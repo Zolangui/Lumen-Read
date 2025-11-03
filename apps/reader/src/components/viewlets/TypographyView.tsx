@@ -49,15 +49,19 @@ export const TypographyView: React.FC<PaneViewProps> = (props) => {
       v: TypographyConfiguration[K],
     ) => {
       if (scope === TypographyScope.Book) {
-        reader.focusedBookTab?.updateBook({
-          configuration: {
-            ...reader.focusedBookTab.book.configuration,
-            typography: {
-              ...reader.focusedBookTab.book.configuration?.typography,
-              [k]: v,
-            },
-          },
-        })
+        const bookTab = reader.focusedBookTab
+        if (bookTab) {
+          const newConfiguration = JSON.parse(
+            JSON.stringify(bookTab.book.configuration || {}),
+          )
+          if (!newConfiguration.typography) {
+            newConfiguration.typography = {}
+          }
+          newConfiguration.typography[k] = v
+          bookTab.updateBook({
+            configuration: newConfiguration,
+          })
+        }
       } else {
         setSettings((prev) => ({
           ...prev,

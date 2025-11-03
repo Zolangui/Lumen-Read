@@ -257,7 +257,12 @@ export class BookTab extends BaseTab {
 
   toggleResult(id: string) {
     const item = find(this.results, id)
-    if (item) item.expanded = !item.expanded
+    if (item) {
+      item.expanded = !item.expanded
+      if (this.results) {
+        this.results = [...this.results]
+      }
+    }
   }
 
   showPrevLocation() {

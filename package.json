@@ -8,8 +8,8 @@
     "lint": "turbo run lint",
     "build:ext:chrome": "esno scripts/build-extension.js chrome",
     "build:ext:firefox": "esno scripts/build-extension.js firefox",
-    "package:chrome": "pnpm build:ext:chrome && cd apps/extension/dist && zip -r ../../flow-chrome.zip . && cd ../../..",
-    "package:firefox": "pnpm build:ext:firefox && cd apps/extension/dist && zip -r ../../flow-firefox.zip . && cd ../../..",
+    "package:chrome": "pnpm build:ext:chrome && bestzip apps/flow-chrome.zip apps/extension/dist/*",
+    "package:firefox": "pnpm build:ext:firefox && bestzip apps/flow-firefox.zip apps/extension/dist/*",
     "release": "pnpm -r publish --access public",
     "prepare": "husky install"
   },
@@ -22,6 +22,7 @@
     "@changesets/changelog-github": "0.4.4",
     "@changesets/cli": "2.22.0",
     "@typescript-eslint/eslint-plugin": "5.19.0",
+    "bestzip": "2.2.1",
     "cross-env": "7.0.3",
     "eslint": "8.13.0",
     "eslint-config-next": "12.1.5",

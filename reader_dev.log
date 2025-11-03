@@ -1,0 +1,3 @@
+
+> @flow/reader@ dev /app/apps/reader
+> cross-env RECOIL_DUPLICATE_ATOM_KEY_CHECKING_ENABLED=false next dev -p 7127
