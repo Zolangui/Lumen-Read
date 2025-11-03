@@ -260,7 +260,7 @@ export class BookTab extends BaseTab {
     if (item) {
       item.expanded = !item.expanded
       if (this.results) {
-        this.results = [...this.results]
+        this.results = JSON.parse(JSON.stringify(this.results))
       }
     }
   }
