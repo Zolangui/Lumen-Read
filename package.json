@@ -8,8 +8,8 @@
     "lint": "turbo run lint",
     "build:ext:chrome": "esno scripts/build-extension.js chrome",
     "build:ext:firefox": "esno scripts/build-extension.js firefox",
-    "package:chrome": "pnpm build:ext:chrome && bestzip apps/flow-chrome.zip apps/extension/dist/*",
-    "package:firefox": "pnpm build:ext:firefox && bestzip apps/flow-firefox.zip apps/extension/dist/*",
+    "package:chrome": "pnpm build:ext:chrome && cd apps/extension/dist && bestzip ../../flow-chrome.zip ./*",
+    "package:firefox": "pnpm build:ext:firefox && cd apps/extension/dist && bestzip ../../flow-firefox.zip ./*",
     "release": "pnpm -r publish --access public",
     "prepare": "husky install"
   },
