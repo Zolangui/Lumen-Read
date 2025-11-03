@@ -181,11 +181,7 @@ function ReaderGroup({ index }: ReaderGroupProps) {
         {group.tabs.map((tab, i) => (
           <PaneContainer active={i === selectedIndex} key={tab.id}>
             {tab instanceof BookTab ? (
-              <BookPane
-                tab={tab}
-                onMouseDown={handleMouseDown}
-                style={{ transform: 'translateZ(0)' }}
-              />
+              <BookPane tab={tab} onMouseDown={handleMouseDown} />
             ) : (
               <tab.Component />
             )}
@@ -203,12 +199,12 @@ const PaneContainer: React.FC<PaneContainerProps> = ({ active, children }) => {
   return <div className={clsx('h-full', active || 'hidden')}>{children}</div>
 }
 
-interface BookPaneProps extends ComponentProps<'div'> {
+interface BookPaneProps {
   tab: BookTab
   onMouseDown: () => void
 }
 
-function BookPane({ tab, onMouseDown, ...props }: BookPaneProps) {
+function BookPane({ tab, onMouseDown }: BookPaneProps) {
   const ref = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
   const prevSize = useRef(0)
@@ -401,10 +397,7 @@ function BookPane({ tab, onMouseDown, ...props }: BookPaneProps) {
   useDisablePinchZooming(iframe)
 
   return (
-    <div
-      className={clsx('flex h-full flex-col', mobile && 'py-[3vw]')}
-      {...props}
-    >
+    <div className={clsx('flex h-full flex-col', mobile && 'py-[3vw]')}>
       <PhotoSlider
         images={[{ src, key: 0 }]}
         visible={!!src}
@@ -417,6 +410,7 @@ function BookPane({ tab, onMouseDown, ...props }: BookPaneProps) {
         ref={wrapperRef}
         className={clsx('relative flex-1 w-full h-full')}
         style={{
+          transform: 'translateZ(0)',
           width:
             contentWidthPercent && contentWidthPercent < 100
               ? `${contentWidthPercent}%`
