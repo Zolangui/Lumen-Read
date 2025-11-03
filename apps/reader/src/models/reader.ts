@@ -107,7 +107,6 @@ export class BookTab extends BaseTab {
   section?: ISection
   sections?: ISection[]
   results?: IMatch[]
-  searchVersion = 0
   activeResultID?: string
   rendered = false
 
@@ -257,10 +256,12 @@ export class BookTab extends BaseTab {
   }
 
   toggleResult(id: string) {
-    const item = find(this.results, id)
+    // deep clone to break memoization in react components
+    const results = JSON.parse(JSON.stringify(this.results))
+    const item = find(results, id)
     if (item) {
       item.expanded = !item.expanded
-      this.searchVersion++
+      this.results = results
     }
   }
 
