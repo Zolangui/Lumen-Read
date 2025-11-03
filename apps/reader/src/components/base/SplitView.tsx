@@ -187,8 +187,8 @@ const Sash: React.FC<SashProps> = ({ vertical, views }) => {
         className={clsx(
           'pointer-events-none absolute inset-0 border-black/10 transition-[background-color]',
           vertical
-            ? 'top-1/2 -translate-y-1/2 border-b'
-            : 'left-1/2 -translate-x-1/2 border-r',
+            ? 'top-[calc(50%-1px)] border-b'
+            : 'left-[calc(50%-1px)] border-r',
           (hover || active) && 'bg-primary70 h-full w-full border-none',
         )}
       ></div>

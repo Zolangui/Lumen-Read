@@ -256,12 +256,14 @@ export class BookTab extends BaseTab {
   }
 
   toggleResult(id: string) {
-    const item = find(this.results, id)
+    if (!this.results) return
+
+    const results = [...this.results]
+    const item = find(results, id)
+
     if (item) {
       item.expanded = !item.expanded
-      if (this.results) {
-        this.results = JSON.parse(JSON.stringify(this.results))
-      }
+      this.results = results
     }
   }
 

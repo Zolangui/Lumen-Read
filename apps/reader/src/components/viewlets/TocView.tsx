@@ -153,7 +153,7 @@ const TocRow = memo<TocRowProps>(({
       subitems={subitems}
       onClick={() => {
         setLastClickedHref(href)
-        reader.focusedBookTab?.display(href)
+        reader.focusedBookTab?.display(href, false)
       }}
       toggle={() => reader.focusedBookTab?.toggle(id)}
       onActivate={onActivate}

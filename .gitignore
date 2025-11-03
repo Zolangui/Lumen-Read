@@ -23,6 +23,8 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+dev_server.log
+reader_dev.log
 
 # local env files
 .env
