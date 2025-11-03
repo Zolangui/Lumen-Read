@@ -367,6 +367,7 @@ const Reader: React.FC<ReaderProps> = ({ className, ...props }: ReaderProps) => 
         readMode || 'mb-12 sm:mb-0',
         bg,
       )}
+      style={{ transform: 'translateZ(0)' }}
       {...props}
     />
   )
