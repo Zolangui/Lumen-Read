@@ -107,7 +107,6 @@ export class BookTab extends BaseTab {
   section?: ISection
   sections?: ISection[]
   results?: IMatch[]
-  searchVersion = 0
   activeResultID?: string
   rendered = false
 
@@ -257,12 +256,13 @@ export class BookTab extends BaseTab {
   }
 
   toggleResult(id: string) {
-    if (!this.results) return
+    // cancel any pending search to avoid race condition
+    ;(this.onKeywordChange as any).cancel()
 
+    if (!this.results) return
     this.results = this.results.map((r) =>
       r.id === id ? { ...r, expanded: !r.expanded } : r,
     )
-    this.searchVersion++
   }
 
   showPrevLocation() {
