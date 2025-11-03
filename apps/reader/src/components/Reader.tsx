@@ -410,6 +410,7 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
         ref={wrapperRef}
         className={clsx('relative flex-1 w-full h-full')}
         style={{
+          transform: 'translateZ(0)',
           width:
             contentWidthPercent && contentWidthPercent < 100
               ? `${contentWidthPercent}%`

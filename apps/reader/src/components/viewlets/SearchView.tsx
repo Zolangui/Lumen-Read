@@ -86,9 +86,11 @@ interface ResultListProps {
   keyword: string
 }
 const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
+  const { focusedBookTab } = useReaderSnapshot()
   const rows = useMemo(
     () => results.flatMap((r) => flatTree(r)) ?? [],
-    [results],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [results, focusedBookTab?.searchVersion],
   )
   const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('search')
