@@ -13,7 +13,7 @@ import { BookRecord, db } from '../db'
 import { fileToEpub } from '../file'
 import { defaultStyle } from '../styles'
 
-import { dfs, find, INode } from './tree'
+import { dfs, INode } from './tree'
 
 function updateIndex(array: any[], deletedItemIndex: number) {
   const last = array.length - 1
@@ -256,13 +256,11 @@ export class BookTab extends BaseTab {
   }
 
   toggleResult(id: string) {
-    // deep clone to break memoization in react components
-    const results = JSON.parse(JSON.stringify(this.results))
-    const item = find(results, id)
-    if (item) {
-      item.expanded = !item.expanded
-      this.results = results
-    }
+    if (!this.results) return
+
+    this.results = this.results.map((r) =>
+      r.id === id ? { ...r, expanded: !r.expanded } : r,
+    )
   }
 
   showPrevLocation() {
