@@ -52,9 +52,13 @@ export const SearchView: React.FC<PaneViewProps> = (props) => {
           title: t(expanded ? 'action.collapse_all' : 'action.expand_all'),
           Icon: expanded ? VscCollapseAll : VscExpandAll,
           handle() {
-            reader.focusedBookTab?.results?.forEach(
-              (r) => (r.expanded = !expanded),
-            )
+            const tab = reader.focusedBookTab
+            if (tab?.results) {
+              tab.results = tab.results.map((r) => ({
+                ...r,
+                expanded: !expanded,
+              }))
+            }
           },
         },
       ]}
