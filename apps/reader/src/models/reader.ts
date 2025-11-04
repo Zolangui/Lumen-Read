@@ -1,4 +1,3 @@
-import { debounce } from '@github/mini-throttle/decorators'
 import { IS_SERVER } from '@literal-ui/hooks'
 import React from 'react'
 import { v4 as uuidv4 } from 'uuid'
@@ -13,7 +12,7 @@ import { BookRecord, db } from '../db'
 import { fileToEpub } from '../file'
 import { defaultStyle } from '../styles'
 
-import { dfs, find, INode } from './tree'
+import { dfs, INode } from './tree'
 
 function updateIndex(array: any[], deletedItemIndex: number) {
   const last = array.length - 1
@@ -109,6 +108,7 @@ export class BookTab extends BaseTab {
   results?: IMatch[]
   activeResultID?: string
   rendered = false
+  private searchTimer?: NodeJS.Timeout
 
   get container() {
     return this?.rendition?.manager?.container as HTMLDivElement | undefined
@@ -235,11 +235,13 @@ export class BookTab extends BaseTab {
   setKeyword(keyword: string) {
     if (this.keyword === keyword) return
     this.keyword = keyword
-    this.onKeywordChange()
+
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer)
+    }
+    this.searchTimer = setTimeout(() => this.onKeywordChange(), 1000)
   }
 
-  // only use throttle/debounce for side effects
-  @debounce(1000)
   async onKeywordChange() {
     this.results = await this.search()
   }
@@ -256,8 +258,14 @@ export class BookTab extends BaseTab {
   }
 
   toggleResult(id: string) {
-    const item = find(this.results, id)
-    if (item) item.expanded = !item.expanded
+    if (this.searchTimer) {
+      clearTimeout(this.searchTimer)
+    }
+
+    if (!this.results) return
+    this.results = this.results.map((r) =>
+      r.id === id ? { ...r, expanded: !r.expanded } : r,
+    )
   }
 
   showPrevLocation() {
