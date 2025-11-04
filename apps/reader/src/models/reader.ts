@@ -1,5 +1,6 @@
-import { debounce } from '@github/mini-throttle/decorators'
 import { IS_SERVER } from '@literal-ui/hooks'
+import { DebouncedFunc } from 'lodash'
+import debounce from 'lodash/debounce'
 import React from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { proxy, ref, snapshot, subscribe, useSnapshot } from 'valtio'
@@ -239,10 +240,7 @@ export class BookTab extends BaseTab {
   }
 
   // only use throttle/debounce for side effects
-  @debounce(1000)
-  async onKeywordChange() {
-    this.results = await this.search()
-  }
+  onKeywordChange: DebouncedFunc<() => Promise<void>>
 
   get totalLength() {
     return this.sections?.reduce((acc, s) => acc + s.length, 0) ?? 0
@@ -257,9 +255,10 @@ export class BookTab extends BaseTab {
 
   toggleResult(id: string) {
     // cancel any pending search to avoid race condition
-    ;(this.onKeywordChange as any).cancel()
+    this.onKeywordChange.cancel()
 
     if (!this.results) return
+    // To trigger a state update with valtio, we need to create a new array.
     this.results = this.results.map((r) =>
       r.id === id ? { ...r, expanded: !r.expanded } : r,
     )
@@ -458,6 +457,10 @@ export class BookTab extends BaseTab {
 
   constructor(public book: BookRecord) {
     super(book.id, book.name)
+
+    this.onKeywordChange = debounce(async () => {
+      this.results = await this.search()
+    }, 1000)
 
     // don't subscribe `db.books` in `constructor`, it will
     // 1. update the unproxied instance, which is not reactive

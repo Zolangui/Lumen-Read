@@ -106,6 +106,9 @@ importers:
       '@sentry/nextjs':
         specifier: 7.12.1
         version: 7.12.1(@babel/preset-env@7.26.0(@babel/core@7.26.0))(next@12.3.4(@babel/core@7.26.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0))(react@18.0.0)(webpack@4.47.0)
+      '@types/lodash':
+        specifier: 4.14.195
+        version: 4.14.195
       '@types/react-highlight-words':
         specifier: 0.16.4
         version: 0.16.4
@@ -133,6 +136,9 @@ importers:
       jszip:
         specifier: 3.10.1
         version: 3.10.1
+      lodash:
+        specifier: ^4.17.21
+        version: 4.17.21
       next:
         specifier: 12.3.4
         version: 12.3.4(@babel/core@7.26.0)(react-dom@18.0.0(react@18.0.0))(react@18.0.0)
@@ -1724,6 +1730,9 @@ packages:
   '@types/localforage@0.0.34':
     resolution: {integrity: sha512-tJxahnjm9dEI1X+hQSC5f2BSd/coZaqbIl1m3TCl0q9SVuC52XcXfV0XmoCU1+PmjyucuVITwoTnN8OlTbEXXA==}
     deprecated: This is a stub types definition for localforage (https://github.com/localForage/localForage). localforage provides its own type definitions, so you don't need @types/localforage installed!
+
+  '@types/lodash@4.14.195':
+    resolution: {integrity: sha512-Hwx9EUgdwf2GLarOjQp5ZH8ZmblzcbTBC2wtQWNKARBSxM9ezRIAUpeDTgoQRAFB0+8CNWXVA9+MaSOzOF3nPg==}
 
   '@types/markdown-it@12.2.3':
     resolution: {integrity: sha512-GKMHFfv3458yYy+v/N8gjufHO6MSZKCOXpZc5GXIWWy8uldwfmPn98vp81gZ5f9SVw8YYBctgfJ22a2d7AOMeQ==}
@@ -10046,6 +10055,8 @@ snapshots:
   '@types/localforage@0.0.34':
     dependencies:
       localforage: 1.10.0
+
+  '@types/lodash@4.14.195': {}
 
   '@types/markdown-it@12.2.3':
     dependencies:

@@ -74,11 +74,7 @@ export const SearchView: React.FC<PaneViewProps> = (props) => {
           />
         </div>
         {keyword && results && (
-          <ResultList
-            key={focusedBookTab?.searchVersion}
-            results={results as IMatch[]}
-            keyword={keyword}
-          />
+          <ResultList results={results as IMatch[]} keyword={keyword} />
         )}
       </div>
     </PaneView>
@@ -90,11 +86,9 @@ interface ResultListProps {
   keyword: string
 }
 const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
-  const { focusedBookTab } = useReaderSnapshot()
   const rows = useMemo(
     () => results.flatMap((r) => flatTree(r)) ?? [],
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [results, focusedBookTab?.searchVersion],
+    [results],
   )
   const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('search')
