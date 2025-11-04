@@ -109,6 +109,7 @@ export class BookTab extends BaseTab {
   activeResultID?: string
   rendered = false
   private searchTimer?: NodeJS.Timeout
+  searchVersion = 0
 
   get container() {
     return this?.rendition?.manager?.container as HTMLDivElement | undefined
@@ -266,6 +267,7 @@ export class BookTab extends BaseTab {
     this.results = this.results.map((r) =>
       r.id === id ? { ...r, expanded: !r.expanded } : r,
     )
+    this.searchVersion++
   }
 
   showPrevLocation() {
