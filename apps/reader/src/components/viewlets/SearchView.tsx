@@ -110,7 +110,11 @@ const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
       <div ref={outerRef} className="scroll">
         <div ref={innerRef}>
           {items.map(({ index }) => (
-            <ResultRow key={index} result={rows[index]} keyword={keyword} />
+            <ResultRow
+              key={rows[index]?.id ?? index}
+              result={rows[index]}
+              keyword={keyword}
+            />
           ))}
         </div>
       </div>
