@@ -94,12 +94,7 @@ const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
     () => results.flatMap((r) => flatTree(r)) ?? [],
     [results],
   )
-  // The useList hook (from react-cool-virtual) seems to be holding onto a stale
-  // reference of the `rows` array. By performing a deep clone with JSON.parse/stringify,
-  // we ensure that the hook receives a completely new object, forcing it to re-render.
-  const { outerRef, innerRef, items } = useList(
-    JSON.parse(JSON.stringify(rows)),
-  )
+  const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('search')
 
   const sectionCount = results.length
@@ -151,7 +146,7 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
       expanded={expanded}
       subitems={subitems}
       badge={isResult}
-      {...(isResult && {
+      {...(!isResult && {
         onClick: () => {
           if (tab) {
             tab.activeResultID = id
@@ -161,7 +156,7 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
       })}
       toggle={() => tab?.toggleResult(id)}
     >
-      {isResult && (
+      {!isResult && (
         <Highlighter
           highlightClassName="match-highlight"
           searchWords={[keyword]}
