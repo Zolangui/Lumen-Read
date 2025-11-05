@@ -98,12 +98,7 @@ const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
     () => results.flatMap((r) => flatTree(r)) ?? [],
     [results],
   )
-  // The useList hook (from react-cool-virtual) seems to be holding onto a stale
-  // reference of the `rows` array. By performing a deep clone with JSON.parse/stringify,
-  // we ensure that the hook receives a completely new object, forcing it to re-render.
-  const { outerRef, innerRef, items } = useList(
-    JSON.parse(JSON.stringify(rows)),
-  )
+  const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('search')
 
   const sectionCount = results.length
@@ -140,6 +135,8 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
   const { cfi, depth, expanded, subitems, id } = result
   let { excerpt, description } = result
   const tab = reader.focusedBookTab
+
+  // CORRETO: depth 0 é o Capítulo (pai), depth 1 é o Excerto (filho/resultado)
   const isResult = depth === 1
 
   excerpt = excerpt.trim()
@@ -152,20 +149,29 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
       description={description}
       depth={depth}
       active={tab?.activeResultID === id}
-      expanded={expanded}
-      subitems={subitems}
-      badge={isResult}
-      {...(!isResult && {
-        onClick: () => {
-          if (tab) {
-            tab.activeResultID = id
-            tab.display(cfi)
-          }
-        },
-      })}
-      toggle={() => tab?.toggleResult(id)}
+      expanded={expanded} // Controla o ícone de seta
+      subitems={subitems} // Controla se a seta deve aparecer
+      badge={isResult} // Mostra o badge no excerto
+
+      // --- INÍCIO DA CORREÇÃO LÓGICA ---
+
+      // Se FOR um resultado (excerto, depth 1), o clique NAVEGA.
+      onClick={
+        isResult
+          ? () => {
+              if (tab) {
+                tab.activeResultID = id
+                tab.display(cfi)
+              }
+            }
+          : undefined
+      }
+
+      // Se NÃO FOR um resultado (capítulo, depth 0), o clique EXPANDE.
+      toggle={!isResult ? () => tab?.toggleResult(id) : undefined}
     >
-      {!isResult && (
+      {/* Se FOR um resultado (excerto, depth 1), mostra o Highlighter. */}
+      {isResult && (
         <Highlighter
           highlightClassName="match-highlight"
           searchWords={[keyword]}
@@ -174,5 +180,7 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
         />
       )}
     </Row>
+
+    // --- FIM DA CORREÇÃO LÓGICA ---
   )
 }
