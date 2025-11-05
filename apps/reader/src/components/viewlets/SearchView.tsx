@@ -151,6 +151,7 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
       badge={isResult}
       {...(!isResult && {
         onClick: () => {
+          console.log('Clicked result:', JSON.parse(JSON.stringify(result)))
           if (tab) {
             tab.activeResultID = id
             tab.display(cfi)
