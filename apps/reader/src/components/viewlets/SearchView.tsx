@@ -90,10 +90,13 @@ interface ResultListProps {
   keyword: string
 }
 const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
-  const rows = useMemo(
-    () => results.flatMap((r) => flatTree(r)) ?? [],
-    [results],
-  )
+  const rows = useMemo(() => {
+    if (!results) return []
+    const expandedState = Object.fromEntries(
+      results.map((r) => [r.id, r.expanded ?? false]),
+    )
+    return results.flatMap((r) => flatTree(r, 0, expandedState))
+  }, [results])
   const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('search')
 

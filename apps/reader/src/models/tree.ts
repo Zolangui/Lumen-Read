@@ -2,15 +2,24 @@ export interface INode {
   id: string
   depth?: number
   expanded?: boolean
-  subitems?: INode[]
+  subitems?: readonly INode[]
 }
 
-export function flatTree<T extends INode>(node: T, depth = 1): T[] {
-  if (!node.subitems || !node.subitems.length || !node.expanded) {
-    return [{ ...node, depth }]
+export function flatTree<T extends INode>(
+  node: T,
+  depth = 1,
+  expandedState: Record<string, boolean> = {},
+): T[] {
+  const expanded = expandedState[node.id] ?? false
+  const newNode = { ...node, depth, expanded }
+
+  if (!node.subitems || !node.subitems.length || !newNode.expanded) {
+    return [newNode]
   }
-  const children = node.subitems.flatMap((i) => flatTree(i as T, depth + 1))
-  return [{ ...node, depth }, ...children]
+  const children = node.subitems.flatMap((i) =>
+    flatTree(i as T, depth + 1, expandedState),
+  )
+  return [newNode, ...children]
 }
 
 export function find<T extends INode>(
