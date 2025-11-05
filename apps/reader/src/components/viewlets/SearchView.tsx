@@ -52,13 +52,9 @@ export const SearchView: React.FC<PaneViewProps> = (props) => {
           title: t(expanded ? 'action.collapse_all' : 'action.expand_all'),
           Icon: expanded ? VscCollapseAll : VscExpandAll,
           handle() {
-            const tab = reader.focusedBookTab
-            if (tab?.results) {
-              tab.results = tab.results.map((r) => ({
-                ...r,
-                expanded: !expanded,
-              }))
-            }
+            reader.focusedBookTab?.results?.forEach(
+              (r) => (r.expanded = !expanded),
+            )
           },
         },
       ]}
@@ -140,7 +136,6 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
   const { cfi, depth, expanded, subitems, id } = result
   let { excerpt, description } = result
   const tab = reader.focusedBookTab
-
   const isResult = depth === 1
 
   excerpt = excerpt.trim()
@@ -156,17 +151,15 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
       expanded={expanded}
       subitems={subitems}
       badge={isResult}
-      onClick={
-        isResult
-          ? () => {
-              if (tab) {
-                tab.activeResultID = id
-                tab.display(cfi)
-              }
-            }
-          : undefined
-      }
-      toggle={!isResult ? () => tab?.toggleResult(id) : undefined}
+      {...(isResult && {
+        onClick: () => {
+          if (tab) {
+            tab.activeResultID = id
+            tab.display(cfi)
+          }
+        },
+      })}
+      toggle={() => tab?.toggleResult(id)}
     >
       {isResult && (
         <Highlighter
