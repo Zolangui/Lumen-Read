@@ -7,6 +7,5 @@ export function useList(array: Readonly<any[]> = []) {
   return useVirtual<HTMLDivElement>({
     itemCount: array.length,
     itemSize: LIST_ITEM_SIZE,
-    resetScroll: true,
   })
 }
