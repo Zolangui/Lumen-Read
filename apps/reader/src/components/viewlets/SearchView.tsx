@@ -75,7 +75,6 @@ export const SearchView: React.FC<PaneViewProps> = (props) => {
         </div>
         {keyword && results && (
           <ResultList
-            key={focusedBookTab?.searchVersion}
             results={results as IMatch[]}
             keyword={keyword}
           />
