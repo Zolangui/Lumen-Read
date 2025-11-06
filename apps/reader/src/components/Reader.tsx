@@ -394,7 +394,7 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
     }
   })
 
-  useDisablePinchZooming(iframe)
+  useDisablePinchZooming(iframe ?? undefined)
 
   return (
     <div className={clsx('flex h-full flex-col', mobile && 'py-[3vw]')}>
