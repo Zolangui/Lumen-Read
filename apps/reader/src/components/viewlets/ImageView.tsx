@@ -66,8 +66,9 @@ const Block: React.FC<BlockProps> = ({ section }) => {
                     (s) => s.href === section.href,
                   )
                   if (realSection) {
+                    const filename = src.split('/').pop()
                     reader.focusedBookTab?.displayFromSelector(
-                      `img[src*="${src}"]`,
+                      `img[src*="${filename}"]`,
                       realSection,
                     )
                   }
