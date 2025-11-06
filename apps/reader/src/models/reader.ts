@@ -334,7 +334,7 @@ export class BookTab extends BaseTab {
         excerpt: navItem.label,
         description: path.map((i) => i.label).join(' / '),
         subitems: subitems.map((i) => ({ ...i, id: i.cfi! })),
-        expanded: true,
+        expanded: false,
       }
     }
   }

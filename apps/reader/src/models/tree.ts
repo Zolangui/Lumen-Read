@@ -1,41 +1,39 @@
 export interface INode {
   id: string
+  parent?: string
+  subitems?: readonly INode[]
   depth?: number
   expanded?: boolean
-  subitems?: readonly INode[]
+}
+
+export function dfs<T extends INode>(
+  node: T,
+  cb: (node: T) => void,
+  depth = 0,
+) {
+  node.depth = depth
+  cb(node)
+  if (node.subitems) {
+    node.subitems.forEach((n) => dfs(n as T, cb, depth + 1))
+  }
 }
 
 export function flatTree<T extends INode>(
   node: T,
-  depth = 1,
+  depth = 0,
   expandedState: Record<string, boolean> = {},
 ): T[] {
-  const expanded = expandedState[node.id] ?? false
-  const newNode = { ...node, depth, expanded }
-
-  if (!node.subitems || !node.subitems.length || !newNode.expanded) {
-    return [newNode]
+  const newNode = {
+    ...node,
+    depth,
+    expanded: expandedState[node.id] ?? false,
   }
-  const children = node.subitems.flatMap((i) =>
-    flatTree(i as T, depth + 1, expandedState),
-  )
-  return [newNode, ...children]
-}
 
-export function find<T extends INode>(
-  nodes: readonly T[] = [],
-  id: string,
-): T | undefined {
-  const node = nodes.find((n) => n.id === id)
-  if (node) return node
-  for (const child of nodes) {
-    const node = find(child.subitems as T[], id)
-    if (node) return node as T
-  }
-  return undefined
-}
+  const children = newNode.expanded
+    ? newNode.subitems?.flatMap((n) =>
+        flatTree(n as T, depth + 1, expandedState),
+      )
+    : undefined
 
-export function dfs<T extends INode>(node: T, fn: (node: T) => void) {
-  fn(node)
-  node.subitems?.forEach((child) => dfs(child as T, fn))
+  return [newNode, ...(children ?? [])]
 }

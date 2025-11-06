@@ -3,12 +3,8 @@ import Highlighter from 'react-highlight-words'
 import { VscCollapseAll, VscExpandAll } from 'react-icons/vsc'
 
 import { useAction, useList, useTranslation } from '@flow/reader/hooks'
-import {
-  flatTree,
-  IMatch,
-  useReaderSnapshot,
-  reader,
-} from '@flow/reader/models'
+import { IMatch, useReaderSnapshot, reader } from '@flow/reader/models'
+import { flatTree } from '@flow/reader/models/tree'
 
 import { TextField } from '../Form'
 import { Row } from '../Row'
@@ -75,7 +71,6 @@ export const SearchView: React.FC<PaneViewProps> = (props) => {
         </div>
         {keyword && results && (
           <ResultList
-            key={focusedBookTab?.searchVersion}
             results={results as IMatch[]}
             keyword={keyword}
           />
@@ -90,10 +85,13 @@ interface ResultListProps {
   keyword: string
 }
 const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
-  const rows = useMemo(
-    () => results.flatMap((r) => flatTree(r)) ?? [],
-    [results],
-  )
+  const rows = useMemo(() => {
+    if (!results) return []
+    const expandedState = Object.fromEntries(
+      results.map((r) => [r.id, r.expanded ?? false]),
+    )
+    return results.flatMap((r) => flatTree(r, 0, expandedState))
+  }, [results])
   const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('search')
 
@@ -146,17 +144,19 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
       expanded={expanded}
       subitems={subitems}
       badge={isResult}
-      {...(!isResult && {
-        onClick: () => {
-          if (tab) {
-            tab.activeResultID = id
-            tab.display(cfi)
-          }
-        },
-      })}
-      toggle={() => tab?.toggleResult(id)}
+      onClick={
+        isResult
+          ? () => {
+              if (tab) {
+                tab.activeResultID = id
+                tab.display(cfi)
+              }
+            }
+          : () => tab?.toggleResult(id)
+      }
+      toggle={!isResult && subitems?.length ? () => tab?.toggleResult(id) : undefined}
     >
-      {!isResult && (
+      {isResult && (
         <Highlighter
           highlightClassName="match-highlight"
           searchWords={[keyword]}
