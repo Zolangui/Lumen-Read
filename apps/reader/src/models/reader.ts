@@ -132,15 +132,6 @@ export class BookTab extends BaseTab {
       this.display(section.href, returnable)
     }
   }
-  displayFromImageSrc(src: string, returnable = true) {
-    for (const section of this.sections ?? []) {
-      const el = section.document.querySelector(`img[src="${src}"]`)
-      if (el) {
-        this.display(section.cfiFromElement(el), returnable)
-        break
-      }
-    }
-  }
   prev() {
     this.rendition?.prev()
     // avoid content flash
@@ -343,7 +334,7 @@ export class BookTab extends BaseTab {
         excerpt: navItem.label,
         description: path.map((i) => i.label).join(' / '),
         subitems: subitems.map((i) => ({ ...i, id: i.cfi! })),
-        expanded: false,
+        expanded: true,
       }
     }
   }

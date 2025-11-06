@@ -75,6 +75,7 @@ export const SearchView: React.FC<PaneViewProps> = (props) => {
         </div>
         {keyword && results && (
           <ResultList
+            key={focusedBookTab?.searchVersion}
             results={results as IMatch[]}
             keyword={keyword}
           />
@@ -89,13 +90,10 @@ interface ResultListProps {
   keyword: string
 }
 const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
-  const rows = useMemo(() => {
-    if (!results) return []
-    const expandedState = Object.fromEntries(
-      results.map((r) => [r.id, r.expanded ?? false]),
-    )
-    return results.flatMap((r) => flatTree(r, 0, expandedState))
-  }, [results])
+  const rows = useMemo(
+    () => results.flatMap((r) => flatTree(r)) ?? [],
+    [results],
+  )
   const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('search')
 
@@ -133,7 +131,6 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
   const { cfi, depth, expanded, subitems, id } = result
   let { excerpt, description } = result
   const tab = reader.focusedBookTab
-
   const isResult = depth === 1
 
   excerpt = excerpt.trim()
@@ -149,19 +146,17 @@ const ResultRow: React.FC<ResultRowProps> = ({ result, keyword }) => {
       expanded={expanded}
       subitems={subitems}
       badge={isResult}
-      onClick={
-        isResult
-          ? () => {
-              if (tab) {
-                tab.activeResultID = id
-                tab.display(cfi)
-              }
-            }
-          : () => tab?.toggleResult(id)
-      }
-      toggle={!isResult && subitems?.length ? () => tab?.toggleResult(id) : undefined}
+      {...(!isResult && {
+        onClick: () => {
+          if (tab) {
+            tab.activeResultID = id
+            tab.display(cfi)
+          }
+        },
+      })}
+      toggle={() => tab?.toggleResult(id)}
     >
-      {isResult && (
+      {!isResult && (
         <Highlighter
           highlightClassName="match-highlight"
           searchWords={[keyword]}
