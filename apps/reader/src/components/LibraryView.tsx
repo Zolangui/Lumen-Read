@@ -62,7 +62,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         />
 
         <div className="mb-6 flex flex-col items-start gap-4 md:flex-row md:items-center">
-          <label className="flex w-full flex-col md:max-w-md h-10">
+          <label className="flex h-10 w-full flex-col md:max-w-md">
             <div className="flex h-full w-full flex-1 items-stretch rounded-lg">
               <div className="text-subtle-light dark:text-subtle-dark bg-surface-light dark:bg-surface-dark border-border-light dark:border-border-dark flex items-center justify-center rounded-l-lg border border-r-0 pl-3">
                 <span className="material-symbols-outlined text-xl">

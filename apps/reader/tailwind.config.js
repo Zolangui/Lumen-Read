@@ -33,5 +33,9 @@ module.exports = {
       padding: '1rem',
     },
   },
-  plugins: [require('@tailwindcss/forms'), require('@flow/tailwind'), require('@tailwindcss/line-clamp')],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@flow/tailwind'),
+    require('@tailwindcss/line-clamp'),
+  ],
 }
