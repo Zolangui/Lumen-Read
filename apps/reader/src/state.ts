@@ -69,6 +69,24 @@ export function useSettings() {
   return useRecoilState(settingsState)
 }
 
+export interface LibraryState {
+  viewMode: 'grid' | 'list'
+  filter: 'All' | 'Unread' | 'In Progress' | 'Finished'
+}
+
+export const libraryState = atom<LibraryState>({
+  key: 'library',
+  default: {
+    viewMode: 'grid',
+    filter: 'All',
+  },
+  effects: [localStorageEffect('library', { viewMode: 'grid', filter: 'All' })],
+})
+
+export function useLibraryState() {
+  return useRecoilState(libraryState)
+}
+
 export const audioState = atom({
   key: 'audio',
   default: {
