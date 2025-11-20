@@ -80,7 +80,7 @@ export const BookCard: React.FC<BookCardProps> = ({
             </span>
           </button>
         </div>
-        <div className="bg-primary/20 absolute bottom-0 left-0 right-0 mx-2 mb-2 h-1 overflow-hidden rounded-full">
+        <div className="absolute bottom-0 left-0 right-0 mx-2 mb-2 h-1 overflow-hidden rounded-full bg-white/80 shadow-sm">
           <div
             className="bg-primary h-full rounded-full"
             style={{ width: `${percentage}%` }}

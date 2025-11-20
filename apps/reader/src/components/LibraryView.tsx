@@ -2,6 +2,7 @@ import clsx from 'clsx'
 import React, { useState, useMemo } from 'react'
 
 import { BookRecord, CoverRecord } from '../db'
+import { useLibraryState } from '../state'
 
 import { BookCard } from './BookCard'
 import { NewHeader } from './NewHeader'
@@ -22,11 +23,14 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   onBookClick,
   onDrop,
 }) => {
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [{ viewMode, filter }, setLibraryState] = useLibraryState()
   const [searchQuery, setSearchQuery] = useState('')
-  const [filter, setFilter] = useState<
-    'All' | 'Unread' | 'In Progress' | 'Finished'
-  >('All')
+
+  const setViewMode = (mode: 'grid' | 'list') =>
+    setLibraryState((prev) => ({ ...prev, viewMode: mode }))
+
+  const setFilter = (f: 'All' | 'Unread' | 'In Progress' | 'Finished') =>
+    setLibraryState((prev) => ({ ...prev, filter: f }))
 
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {

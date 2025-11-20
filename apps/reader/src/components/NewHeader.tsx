@@ -1,5 +1,8 @@
+import { Hct, argbFromHex } from '@material/material-color-utilities'
 import clsx from 'clsx'
-import React from 'react'
+import React, { useMemo } from 'react'
+
+import { useSourceColor } from '../hooks'
 
 interface NewHeaderProps {
   viewMode: 'grid' | 'list'
@@ -12,15 +15,29 @@ export const NewHeader: React.FC<NewHeaderProps> = ({
   onViewModeChange,
   onAddBook,
 }) => {
+  const { sourceColor } = useSourceColor()
+
+  const hueRotation = useMemo(() => {
+    try {
+      const sourceHue = Hct.fromInt(argbFromHex(sourceColor)).hue
+      // Base icon color is approx #0ea5e9 which has a hue of ~199deg
+      const baseHue = 199
+      return `${sourceHue - baseHue}deg`
+    } catch (e) {
+      return '0deg'
+    }
+  }, [sourceColor])
+
   return (
     <header className="border-border-light dark:border-border-dark mb-6 flex flex-col items-start justify-between gap-4 border-b border-solid pb-6 sm:flex-row sm:items-center">
       <div className="flex items-center gap-8">
         <div className="text-text-light dark:text-text-dark flex items-center gap-3">
           <div className="size-8">
             <img
-              src="/icons/192.png"
+              src="/icons/512.png"
               alt="Lumen Read Logo"
-              className="h-8 w-8 object-contain"
+              className="h-8 w-8 object-contain transition-all duration-500"
+              style={{ filter: `hue-rotate(${hueRotation})` }}
             />
           </div>
           <h2 className="text-2xl font-bold leading-tight tracking-tighter">
