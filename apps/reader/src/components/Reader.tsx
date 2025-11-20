@@ -1,8 +1,6 @@
 import { useEventListener } from '@literal-ui/hooks'
 import clsx from 'clsx'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { MdWebAsset } from 'react-icons/md/index.js'
-import { RiBookLine } from 'react-icons/ri/index.js'
 import { PhotoSlider } from 'react-photo-view'
 import { useSetRecoilState } from 'recoil'
 import useTilg from 'tilg'
@@ -15,12 +13,12 @@ import { db } from '../db'
 import { handleFiles } from '../file'
 import {
   hasSelection,
+  useAction,
   useBackground,
   useColorScheme,
   useDisablePinchZooming,
   useMobile,
   useSync,
-  useTranslation,
   useTypography,
 } from '../hooks'
 import { BookTab, reader, useReaderSnapshot } from '../models'
@@ -33,7 +31,6 @@ import {
   Annotations,
 } from './Annotation'
 import { NewReaderLayout } from './NewReaderLayout'
-import { Tab } from './Tab'
 import { TextSelectionMenu } from './TextSelectionMenu'
 import { DropZone, SplitView, useDndContext, useSplitViewItem } from './base'
 import * as pages from './pages'
@@ -79,9 +76,7 @@ interface ReaderGroupProps {
 }
 function ReaderGroup({ index }: ReaderGroupProps) {
   const group = reader.groups[index]!
-  const { focusedIndex } = useReaderSnapshot()
-  const { tabs, selectedIndex } = useSnapshot(group)
-  const t = useTranslation()
+  const { selectedIndex } = useSnapshot(group)
 
   const { size } = useSplitViewItem(`${ReaderGroup.name}.${index}`, {
     // to disable sash resize
@@ -98,31 +93,7 @@ function ReaderGroup({ index }: ReaderGroupProps) {
       onMouseDown={handleMouseDown}
       style={{ width: size }}
     >
-      <Tab.List
-        className="hidden sm:flex"
-        onDelete={() => reader.removeGroup(index)}
-      >
-        {tabs.map((tab: any, i: number) => {
-          const selected = i === selectedIndex
-          const focused = index === focusedIndex && selected
-          return (
-            <Tab
-              key={tab.id}
-              selected={selected}
-              focused={focused}
-              onClick={() => group.selectTab(i)}
-              onDelete={() => reader.removeTab(i, index)}
-              Icon={tab instanceof BookTab ? RiBookLine : MdWebAsset}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('text/plain', `${index},${i}`)
-              }}
-            >
-              {tab.isBook ? tab.title : t(`${tab.title}.title`)}
-            </Tab>
-          )
-        })}
-      </Tab.List>
+      {/* Tabs integrated into header - no separate Tab.List */}
 
       <DropZone
         className={clsx('flex-1', isTouchScreen || 'h-0')}
@@ -215,6 +186,7 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
   const { dark } = useColorScheme()
   const [background, , backgroundColor] = useBackground()
   const { contentWidthPercent } = typography
+  const [, setAction] = useAction()
 
   const { iframe, rendition, rendered, container, book } = useSnapshot(tab)
 
@@ -527,14 +499,46 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
   const displayCreator =
     tab.book.metadata?.creator || parseTitle(tab.title).creator
 
+  // Get group and tabs info for header
+  const groupIndex = reader.groups.findIndex((g) =>
+    g.tabs.some((t) => t.id === tab.id),
+  )
+  const group = groupIndex !== -1 ? reader.groups[groupIndex] : undefined
+  const allTabs = group?.tabs || []
+  const selectedTabIndex = allTabs.findIndex((t) => t.id === tab.id)
+
   const header = (
     <ReaderPaneHeader
       title={displayTitle}
       creator={displayCreator}
+      tabs={allTabs}
+      selectedTabIndex={selectedTabIndex}
+      onTabSelect={(index) => {
+        if (group) {
+          group.selectTab(index)
+        }
+      }}
+      onTabClose={(index) => {
+        if (groupIndex !== -1) {
+          reader.removeTab(index, groupIndex)
+        }
+      }}
       onNext={() => tab.next()}
       onPrev={() => tab.prev()}
       onToc={() => {
-        /* TODO: Implement TOC toggle */
+        setAction('toc')
+      }}
+      onClose={() => {
+        // Close the current tab
+        if (groupIndex !== -1) {
+          const tabIndex = group!.tabs.findIndex((t) => t.id === tab.id)
+          if (tabIndex !== -1) {
+            reader.removeTab(tabIndex, groupIndex)
+          }
+        }
+      }}
+      onMenu={() => {
+        setAction((current) => (current ? undefined : 'toc'))
       }}
     />
   )
@@ -591,46 +595,133 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
 interface ReaderPaneHeaderProps {
   title?: string
   creator?: string
+  tabs?: any[]
+  selectedTabIndex?: number
+  onTabSelect?: (index: number) => void
+  onTabClose?: (index: number) => void
   onNext?: () => void
   onPrev?: () => void
   onToc?: () => void
+  onClose?: () => void
+  onMenu?: () => void
 }
 
 const ReaderPaneHeader: React.FC<ReaderPaneHeaderProps> = ({
   title,
-  creator,
+  creator: _creator,
+  tabs,
+  selectedTabIndex = 0,
+  onTabSelect,
+  onTabClose,
   onNext,
   onPrev,
   onToc,
+  onClose,
+  onMenu,
 }) => {
+  // Truncate title if too long
+  const truncatedTitle =
+    title && title.length > 40 ? `${title.substring(0, 40)}...` : title
+
+  // Always show tabs for consistent sizing
+  const showTabs = tabs && tabs.length >= 1
+
   return (
-    <header className="border-border-light dark:border-border-dark flex h-16 shrink-0 items-center justify-between border-b px-6">
-      <div className="flex items-center gap-3">
-        <h1 className="text-lg font-bold">{title || 'Untitled'}</h1>
-        <p className="text-subtle-light dark:text-subtle-dark hidden text-sm sm:block">
-          {creator || 'Unknown Author'}
-        </p>
+    <header className="flex h-12 shrink-0 items-center justify-between border-b border-gray-200 px-4 py-2 dark:border-gray-800">
+      <div className="flex items-center space-x-2">
+        <button
+          onClick={onMenu}
+          className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+        >
+          <span className="material-symbols-outlined text-xl">menu</span>
+        </button>
+        <button
+          onClick={() => reader.clear()}
+          className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          title="Back to Library"
+        >
+          <span className="material-symbols-outlined text-xl">home</span>
+        </button>
+        {showTabs ? (
+          <div className="flex items-center space-x-2">
+            {tabs.map((tab: any, index: number) => {
+              const isSelected = index === selectedTabIndex
+              const tabTitle = tab instanceof BookTab ? tab.title : tab.title
+              const truncTabTitle =
+                tabTitle && tabTitle.length > 25
+                  ? `${tabTitle.substring(0, 25)}...`
+                  : tabTitle
+              return (
+                <div
+                  key={tab.id}
+                  className={clsx(
+                    'group flex items-center rounded px-3 py-1.5 transition-colors',
+                    isSelected
+                      ? 'bg-gray-100 dark:bg-gray-800'
+                      : 'hover:bg-gray-50 dark:hover:bg-gray-900',
+                  )}
+                >
+                  <button
+                    onClick={() => onTabSelect?.(index)}
+                    onDoubleClick={(e) => e.preventDefault()}
+                    className={clsx(
+                      'text-sm font-medium transition-colors',
+                      isSelected
+                        ? 'text-gray-800 dark:text-white'
+                        : 'text-gray-600 dark:text-gray-400',
+                    )}
+                  >
+                    {truncTabTitle || 'Untitled'}
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onTabClose?.(index)
+                    }}
+                    className="ml-2 rounded p-0.5 opacity-0 transition-opacity hover:bg-gray-200 group-hover:opacity-100 dark:hover:bg-gray-700"
+                  >
+                    <span className="material-symbols-outlined text-sm text-gray-500 dark:text-gray-400">
+                      close
+                    </span>
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <>
+            <h1 className="font-semibold text-gray-800 dark:text-white">
+              {truncatedTitle || 'Untitled'}
+            </h1>
+            <button
+              onClick={onClose}
+              className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <span className="material-symbols-outlined text-xl">close</span>
+            </button>
+          </>
+        )}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex-grow"></div>
+      <div className="flex items-center space-x-2">
         <button
           onClick={onPrev}
-          className="text-subtle-light dark:text-subtle-dark flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+          className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
         >
-          <span className="material-symbols-outlined text-2xl">
-            skip_previous
-          </span>
+          <span className="material-symbols-outlined">chevron_left</span>
         </button>
         <button
           onClick={onNext}
-          className="text-subtle-light dark:text-subtle-dark flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+          className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
         >
-          <span className="material-symbols-outlined text-2xl">skip_next</span>
+          <span className="material-symbols-outlined">chevron_right</span>
         </button>
+        <div className="mx-2 h-6 w-px bg-gray-200 dark:bg-gray-700"></div>
         <button
           onClick={onToc}
-          className="text-subtle-light dark:text-subtle-dark flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+          className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
         >
-          <span className="material-symbols-outlined text-2xl">more_horiz</span>
+          <span className="material-symbols-outlined">more_horiz</span>
         </button>
       </div>
     </header>
@@ -646,9 +737,7 @@ const ReaderPaneFooter: React.FC<ReaderPaneFooterProps> = ({
 }) => {
   return (
     <footer className="border-border-light dark:border-border-dark flex h-14 shrink-0 items-center justify-between border-t px-6">
-      <p className="text-subtle-light dark:text-subtle-dark text-sm">
-        Page {Math.round(percentage * 100)}%
-      </p>
+      <div className="flex-1" />
       <div className="mx-4 w-full max-w-xs">
         <div className="bg-primary/20 relative h-1 w-full rounded-full">
           <div
@@ -656,14 +745,14 @@ const ReaderPaneFooter: React.FC<ReaderPaneFooterProps> = ({
             style={{ width: `${percentage * 100}%` }}
           ></div>
           <div
-            className="absolute -top-1/2"
+            className="absolute top-1/2 -translate-y-1/2"
             style={{ left: `${percentage * 100}%` }}
           >
-            <div className="bg-primary border-surface-light dark:border-surface-dark h-3 w-3 rounded-full border-2"></div>
+            <div className="bg-primary border-surface-light dark:border-surface-dark h-3 w-3 -translate-x-1/2 rounded-full border-2"></div>
           </div>
         </div>
       </div>
-      <p className="text-subtle-light dark:text-subtle-dark text-sm">
+      <p className="text-subtle-light dark:text-subtle-dark flex-1 text-right text-sm">
         {Math.round(percentage * 100)}%
       </p>
     </footer>
