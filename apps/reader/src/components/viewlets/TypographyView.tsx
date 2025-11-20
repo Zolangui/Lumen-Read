@@ -300,7 +300,7 @@ const NumberField: React.FC<NumberFieldProps> = ({
           step={step}
           defaultValue={defaultValue}
           placeholder="default"
-          className="w-full border-x border-gray-300 bg-gray-100 py-1.5 text-center text-sm text-gray-800 [appearance:textfield] dark:border-gray-600 dark:bg-gray-800 dark:text-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="w-full border-0 bg-transparent py-1.5 text-center text-sm text-gray-800 [appearance:textfield] focus:outline-none dark:text-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           onBlur={(e) => {
             onChange(Number(e.target.value))
           }}

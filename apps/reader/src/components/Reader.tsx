@@ -736,19 +736,20 @@ const ReaderPaneFooter: React.FC<ReaderPaneFooterProps> = ({
   percentage = 0,
 }) => {
   return (
-    <footer className="border-border-light dark:border-border-dark flex h-14 shrink-0 items-center justify-between border-t px-6">
+    <footer className="border-border-light dark:border-border-dark relative flex h-14 shrink-0 items-center justify-between border-t px-6">
       <div className="flex-1" />
-      <div className="mx-4 w-full max-w-xs">
-        <div className="bg-primary/20 relative h-1 w-full rounded-full">
+      {/* Floating progress bar */}
+      <div className="absolute bottom-4 left-1/2 w-full max-w-xs -translate-x-1/2 px-4">
+        <div className="bg-primary/20 relative h-0.5 w-full rounded-full shadow-sm">
           <div
-            className="bg-primary absolute h-full rounded-full"
+            className="bg-primary absolute h-full rounded-full transition-all duration-300"
             style={{ width: `${percentage * 100}%` }}
           ></div>
           <div
-            className="absolute top-1/2 -translate-y-1/2"
+            className="absolute top-1/2 -translate-y-1/2 transition-all duration-300"
             style={{ left: `${percentage * 100}%` }}
           >
-            <div className="bg-primary border-surface-light dark:border-surface-dark h-3 w-3 -translate-x-1/2 rounded-full border-2"></div>
+            <div className="bg-primary border-surface-light dark:border-surface-dark h-2.5 w-2.5 -translate-x-1/2 rounded-full border-2 shadow-sm"></div>
           </div>
         </div>
       </div>
