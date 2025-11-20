@@ -1,14 +1,8 @@
 import { useEventListener } from '@literal-ui/hooks'
 import clsx from 'clsx'
-import React, {
-  ComponentProps,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react'
-import { MdChevronRight, MdWebAsset } from 'react-icons/md'
-import { RiBookLine } from 'react-icons/ri'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { MdWebAsset } from 'react-icons/md/index.js'
+import { RiBookLine } from 'react-icons/ri/index.js'
 import { PhotoSlider } from 'react-photo-view'
 import { useSetRecoilState } from 'recoil'
 import useTilg from 'tilg'
@@ -38,6 +32,7 @@ import {
   setClickedAnnotation,
   Annotations,
 } from './Annotation'
+import { NewReaderLayout } from './NewReaderLayout'
 import { Tab } from './Tab'
 import { TextSelectionMenu } from './TextSelectionMenu'
 import { DropZone, SplitView, useDndContext, useSplitViewItem } from './base'
@@ -72,7 +67,7 @@ export function ReaderGridView() {
   if (!groups.length) return null
   return (
     <SplitView className={clsx('ReaderGridView')}>
-      {groups.map(({ id }, i) => (
+      {groups.map(({ id }: { id: string }, i: number) => (
         <ReaderGroup key={id} index={i} />
       ))}
     </SplitView>
@@ -107,7 +102,7 @@ function ReaderGroup({ index }: ReaderGroupProps) {
         className="hidden sm:flex"
         onDelete={() => reader.removeGroup(index)}
       >
-        {tabs.map((tab, i) => {
+        {tabs.map((tab: any, i: number) => {
           const selected = i === selectedIndex
           const focused = index === focusedIndex && selected
           return (
@@ -178,7 +173,7 @@ function ReaderGroup({ index }: ReaderGroupProps) {
           }
         }}
       >
-        {group.tabs.map((tab, i) => (
+        {group.tabs.map((tab: any, i: number) => (
           <PaneContainer active={i === selectedIndex} key={tab.id}>
             {tab instanceof BookTab ? (
               <BookPane tab={tab} onMouseDown={handleMouseDown} />
@@ -196,49 +191,127 @@ interface PaneContainerProps {
   active: boolean
 }
 const PaneContainer: React.FC<PaneContainerProps> = ({ active, children }) => {
-  return <div className={clsx('h-full', active || 'hidden')}>{children}</div>
+  return (
+    <div className={clsx('h-full', active || 'hidden')}>
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child, { active } as any)
+          : child,
+      )}
+    </div>
+  )
 }
 
 interface BookPaneProps {
   tab: BookTab
   onMouseDown: () => void
+  active?: boolean
 }
 
-function BookPane({ tab, onMouseDown }: BookPaneProps) {
+function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
   const ref = useRef<HTMLDivElement>(null)
   const wrapperRef = useRef<HTMLDivElement>(null)
-  const prevSize = useRef(0)
   const typography = useTypography(tab)
   const { dark } = useColorScheme()
-  const [background] = useBackground()
+  const [background, , backgroundColor] = useBackground()
   const { contentWidthPercent } = typography
 
-  const { iframe, rendition, rendered, container } = useSnapshot(tab)
+  const { iframe, rendition, rendered, container, book } = useSnapshot(tab)
 
   useTilg()
 
+  // Function to center content by applying dynamic padding to iframe body
+  const centerContent = useCallback(() => {
+    const wrapper = wrapperRef.current
+    if (!wrapper || !rendition) return
+
+    try {
+      const iframe = wrapper.querySelector('iframe')
+      if (!iframe || !iframe.contentDocument) return
+
+      const body = iframe.contentDocument.body
+      if (!body) return
+
+      const wrapperWidth = wrapper.clientWidth
+      const bodyStyle = iframe.contentWindow?.getComputedStyle(body)
+      if (!bodyStyle) return
+
+      // Get actual column count from CSS
+      const columnCount = parseInt(bodyStyle.columnCount)
+      const columnGap = parseFloat(bodyStyle.columnGap || '0')
+
+      // Only apply centering if we have valid column layout
+      if (columnCount && columnCount > 0 && !isNaN(columnCount)) {
+        // Calculate the width of a single column
+        const totalGapWidth = (columnCount - 1) * columnGap
+        const columnWidth = (wrapperWidth - totalGapWidth) / columnCount
+
+        // Calculate total width needed for all columns
+        const totalColumnsWidth = columnCount * columnWidth + totalGapWidth
+
+        // Calculate extra space and apply as margin
+        const extraSpace = wrapperWidth - totalColumnsWidth
+        const margin = Math.max(0, Math.floor(extraSpace / 2))
+
+        // Use margin instead of padding - this doesn't reduce internal width
+        body.style.marginLeft = `${margin}px`
+        body.style.marginRight = `${margin}px`
+
+        console.log('Content centering (margin):', {
+          wrapperWidth,
+          columnCount,
+          columnWidth,
+          columnGap,
+          totalColumnsWidth,
+          extraSpace,
+          margin,
+        })
+      } else {
+        // No columns or invalid config, reset margins
+        body.style.marginLeft = '0px'
+        body.style.marginRight = '0px'
+        console.log('No valid column layout, margins reset')
+      }
+    } catch (error) {
+      console.error('Error centering content:', error)
+    }
+  }, [rendition])
+
   useEffect(() => {
-    const el = wrapperRef.current
+    const el = ref.current
     if (!el) return
 
-    const observer = new ResizeObserver(([e]) => {
-      const size = e?.contentRect.width ?? 0
-      // `display: hidden` will lead `rect` to 0
-      if (size !== 0 && prevSize.current !== 0) {
-        // We only care about the main split view resize, not our own.
-        if (rendition?.manager) {
-          rendition.resize(el.clientWidth, el.clientHeight)
+    let timeoutId: NodeJS.Timeout
+
+    const observer = new ResizeObserver(() => {
+      clearTimeout(timeoutId)
+      timeoutId = setTimeout(() => {
+        if (rendition) {
+          try {
+            const width = el.clientWidth
+            const height = el.clientHeight
+            console.log('Resizing rendition to:', width, height)
+            console.log('WrapperRef width:', wrapperRef.current?.clientWidth)
+            console.log('ContentWidthPercent:', contentWidthPercent)
+            if (width > 0 && height > 0) {
+              rendition.resize(width, height)
+              // Apply centering after resize
+              setTimeout(() => centerContent(), 100)
+            }
+          } catch (error) {
+            console.error('Error resizing rendition:', error)
+          }
         }
-      }
-      prevSize.current = size
+      }, 60)
     })
 
     observer.observe(el)
 
     return () => {
       observer.disconnect()
+      clearTimeout(timeoutId)
     }
-  }, [rendition])
+  }, [rendition, contentWidthPercent, centerContent])
 
   useSync(tab)
 
@@ -261,7 +334,7 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
       const height = el.clientHeight
       tab.render(el, width, height)
     }
-  }, [rendition, tab, contentWidthPercent]) // Rerender when width changes
+  }, [rendition, tab])
 
   useEffect(() => {
     /**
@@ -270,7 +343,17 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
      * according to the latest layout
      */
     rendition?.spread(typography.spread ?? RenditionSpread.Auto)
-  }, [typography.spread, rendition])
+    // Apply centering after spread change
+    setTimeout(() => centerContent(), 200)
+  }, [typography.spread, rendition, centerContent])
+
+  // Apply centering when page turns (rendered changes)
+  useEffect(() => {
+    if (rendered) {
+      console.log('Page rendered, applying centering')
+      setTimeout(() => centerContent(), 100)
+    }
+  }, [rendered, centerContent])
 
   useEffect(() => applyCustomStyle(), [applyCustomStyle])
 
@@ -278,7 +361,43 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
     if (dark === undefined) return
     // set `!important` when in dark mode
     rendition?.themes.override('color', dark ? '#bfc8ca' : '#3f484a', dark)
-  }, [rendition, dark])
+    if (backgroundColor) {
+      rendition?.themes.override('background-color', backgroundColor, true)
+    }
+  }, [rendition, dark, backgroundColor])
+
+  // Force resize after initial render
+  useEffect(() => {
+    if (rendition && rendered) {
+      try {
+        // Call resize() without arguments to let epub.js recalculate
+        rendition.resize()
+      } catch (error) {
+        console.error('Error resizing rendition after render:', error)
+      }
+    }
+  }, [rendition, rendered])
+
+  // Trigger resize when pane becomes visible after being hidden
+  useEffect(() => {
+    if (active && rendition?.manager) {
+      // Small delay to ensure DOM has updated after becoming visible
+      const timeoutId = setTimeout(() => {
+        if (rendition?.manager) {
+          // Double check rendition.manager is still valid
+          try {
+            rendition.resize()
+          } catch (error) {
+            console.error(
+              'Error resizing rendition on visibility change:',
+              error,
+            )
+          }
+        }
+      }, 50)
+      return () => clearTimeout(timeoutId)
+    }
+  }, [active, rendition])
 
   const [src, setSrc] = useState<string>()
 
@@ -396,8 +515,34 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
 
   useDisablePinchZooming(iframe)
 
+  const parseTitle = (filename: string) => {
+    const parts = filename.split(' -- ')
+    if (parts.length >= 2) {
+      return { title: parts[0], creator: parts[1] }
+    }
+    return { title: filename, creator: undefined }
+  }
+
+  const displayTitle = tab.book.metadata?.title || parseTitle(tab.title).title
+  const displayCreator =
+    tab.book.metadata?.creator || parseTitle(tab.title).creator
+
+  const header = (
+    <ReaderPaneHeader
+      title={displayTitle}
+      creator={displayCreator}
+      onNext={() => tab.next()}
+      onPrev={() => tab.prev()}
+      onToc={() => {
+        /* TODO: Implement TOC toggle */
+      }}
+    />
+  )
+
+  const footer = <ReaderPaneFooter percentage={book.percentage} />
+
   return (
-    <div className={clsx('flex h-full flex-col', mobile && 'py-[3vw]')}>
+    <NewReaderLayout header={header} footer={footer}>
       <PhotoSlider
         images={[{ src, key: 0 }]}
         visible={!!src}
@@ -405,121 +550,122 @@ function BookPane({ tab, onMouseDown }: BookPaneProps) {
         maskOpacity={0.6}
         bannerVisible={false}
       />
-      <ReaderPaneHeader tab={tab} />
       <div
-        ref={wrapperRef}
-        className={clsx('relative flex-1 w-full h-full')}
-        style={{
-          width:
-            contentWidthPercent && contentWidthPercent < 100
-              ? `${contentWidthPercent}%`
-              : '100%',
-          margin: '0 auto',
-        }}
+        className="relative flex h-full w-full flex-1 flex-col items-center"
+        style={{ backgroundColor }}
       >
         <div
-          ref={ref}
-          className="h-full w-full"
-          // `color-scheme: dark` will make iframe background white
-          style={{ colorScheme: 'auto' }}
+          ref={wrapperRef}
+          className="reader-wrapper relative mx-auto h-full"
+          style={{
+            width:
+              contentWidthPercent && contentWidthPercent < 100
+                ? `${contentWidthPercent}%`
+                : '100%',
+          }}
         >
           <div
-            className={clsx(
-              'absolute inset-0',
-              // do not cover `sash`
-              'z-20',
-              rendered && 'hidden',
-              background,
-            )}
-          />
-          <TextSelectionMenu tab={tab} />
-          <Annotations tab={tab} />
+            ref={ref}
+            className="flex h-full w-full justify-center"
+            // `color-scheme: dark` will make iframe background white
+            style={{ colorScheme: 'auto' }}
+          >
+            <div
+              className={clsx(
+                'absolute inset-0',
+                // do not cover `sash`
+                'z-20',
+                rendered && 'hidden',
+                background,
+              )}
+            />
+            <TextSelectionMenu tab={tab} />
+            <Annotations tab={tab} />
+          </div>
         </div>
       </div>
-      <ReaderPaneFooter tab={tab} />
-    </div>
+    </NewReaderLayout>
   )
 }
 
 interface ReaderPaneHeaderProps {
-  tab: BookTab
+  title?: string
+  creator?: string
+  onNext?: () => void
+  onPrev?: () => void
+  onToc?: () => void
 }
-const ReaderPaneHeader: React.FC<ReaderPaneHeaderProps> = ({ tab }) => {
-  const { location } = useSnapshot(tab)
-  const navPath = tab.getNavPath()
 
-  useEffect(() => {
-    navPath.forEach((i) => (i.expanded = true))
-  }, [navPath])
-
+const ReaderPaneHeader: React.FC<ReaderPaneHeaderProps> = ({
+  title,
+  creator,
+  onNext,
+  onPrev,
+  onToc,
+}) => {
   return (
-    <Bar>
-      <div className="scroll-h flex">
-        {navPath.map((item, i) => (
-          <button
-            key={i}
-            className="hover:text-on-surface flex shrink-0 items-center"
-          >
-            {item.label}
-            {i !== navPath.length - 1 && <MdChevronRight size={20} />}
-          </button>
-        ))}
+    <header className="border-border-light dark:border-border-dark flex h-16 shrink-0 items-center justify-between border-b px-6">
+      <div className="flex items-center gap-3">
+        <h1 className="text-lg font-bold">{title || 'Untitled'}</h1>
+        <p className="text-subtle-light dark:text-subtle-dark hidden text-sm sm:block">
+          {creator || 'Unknown Author'}
+        </p>
       </div>
-      {location && (
-        <div className="shrink-0">
-          {location.start.displayed.page} / {location.start.displayed.total}
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onPrev}
+          className="text-subtle-light dark:text-subtle-dark flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+        >
+          <span className="material-symbols-outlined text-2xl">
+            skip_previous
+          </span>
+        </button>
+        <button
+          onClick={onNext}
+          className="text-subtle-light dark:text-subtle-dark flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+        >
+          <span className="material-symbols-outlined text-2xl">skip_next</span>
+        </button>
+        <button
+          onClick={onToc}
+          className="text-subtle-light dark:text-subtle-dark flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5"
+        >
+          <span className="material-symbols-outlined text-2xl">more_horiz</span>
+        </button>
+      </div>
+    </header>
+  )
+}
+
+interface ReaderPaneFooterProps {
+  percentage?: number
+}
+
+const ReaderPaneFooter: React.FC<ReaderPaneFooterProps> = ({
+  percentage = 0,
+}) => {
+  return (
+    <footer className="border-border-light dark:border-border-dark flex h-14 shrink-0 items-center justify-between border-t px-6">
+      <p className="text-subtle-light dark:text-subtle-dark text-sm">
+        Page {Math.round(percentage * 100)}%
+      </p>
+      <div className="mx-4 w-full max-w-xs">
+        <div className="bg-primary/20 relative h-1 w-full rounded-full">
+          <div
+            className="bg-primary absolute h-full rounded-full"
+            style={{ width: `${percentage * 100}%` }}
+          ></div>
+          <div
+            className="absolute -top-1/2"
+            style={{ left: `${percentage * 100}%` }}
+          >
+            <div className="bg-primary border-surface-light dark:border-surface-dark h-3 w-3 rounded-full border-2"></div>
+          </div>
         </div>
-      )}
-    </Bar>
-  )
-}
-
-interface FooterProps {
-  tab: BookTab
-}
-const ReaderPaneFooter: React.FC<FooterProps> = ({ tab }) => {
-  const { locationToReturn, location, book } = useSnapshot(tab)
-
-  return (
-    <Bar>
-      {locationToReturn ? (
-        <>
-          <button
-            className={clsx(locationToReturn || 'invisible')}
-            onClick={() => {
-              tab.hidePrevLocation()
-              tab.display(locationToReturn.end.cfi, false)
-            }}
-          >
-            Return to {locationToReturn.end.cfi}
-          </button>
-          <button
-            onClick={() => {
-              tab.hidePrevLocation()
-            }}
-          >
-            Stay
-          </button>
-        </>
-      ) : (
-        <>
-          <div>{location?.start.href}</div>
-          <div>{((book.percentage ?? 0) * 100).toFixed()}%</div>
-        </>
-      )}
-    </Bar>
-  )
-}
-
-interface LineProps extends ComponentProps<'div'> {}
-const Bar: React.FC<LineProps> = ({ className, ...props }) => {
-  return (
-    <div
-      className={clsx(
-        'typescale-body-small text-outline flex h-6 items-center justify-between gap-2 px-[4vw] sm:px-2',
-        className,
-      )}
-      {...props}
-    ></div>
+      </div>
+      <p className="text-subtle-light dark:text-subtle-dark text-sm">
+        {Math.round(percentage * 100)}%
+      </p>
+    </footer>
   )
 }

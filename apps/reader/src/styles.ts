@@ -9,9 +9,17 @@ export const activeClass = 'bg-primary70'
 export const defaultStyle = {
   html: {
     padding: '0 !important',
+    width: '100% !important',
+    'max-width': '100% !important',
+    margin: '0 !important',
   },
   body: {
     background: 'transparent',
+    // width, max-width, and margin removed to allow dynamic centering and prevent cutoff
+  },
+  iframe: {
+    width: '100% !important',
+    height: '100% !important',
   },
   'a:any-link': {
     color: '#3b82f6 !important',

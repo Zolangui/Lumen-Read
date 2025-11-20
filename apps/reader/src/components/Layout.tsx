@@ -4,14 +4,16 @@ import { ComponentProps, useEffect, useMemo, useState } from 'react'
 import { IconType } from 'react-icons'
 import {
   MdFormatUnderlined,
-  MdOutlineImage,
-  MdMusicNote,
+  MdImage,
+  MdAudiotrack,
   MdSearch,
   MdToc,
   MdTimeline,
-  MdOutlineLightMode,
+  MdPalette,
+  MdTextFields,
+  MdSelfImprovement,
 } from 'react-icons/md'
-import { RiFocus3Line, RiFontSize, RiHome6Line, RiSettings5Line } from 'react-icons/ri'
+import { RiHome6Line, RiSettings5Line } from 'react-icons/ri'
 import { useRecoilState } from 'recoil'
 
 import {
@@ -102,7 +104,7 @@ const viewActions: IViewAction[] = [
   {
     name: 'image',
     title: 'image',
-    Icon: MdOutlineImage,
+    Icon: MdImage,
     View: ImageView,
     env: Env.Desktop,
   },
@@ -116,21 +118,21 @@ const viewActions: IViewAction[] = [
   {
     name: 'typography',
     title: 'typography',
-    Icon: RiFontSize,
+    Icon: MdTextFields,
     View: TypographyView,
     env: Env.Desktop | Env.Mobile,
   },
   {
     name: 'theme',
     title: 'theme',
-    Icon: MdOutlineLightMode,
+    Icon: MdPalette,
     View: ThemeView,
     env: Env.Desktop | Env.Mobile,
   },
   {
     name: 'audio',
     title: 'audio',
-    Icon: MdMusicNote,
+    Icon: MdAudiotrack,
     View: AudioView,
     env: Env.Desktop | Env.Mobile,
   },
@@ -177,7 +179,7 @@ function ViewActionBar({ className, env }: EnvActionBarProps) {
         })}
       <Action
         title={t('zen.title')}
-        Icon={RiFocus3Line}
+        Icon={MdSelfImprovement}
         active={isZenMode}
         onClick={() => setZenMode(!isZenMode)}
       />
@@ -353,8 +355,11 @@ const SideBar: React.FC = () => {
 }
 
 interface ReaderProps extends ComponentProps<'div'> {}
-const Reader: React.FC<ReaderProps> = ({ className, ...props }: ReaderProps) => {
-  useSplitViewItem(Reader)
+const Reader: React.FC<ReaderProps> = ({
+  className,
+  ...props
+}: ReaderProps) => {
+  const { size } = useSplitViewItem(Reader, { visible: true })
   const [bg] = useBackground()
 
   const r = useReaderSnapshot()
@@ -367,7 +372,11 @@ const Reader: React.FC<ReaderProps> = ({ className, ...props }: ReaderProps) => 
         readMode || 'mb-12 sm:mb-0',
         bg,
       )}
-      style={{ transform: 'translateZ(0)' }}
+      style={{
+        transform: 'translateZ(0)',
+        minWidth: 0,
+        ...(size && { width: size }),
+      }}
       {...props}
     />
   )

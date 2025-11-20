@@ -35,9 +35,9 @@ export function useBackground() {
     return 'bg-default'
   }, [dark, level])
 
-  useEffect(() => {
-    if (dark === undefined) return
-    if (rawTheme === undefined) return
+  const backgroundColor = useMemo(() => {
+    if (dark === undefined) return undefined
+    if (rawTheme === undefined) return undefined
 
     const surfaceMap: Record<number, number> = {
       1: 0.05,
@@ -49,14 +49,20 @@ export function useBackground() {
 
     const { surface, primary } = rawTheme.schemes.light
 
-    const color = dark
+    return dark
       ? '#24292e'
       : level < 0
       ? '#fff'
       : compositeColors(surface, primary, surfaceMap[level]!)
-
-    document.querySelector('#theme-color')?.setAttribute('content', color)
   }, [dark, level, rawTheme])
 
-  return [background, setBackground] as const
+  useEffect(() => {
+    if (backgroundColor) {
+      document
+        .querySelector('#theme-color')
+        ?.setAttribute('content', backgroundColor)
+    }
+  }, [backgroundColor])
+
+  return [background, setBackground, backgroundColor] as const
 }
