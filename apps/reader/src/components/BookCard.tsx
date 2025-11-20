@@ -73,8 +73,8 @@ export const BookCard: React.FC<BookCardProps> = ({
           className="aspect-[2/3] w-full rounded-lg bg-cover bg-center bg-no-repeat shadow-md transition-transform group-hover:scale-105"
           style={{ backgroundImage: `url("${cover || placeholder}")` }}
         ></div>
-        <div className="absolute inset-x-0 bottom-0 p-2 opacity-0 transition-opacity group-hover:opacity-100">
-          <button className="size-8 absolute top-2 right-2 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70">
+        <div className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
+          <button className="size-8 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70">
             <span className="material-symbols-outlined text-lg">
               more_horiz
             </span>

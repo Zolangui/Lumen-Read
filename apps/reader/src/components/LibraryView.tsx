@@ -62,15 +62,15 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         />
 
         <div className="mb-6 flex flex-col items-start gap-4 md:flex-row md:items-center">
-          <label className="flex w-full flex-col md:max-w-md">
-            <div className="flex h-10 w-full flex-1 items-stretch rounded-lg">
-              <div className="text-subtle-light dark:text-subtle-dark bg-background-light dark:bg-background-dark border-border-light dark:border-border-dark flex items-center justify-center rounded-l-lg border border-r-0 pl-3">
+          <label className="flex w-full flex-col md:max-w-md h-10">
+            <div className="flex h-full w-full flex-1 items-stretch rounded-lg">
+              <div className="text-subtle-light dark:text-subtle-dark bg-surface-light dark:bg-surface-dark border-border-light dark:border-border-dark flex items-center justify-center rounded-l-lg border border-r-0 pl-3">
                 <span className="material-symbols-outlined text-xl">
                   search
                 </span>
               </div>
               <input
-                className="form-input text-text-light dark:text-text-dark focus:ring-primary/50 border-border-light dark:border-border-dark bg-background-light dark:bg-background-dark placeholder:text-subtle-light dark:placeholder:text-subtle-dark flex h-full w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg border border-l-0 px-4 text-base font-normal leading-normal focus:outline-0 focus:ring-2"
+                className="form-input text-text-light dark:text-text-dark focus:ring-primary/50 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark placeholder:text-subtle-light dark:placeholder:text-subtle-dark flex h-full w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg border border-l-0 px-4 text-base font-normal leading-normal focus:outline-0 focus:ring-2"
                 placeholder="Search by title or author..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
