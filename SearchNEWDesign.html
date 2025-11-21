@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lumen Read</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&amp;family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#377cfb",
+              "background-light": "#f8fafc",
+              "background-dark": "#161a1d",
+              "surface-light": "#ffffff",
+              "surface-dark": "#202529",
+              "text-primary-light": "#1f2937",
+              "text-primary-dark": "#e5e7eb",
+              "text-secondary-light": "#6b7280",
+              "text-secondary-dark": "#9ca3af",
+              "border-light": "#e5e7eb",
+              "border-dark": "#374151",
+            },
+            fontFamily: {
+              display: ["Merriweather", "serif"],
+              sans: ["Roboto", "sans-serif"],
+            },
+            borderRadius: {
+              DEFAULT: "0.5rem",
+            },
+          },
+        },
+      };
+    </script>
+<style>
+      body {
+        font-family: "Roboto", sans-serif;
+      }
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6 {
+        font-family: "Merriweather", serif;
+      }
+      .material-icons-outlined {
+        font-size: 20px;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+        font-size: 20px;}
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-text-primary-light dark:text-text-primary-dark">
+<div class="flex h-screen">
+<aside class="flex flex-col items-center w-16 p-2 bg-surface-light dark:bg-surface-dark border-r border-border-light dark:border-border-dark">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-white font-bold text-lg mb-6">
+          L
+        </div>
+<nav class="flex flex-col items-center space-y-4 flex-grow">
+<button class="p-2 rounded-lg bg-primary/20 text-primary">
+<span class="material-icons-outlined">search</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">spellcheck</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">image</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">data_object</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">title</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">palette</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">music_note</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">flight</span>
+</button>
+</nav>
+<div class="flex flex-col items-center space-y-4">
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">settings</span>
+</button>
+</div>
+</aside>
+<aside class="w-80 flex-shrink-0 bg-surface-light dark:bg-surface-dark p-6 border-r border-border-light dark:border-border-dark flex flex-col">
+<div class="flex items-center space-x-2 mb-6">
+<span class="material-icons-outlined text-primary text-2xl">search</span>
+<h2 class="text-2xl font-bold">Search</h2>
+</div>
+<div class="relative mb-6">
+<span class="material-icons-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary-light dark:text-text-secondary-dark">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-lg bg-background-light dark:bg-background-dark border border-border-light dark:border-border-dark focus:ring-primary focus:border-primary text-sm" type="text" value="cavalo"/>
+</div>
+<div class="flex-grow overflow-y-auto pr-2 -mr-2">
+<ul class="space-y-6 text-sm">
+<li>
+<h3 class="font-bold mb-1">1. Domine o seu lado emocional</h3>
+<p class="text-text-secondary-light dark:text-text-secondary-dark leading-snug">
+                ...a capacidade de domar o seu próprio
+                <strong class="text-primary">cavalo</strong> selvagem interior...
+              </p>
+<button class="flex items-center gap-1 text-primary text-xs font-medium mt-2 px-2 py-1 rounded-md hover:bg-primary/10">
+                Expandir resultados
+                <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+</li>
+<li>
+<h3 class="font-bold mb-1">
+                8. Mude as suas circunstâncias mudando de atitude
+              </h3>
+<p class="text-text-secondary-light dark:text-text-secondary-dark leading-snug">
+                ...como um
+                <strong class="text-primary">cavalo</strong> que resiste ao cavaleiro...
+              </p>
+<button class="flex items-center gap-1 text-primary text-xs font-medium mt-2 px-2 py-1 rounded-md hover:bg-primary/10">
+                Expandir resultados
+                <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+</li>
+<li>
+<h3 class="font-bold mb-1">
+                12. Reconecte-se com o masculino ou o feminino dentro de você
+              </h3>
+<p class="text-text-secondary-light dark:text-text-secondary-dark leading-snug">
+                ...montar o seu
+                <strong class="text-primary">cavalo</strong> de volta ao caminho certo...
+              </p>
+<button class="flex items-center gap-1 text-primary text-xs font-medium mt-2 px-2 py-1 rounded-md hover:bg-primary/10">
+                Expandir resultados
+                <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+</li>
+<li>
+<h3 class="font-bold mb-1">
+                16. Veja a hostilidade por trás da fachada amigável
+              </h3>
+<p class="text-text-secondary-light dark:text-text-secondary-dark leading-snug">
+                ...o <strong class="text-primary">cavalo</strong> de Tróia da falsidade...
+              </p>
+<button class="flex items-center gap-1 text-primary text-xs font-medium mt-2 px-2 py-1 rounded-md hover:bg-primary/10">
+                Expandir resultados
+                <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+</li>
+<li>
+<h3 class="font-bold mb-1">
+                18. Medite sobre a nossa mortalidade comum
+              </h3>
+<p class="text-text-secondary-light dark:text-text-secondary-dark leading-snug">
+                ...a imagem de um
+                <strong class="text-primary">cavalo</strong> galopando na planície...
+              </p>
+<button class="flex items-center gap-1 text-primary text-xs font-medium mt-2 px-2 py-1 rounded-md hover:bg-primary/10">
+                Expandir resultados
+                <span class="material-symbols-outlined text-base">expand_more</span>
+</button>
+</li>
+<li>
+<span class="text-text-secondary-light dark:text-text-secondary-dark">Índice remissivo</span>
+</li>
+</ul>
+</div>
+</aside>
+<main class="flex-1 flex flex-col bg-background-light dark:bg-background-dark">
+<header class="flex items-center justify-between p-3 border-b border-border-light dark:border-border-dark h-16 flex-shrink-0">
+<div class="flex items-center space-x-4">
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">menu</span>
+</button>
+<button class="p-2 rounded-lg text-text-secondary-light dark:text-text-secondary-dark hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">home</span>
+</button>
+<div class="bg-surface-light dark:bg-surface-dark px-4 py-2 rounded-lg font-medium text-sm">
+              As Leis da Natureza Human...
+            </div>
+</div>
+<div class="flex items-center space-x-2 text-text-secondary-light dark:text-text-secondary-dark">
+<button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">chevron_right</span>
+</button>
+<button class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+<span class="material-icons-outlined">more_horiz</span>
+</button>
+</div>
+</header>
+<div class="flex-grow p-12 overflow-y-auto">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 max-w-7xl mx-auto">
+<div class="prose prose-lg dark:prose-invert max-w-none text-text-secondary-light dark:text-text-secondary-dark font-display">
+<p class="text-center text-sm">11</p>
+<h2 class="text-center text-text-primary-light dark:text-text-primary-dark">
+                Conheça os seus limites
+              </h2>
+<h3 class="text-center text-text-secondary-light dark:text-text-secondary-dark mb-12">
+                A Lei da Grandiosidade
+              </h3>
+<p>
+                Nós, seres humanos, sentimos profunda necessidade de ter uma
+                opinião positiva de nós mesmos. Se esse julgamento sobre nossa
+                bondade, talento e maestria divergir demais da realidade, nos
+                tornaremos pedantes. Imaginaremos a nossa superioridade. Muitas
+                vezes, uma pequena dose de êxito erguerá a nossa grandiosidade
+                natural a níveis ainda mais perigosos. A nossa auto-opinião
+                elevada terá sido agora confirmada pelos acontecimentos.
+                Esquecemos o papel que a sorte ou a colaboração dos outros
+                desempenhou no nosso triunfo. Imaginamos que temos o toque de
+                Midas. Perdendo o contato com o que é real, tomamos decisões
+                irracionais. É por isso que o nosso sucesso muitas vezes não
+                dura. Procure por sinais da grandiosidade elevada em si mesmo e
+                nos demais – a certeza prepotente de que os seus planos terão
+                um resultado positivo; uma sensibilidade excessiva a críticas; o
+                desdém por qualquer forma de autoridade. Neutralize a influência
+                da grandiosidade ao manter uma avaliação realista de si mesmo e
+                das suas limitações. Atrele todos os sentimentos de
+                brilhantismo ao seu trabalho, às suas conquistas e às suas
+                contribuições à sociedade.
+              </p>
+</div>
+<div class="prose prose-lg dark:prose-invert max-w-none text-text-secondary-light dark:text-text-secondary-dark font-display">
+<h3 class="text-center text-text-primary-light dark:text-text-primary-dark mb-12">
+                A ILUSÃO DO SUCESSO
+              </h3>
+<p>
+                No verão de 1984, Michael Eisner (n. 1942), presidente do
+                estúdio de cinema Paramount Pictures, não tinha mais como
+                ignorar a inquietude que o atormentava havia meses. Estava
+                impaciente para mudar de plataforma e chacoalhar os alicerces
+                de Hollywood. Esse desassossego o acompanhara pela vida
+                inteira. Eisner começou a carreira na emissora ABC e, sem nunca
+                se acomodar demais em nenhum departamento, depois de nove anos
+                de várias promoções, chegou à posição de diretor de programação
+                do horário nobre. No entanto, o mundo da televisão começou a lhe
+                parecer pequeno e restrito. Precisava de uma plataforma maior,
+                mais imponente. Em 1976, Barry Diller – ex-diretor da ABC e
+                então presidente da Paramount Pictures – lhe ofereceu a
+                oportunidade de dirigir o estúdio cinematográfico da Paramount,
+                e Eisner aceitou de imediato.
+              </p>
+<p>
+                Fazia muito tempo que a Paramount enfrentava uma crise, mas,
+                trabalhando com Diller, Eisner a transformou no estúdio mais
+                badalado de Hollywood, com uma série impressionante de filmes
+                de sucesso, como: Os embalos de sábado à noite; Grease; Nos
+                tempos da brilhantina; Flashdance. Em ritmo de embalo, e Laços
+                de ternura. Embora Diller por certo houvesse desempenhado um
+                papel nessa reviravolta, Eisner se via como a principal força
+                motriz por trás do sucesso do estúdio. Afinal, ele inventara uma
+                fórmula infalível para criar
+              </p>
+</div>
+</div>
+</div>
+<footer class="flex-shrink-0 p-3 h-12">
+<div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 48%"></div>
+</div>
+<div class="text-right text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1 mr-2">
+            48%
+          </div>
+</footer>
+</main>
+</div>
+
+</body></html>

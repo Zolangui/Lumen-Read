@@ -11,7 +11,7 @@ export function dfs<T extends INode>(
   cb: (node: T) => void,
   depth = 0,
 ) {
-  node.depth = depth
+  // node.depth = depth // Removed to avoid mutating proxy objects
   cb(node)
   if (node.subitems) {
     node.subitems.forEach((n) => dfs(n as T, cb, depth + 1))

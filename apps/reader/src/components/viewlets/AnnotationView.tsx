@@ -1,48 +1,14 @@
-import { useBoolean } from '@literal-ui/hooks'
-import React, { Fragment } from 'react'
-import { useMemo } from 'react'
-import { VscCopy } from 'react-icons/vsc'
+import clsx from 'clsx'
+import dayjs from 'dayjs'
+import React, { useMemo } from 'react'
 
 import { Annotation } from '@flow/reader/annotation'
 import { useTranslation } from '@flow/reader/hooks'
 import { reader, useReaderSnapshot } from '@flow/reader/models'
-import { copy, group, keys } from '@flow/reader/utils'
 
-import { Row } from '../Row'
-import { PaneViewProps, PaneView, Pane } from '../base'
+import { PaneViewProps } from '../base'
 
-export const AnnotationView: React.FC<PaneViewProps> = (props) => {
-  return (
-    <PaneView {...props}>
-      <DefinitionPane />
-      <AnnotationPane />
-    </PaneView>
-  )
-}
-
-const DefinitionPane: React.FC = () => {
-  const { focusedBookTab } = useReaderSnapshot()
-  const t = useTranslation('annotation')
-
-  return (
-    <Pane headline={t('definitions')} preferredSize={120}>
-      {focusedBookTab?.book.definitions.map((d) => {
-        return (
-          <Row
-            key={d}
-            onDelete={() => {
-              reader.focusedBookTab?.undefine(d)
-            }}
-          >
-            {d}
-          </Row>
-        )
-      })}
-    </Pane>
-  )
-}
-
-const AnnotationPane: React.FC = () => {
+export const AnnotationView: React.FC<PaneViewProps> = () => {
   const { focusedBookTab } = useReaderSnapshot()
   const t = useTranslation('annotation')
 
@@ -51,109 +17,224 @@ const AnnotationPane: React.FC = () => {
     [focusedBookTab?.book.annotations],
   )
 
-  const groupedAnnotation = useMemo(() => {
-    return group(annotations ?? [], (a) => a.spine.index)
+  const definitions = useMemo(
+    () => focusedBookTab?.book.definitions ?? [],
+    [focusedBookTab?.book.definitions],
+  )
+
+  // Sort annotations by date (newest first)
+  const sortedAnnotations = useMemo(() => {
+    return [...annotations].sort((a, b) => b.createAt - a.createAt)
   }, [annotations])
 
-  const exportAnnotations = () => {
-    // process annotations to be under each section
-    // group annotations by title
-    const grouped = group(annotations, (a) => a.spine.title)
-    const exported: Record<string, any[]> = {}
-    for (const chapter in grouped) {
-      const annotations =
-        grouped[chapter]?.map((a) => {
-          const annotation: Record<string, any> = {}
-          if (a.notes !== undefined) annotation.notes = a.notes
-          if (a.text !== undefined) annotation.text = a.text
-          return annotation
-        }) ?? []
-      exported[chapter] = annotations
-    }
-
-    // Copy to clipboard as markdown
-    const exportedAnnotationsMd = Object.entries(exported)
-      .map(([chapter, annotations]) => {
-        return `## ${chapter}\n${annotations
-          .map((a) => `- ${a.text} ${a.notes ? `(${a.notes})` : ''}`)
-          .join('\n')}`
-      })
-      .join('\n\n')
-    copy(exportedAnnotationsMd)
-  }
-
   return (
-    <Pane
-      headline={t('annotations')}
-      actions={
-        annotations.length > 0
-          ? [
-              {
-                id: 'copy-all',
-                title: t('copy_as_markdown'),
-                Icon: VscCopy,
-                handle() {
-                  exportAnnotations()
-                },
-              },
-            ]
-          : undefined
-      }
-    >
-      {keys(groupedAnnotation).map((k) => (
-        <AnnotationBlock key={k} annotations={groupedAnnotation[k]!} />
-      ))}
-    </Pane>
+    <div className="flex h-full flex-col bg-white dark:bg-gray-900">
+      {/* Header */}
+      <div className="flex h-16 shrink-0 items-center border-b border-gray-200 px-4 dark:border-gray-700">
+        <span className="material-symbols-outlined mr-2 text-xl text-gray-600 dark:text-gray-400">
+          format_underlined
+        </span>
+        <h2 className="font-semibold text-gray-800 dark:text-white">
+          {t('annotations')}
+        </h2>
+      </div>
+
+      <div className="no-scrollbar flex-1 overflow-y-auto p-4">
+        {/* Definitions Section */}
+        <div className="mb-8">
+          <div className="mb-3 flex items-center justify-between px-1">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              {t('definitions')}
+            </h3>
+          </div>
+
+          {definitions.length > 0 ? (
+            <div className="space-y-3">
+              {definitions.map((def) => (
+                <DefinitionCard key={def} text={def} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border-2 border-dashed border-gray-100 p-4 text-center dark:border-gray-800">
+              <p className="text-xs italic text-gray-400">
+                Selecione um texto e clique no ícone de livro para adicionar
+                definições.
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Annotations Section */}
+        <div>
+          <div className="mb-3 flex items-center justify-between px-1">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+              {t('annotations')} & Notas
+            </h3>
+          </div>
+
+          {sortedAnnotations.length > 0 ? (
+            <div className="space-y-3">
+              {sortedAnnotations.map((a) => (
+                <AnnotationCard key={a.id} annotation={a} />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border-2 border-dashed border-gray-100 p-4 text-center dark:border-gray-800">
+              <p className="text-xs italic text-gray-400">
+                Destaque um texto para adicionar anotações ou notas.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   )
 }
 
-interface AnnotationBlockProps {
-  annotations: Annotation[]
+const DefinitionCard: React.FC<{ text: string }> = ({ text }) => {
+  return (
+    <div className="group relative mb-2 flex cursor-pointer items-start gap-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-800/50">
+      {/* Icon Left */}
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+        <span className="material-symbols-outlined text-lg">menu_book</span>
+      </div>
+
+      {/* Content Right */}
+      <div className="min-w-0 flex-1">
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 opacity-80 dark:text-gray-400">
+            Definição
+          </span>
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              reader.focusedBookTab?.undefine(text)
+            }}
+            className="opacity-0 transition-opacity group-hover:opacity-100"
+            title="Remover definição"
+          >
+            <span className="material-symbols-outlined text-base text-gray-400 hover:text-red-500">
+              close
+            </span>
+          </button>
+        </div>
+
+        <p
+          className="line-clamp-3 whitespace-normal break-words font-serif text-xs italic leading-relaxed text-gray-600 dark:text-gray-300"
+          title={text}
+        >
+          &quot;{text}&quot;
+        </p>
+      </div>
+    </div>
+  )
 }
-const AnnotationBlock: React.FC<AnnotationBlockProps> = ({ annotations }) => {
-  const [expanded, toggle] = useBoolean(true)
+
+const AnnotationCard: React.FC<{ annotation: Annotation }> = ({
+  annotation,
+}) => {
+  const isNote = !!annotation.notes
+  const typeLabel = isNote ? 'Nota' : 'Destaque'
+  const iconName = isNote ? 'comment' : 'ink_highlighter'
+
+  // Color mapping
+  const color = annotation.color || 'yellow'
+  const colorStyles = {
+    yellow: {
+      icon: 'text-yellow-600 dark:text-yellow-400',
+      bg: 'bg-yellow-50 dark:bg-yellow-900/30',
+      border: 'border-yellow-300 dark:border-yellow-700',
+    },
+    red: {
+      icon: 'text-red-600 dark:text-red-400',
+      bg: 'bg-red-50 dark:bg-red-900/30',
+      border: 'border-red-300 dark:border-red-700',
+    },
+    green: {
+      icon: 'text-green-600 dark:text-green-400',
+      bg: 'bg-green-50 dark:bg-green-900/30',
+      border: 'border-green-300 dark:border-green-700',
+    },
+    blue: {
+      icon: 'text-blue-600 dark:text-blue-400',
+      bg: 'bg-blue-50 dark:bg-blue-900/30',
+      border: 'border-blue-300 dark:border-blue-700',
+    },
+  }[color] || {
+    icon: 'text-yellow-600 dark:text-yellow-400',
+    bg: 'bg-yellow-50 dark:bg-yellow-900/30',
+    border: 'border-yellow-300 dark:border-yellow-700',
+  }
 
   return (
-    <div>
-      <Row
-        depth={1}
-        badge
-        expanded={expanded}
-        toggle={toggle}
-        subitems={annotations}
+    <div
+      onClick={() => reader.focusedBookTab?.display(annotation.cfi)}
+      className="group relative mb-2 flex cursor-pointer items-start gap-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-800/50"
+    >
+      {/* Icon Left */}
+      <div
+        className={clsx(
+          'flex h-8 w-8 shrink-0 items-center justify-center rounded-md transition-transform group-hover:scale-105',
+          colorStyles.bg,
+          colorStyles.icon,
+        )}
       >
-        {annotations[0]?.spine.title}
-      </Row>
+        <span className="material-symbols-outlined text-lg">{iconName}</span>
+      </div>
 
-      {expanded && (
-        <div>
-          {annotations.map((a) => (
-            <Fragment key={a.id}>
-              <Row
-                depth={2}
-                onClick={() => {
-                  reader.focusedBookTab?.display(a.cfi)
-                }}
-                onDelete={() => {
-                  reader.focusedBookTab?.removeAnnotation(a.cfi)
-                }}
-              >
-                {a.text}
-              </Row>
-              {a.notes && (
-                <Row
-                  depth={3}
-                  onClick={() => {
-                    reader.focusedBookTab?.display(a.cfi)
-                  }}
-                >
-                  <span className="text-outline">{a.notes}</span>
-                </Row>
-              )}
-            </Fragment>
-          ))}
+      {/* Content Right */}
+      <div className="min-w-0 flex-1">
+        {/* Header: Type & Date */}
+        <div className="mb-1 flex items-baseline justify-between">
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 opacity-80 dark:text-gray-400">
+              {typeLabel}
+            </span>
+            <span className="text-[10px] text-gray-400">
+              {dayjs(annotation.createAt).format('D MMM')}
+            </span>
+          </div>
+
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              reader.focusedBookTab?.removeAnnotation(annotation.cfi)
+            }}
+            className="opacity-0 transition-opacity group-hover:opacity-100"
+            title="Remover anotação"
+          >
+            <span className="material-symbols-outlined text-base text-gray-400 hover:text-red-500">
+              close
+            </span>
+          </button>
         </div>
-      )}
+
+        {isNote ? (
+          <div className="space-y-1.5">
+            {/* Context (Quote) - Smaller & Italic */}
+            <div
+              className={clsx('border-l-2 pl-2', colorStyles.border)}
+              title={annotation.text}
+            >
+              <p className="line-clamp-2 whitespace-normal break-words font-serif text-[11px] italic text-gray-500 dark:text-gray-400">
+                &quot;{annotation.text}&quot;
+              </p>
+            </div>
+            {/* User Note - Prominent */}
+            <p className="break-words text-sm font-medium text-gray-900 dark:text-gray-100">
+              {annotation.notes}
+            </p>
+          </div>
+        ) : (
+          /* Highlight only */
+          <p
+            className="line-clamp-3 whitespace-normal break-words font-serif text-xs italic text-gray-600 dark:text-gray-300"
+            title={annotation.text}
+          >
+            &quot;{annotation.text}&quot;
+          </p>
+        )}
+      </div>
     </div>
   )
 }

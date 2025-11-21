@@ -86,16 +86,3 @@ export const libraryState = atom<LibraryState>({
 export function useLibraryState() {
   return useRecoilState(libraryState)
 }
-
-export const audioState = atom({
-  key: 'audio',
-  default: {
-    isPlaying: false,
-    volume: 0.5,
-    compressorThreshold: -50,
-    lowpassFreq: 800,
-    midBoostFreq: 1500,
-    midBoostGain: 3,
-    lowShelfGain: 6,
-  },
-})

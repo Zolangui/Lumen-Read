@@ -8,7 +8,7 @@ export type Action =
   | 'image'
   | 'timeline'
   | 'theme'
-  | 'audio'
+
 export const actionState = atom<Action | undefined>({
   key: 'action',
   default: undefined,
