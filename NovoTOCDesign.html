@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Lumen Read - Book Reader</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography,container-queries"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#007B88",
+            "background-light": "#F7F8FA",
+            "background-dark": "#0B1118",
+          },
+          fontFamily: {
+            display: ["Sora", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "8px",
+          },
+        },
+      },
+    };
+  </script>
+<style type="text/tailwindcss">
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-800 dark:text-gray-200 flex h-screen overflow-hidden">
+<aside class="flex shrink-0">
+<div class="w-20 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col items-center py-4 space-y-2">
+<button class="flex flex-col items-center justify-center w-full p-2 rounded bg-gray-100 dark:bg-gray-800 text-primary dark:text-white">
+<span class="material-symbols-outlined text-2xl">toc</span>
+<span class="text-xs mt-1">TOC</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined text-2xl">format_size</span>
+<span class="text-xs mt-1">Typography</span>
+</button>
+<button class="flex flex-col items-center justify-center w-full p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined text-2xl">palette</span>
+<span class="text-xs mt-1">Theme</span>
+</button>
+</div>
+<div class="w-[320px] bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+<div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700 h-16 shrink-0">
+<div class="flex items-center">
+<button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined text-xl">arrow_back</span>
+</button>
+<h2 class="ml-2 font-semibold text-gray-800 dark:text-white">As Leis da Natureza Humana</h2>
+</div>
+</div>
+<div class="flex-grow p-4 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+<div class="pt-0">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 px-2 mb-2">Table of Contents</h3>
+<ul class="text-sm text-gray-500 dark:text-gray-400">
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">CRÉDITOS</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">SUMÁRIO</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">APRESENTAÇÃO À 1ª EDIÇÃO...</a></li>
+<li class="bg-primary/10 dark:bg-primary/20 rounded">
+<a class="flex items-center py-2 px-2 rounded text-primary dark:text-white font-semibold" href="#">
+<span class="material-symbols-outlined text-base mr-1 transition-transform rotate-90">expand_more</span>
+PREFÁCIO À 1ª EDIÇÃO (2014)
+</a>
+<ul class="pl-4 text-gray-600 dark:text-gray-300">
+<li class="py-1"><a class="block py-1 pl-4 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">INTRODUÇÃO: MAPA DA VIA...</a></li>
+</ul>
+</li>
+<li>
+<a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-base mr-1 transition-transform">chevron_right</span>
+CAPÍTULO I: PRIMEIROS PASS...
+</a>
+</li>
+<li>
+<a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-base mr-1 transition-transform">chevron_right</span>
+CAPÍTULO II: MARCHA ACEL...
+</a>
+</li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">1930: MARCO DIVISÓRIO</a></li>
+<li>
+<a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-base mr-1 transition-transform">chevron_right</span>
+OS DIREITOS SOCIAIS NA DI...
+</a>
+</li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">A VOZ DOS DIREITOS POLÍTI...</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">CONFRONTO E FIM DA DEM...</a></li>
+<li>
+<a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-base mr-1 transition-transform">chevron_right</span>
+CAPÍTULO III: PASSO ATRÁS...
+</a>
+</li>
+<li>
+<a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">
+<span class="material-symbols-outlined text-base mr-1 transition-transform">chevron_right</span>
+CAPÍTULO IV: A CIDADANIA ...
+</a>
+</li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">CONCLUSÃO: A CIDADANIA...</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">POSFÁCIO À 1ª EDIÇÃO (201...</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">POSFÁCIO À EDIÇÃO COMEM...</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">SUGESTÕES DE LEITURA</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">CRÉDITOS DAS IMAGENS DE...</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">COLOFON</a></li>
+<li><a class="flex items-center py-2 px-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800" href="#">CIDADANIA NO BRASIL</a></li>
+</ul>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-grow flex flex-col bg-background-light dark:bg-background-dark">
+<header class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800 h-16 shrink-0">
+<div class="flex items-center space-x-2">
+<button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined text-xl">menu</span>
+</button>
+<h1 class="font-semibold text-gray-800 dark:text-white">As Leis da Natureza Humana - Ro...</h1>
+<button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined text-xl">close</span>
+</button>
+</div>
+<div class="flex-grow"></div>
+<div class="flex items-center space-x-2">
+<button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined">chevron_left</span>
+</button>
+<button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</button>
+<div class="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-2"></div>
+<button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-400">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+</header>
+<div class="flex-grow overflow-y-auto bg-gray-100 dark:bg-gray-800/50 p-8">
+<div class="max-w-7xl mx-auto">
+<div class="mb-8">
+<h1 class="font-bold text-2xl text-gray-900 dark:text-white">As Leis da Natureza Humana</h1>
+<p class="text-sm text-gray-500 dark:text-gray-400">Robert Greene</p>
+</div>
+<div class="grid grid-cols-2 gap-x-16">
+<article class="prose dark:prose-invert prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:leading-relaxed">
+<h2>Introdução</h2>
+<p>Se encontrar qualquer traço especial de mesquinharia ou estupidez [...], você deve ter cuidado para não deixar que isso o aborreça ou perturbe, e encare-o apenas como um acréscimo ao seu conhecimento - um novo fato a ser considerado ao estudar o caráter da humanidade. A sua atitude em relação a esse traço será igual à de um mineralogista que topa com um espécime bastante característico de mineral.</p>
+<p class="text-right">- Arthur Schopenhauer</p>
+<p>Durante todo o curso da nossa vida, é inevitável que tenhamos de lidar com uma variedade de pessoas que criam problemas e tornam a nossa trajetória mais complicada e desagradável. Algumas delas são líderes ou chefes; outras são colegas ou amigos. Talvez sejam agressivas ou passivo-agressivas e, em geral, manipulam as nossas emoções com maestria. Muitas vezes, demonstram charme e uma autoconfiança estimulante, têm inúmeras ideias e transbordam entusiasmo; e nós sucumbimos aos seus encantos. Apenas tarde demais, descobrimos que a segurança que manifestam é irracional e que as suas ideias são malconcebidas. No trabalho, talvez sejam aqueles que sabotam as nossas tarefas ou carreira por causa de uma inveja secreta, um deleite em nos</p>
+</article>
+<article class="prose dark:prose-invert prose-p:text-gray-700 dark:prose-p:text-gray-300 prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:leading-relaxed pt-[45px]">
+<p>derrubar. Ou que revelam, para o nosso horror, estar apenas interessados em si mesmos, utilizando-nos como degraus para concluir seus objetivos.</p>
+<p>Nessas situações, é impossível evitar que sejamos pegos de surpresa, pois não esperamos deles comportamentos desse tipo. Muitas vezes, nos será contada uma história falsa para justificar essas ações ou a fim de convenientemente culpar bodes expiatórios, pois esses indivíduos sabem como nos confundir e nos atrair para um drama sob o seu controle. Podemos protestar ou nos zangar, mas, no fim, nos sentimos impotentes e o dano está feito — até que outra pessoa como essas entre em nossa vida e a história se repita.</p>
+<p>Em relação a nós mesmos e ao nosso próprio comportamento, costumamos nos sentir confusos e impotentes. Por exemplo, de repente dizemos algo que ofende o nosso chefe ou amigo — não sabemos bem de onde isso veio, mas nos frustramos ao perceber que alguma raiva ou tensão escapou de dentro de nós de uma maneira da qual nos arrependemos. Ou nos lançamos com entusiasmo sobre um projeto ou plano, apenas para nos darmos conta de que era uma tolice e uma terrível perda de tempo. Ou, então, nos apaixonamos por alguém que é exatamente o tipo errado para nós, sabemos disso, porém não conseguimos evitar. E nos fazemos a seguinte pergunta: “O que deu em mim?”.</p>
+<p>Nessas situações, nos vemos seguindo padrões autodestrutivos de comportamento que parecemos não conseguir controlar; como se abrigássemos um estranho dentro de nós, um demoniozinho que opera de forma</p>
+</article>
+</div>
+</div>
+</div>
+</main>
+</body></html>

@@ -646,7 +646,10 @@ const ReaderPaneHeader: React.FC<ReaderPaneHeaderProps> = ({
           <div className="flex items-center space-x-2">
             {tabs.map((tab: any, index: number) => {
               const isSelected = index === selectedTabIndex
-              const tabTitle = tab instanceof BookTab ? tab.title : tab.title
+              const tabTitle =
+                tab instanceof BookTab
+                  ? tab.book.metadata?.title || tab.book.name
+                  : tab.title
               const truncTabTitle =
                 tabTitle && tabTitle.length > 25
                   ? `${tabTitle.substring(0, 25)}...`

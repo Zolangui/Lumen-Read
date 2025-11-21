@@ -121,6 +121,16 @@ export class BookTab extends BaseTab {
   }
 
   display(target?: string, returnable = true) {
+    if (target && this.sections) {
+      const [targetPath] = target.split('#')
+      const section = this.sections.find((s) => compareHref(s.href, targetPath))
+      if (section) {
+        const hashIndex = target.indexOf('#')
+        const hash = hashIndex > -1 ? target.substring(hashIndex) : ''
+        target = section.href + hash
+      }
+    }
+
     this.rendition?.display(target)
     if (returnable) this.showPrevLocation()
   }
