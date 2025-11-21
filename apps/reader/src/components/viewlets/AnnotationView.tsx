@@ -128,7 +128,17 @@ const DefinitionCard: React.FC<{ text: string }> = ({ text }) => {
         </div>
 
         <p
-          className="line-clamp-3 whitespace-normal break-words py-0.5 font-serif text-xs italic leading-relaxed text-gray-600 dark:text-gray-300"
+          className="py-1 font-serif text-xs italic text-gray-600 dark:text-gray-300"
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            lineHeight: '1.6',
+            maxHeight: '4.8em', // 3 lines × 1.6 line-height = 4.8em
+            wordWrap: 'break-word',
+            textOverflow: 'ellipsis',
+          }}
           title={text}
         >
           &quot;{text}&quot;
@@ -224,7 +234,19 @@ const AnnotationCard: React.FC<{ annotation: Annotation }> = ({
               className={clsx('border-l-2 pl-2', colorStyles.border)}
               title={annotation.text}
             >
-              <p className="line-clamp-2 whitespace-normal break-words font-serif text-[11px] italic text-gray-500 dark:text-gray-400">
+              <p
+                className="py-1 font-serif text-[11px] italic text-gray-500 dark:text-gray-400"
+                style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  lineHeight: '1.6',
+                  maxHeight: '3.2em', // 2 lines × 1.6 line-height = 3.2em
+                  wordWrap: 'break-word',
+                  textOverflow: 'ellipsis',
+                }}
+              >
                 &quot;{annotation.text}&quot;
               </p>
             </div>
@@ -236,7 +258,17 @@ const AnnotationCard: React.FC<{ annotation: Annotation }> = ({
         ) : (
           /* Highlight only */
           <p
-            className="line-clamp-3 whitespace-normal break-words font-serif text-xs italic text-gray-600 dark:text-gray-300"
+            className="py-1 font-serif text-xs italic text-gray-600 dark:text-gray-300"
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1.6',
+              maxHeight: '4.8em', // 3 lines × 1.6 line-height = 4.8em
+              wordWrap: 'break-word',
+              textOverflow: 'ellipsis',
+            }}
             title={annotation.text}
           >
             &quot;{annotation.text}&quot;

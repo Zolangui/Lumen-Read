@@ -62,7 +62,7 @@ export const ThemeView: React.FC<PaneViewProps> = () => {
                 const input = document.createElement('input')
                 input.type = 'color'
                 input.value = sourceColor
-                input.onchange = (e) =>
+                input.oninput = (e) =>
                   setSourceColor((e.target as HTMLInputElement).value)
                 input.click()
               }}

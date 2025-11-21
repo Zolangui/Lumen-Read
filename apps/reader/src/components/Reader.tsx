@@ -295,30 +295,40 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
     updateCustomStyle(contents, typography)
 
     // Smart Color Inversion for Dark Mode
-    if (dark && contents) {
+    if (contents) {
       const doc = contents.document
       const elements = doc.querySelectorAll(
         'p, span, h1, h2, h3, h4, h5, h6, div, a, li, blockquote',
       )
-      const themeColor = '#bfc8ca' // Light gray for dark mode
 
-      elements.forEach((el: Element) => {
-        const htmlEl = el as HTMLElement
-        const computedStyle = window.getComputedStyle(htmlEl)
-        const color = computedStyle.color
+      if (dark) {
+        // Dark mode: invert dark colors to light
+        const themeColor = '#bfc8ca' // Light gray for dark mode
 
-        // Parse RGB
-        const rgb = color.match(/\d+/g)
-        if (rgb && rgb.length >= 3) {
-          const [r, g, b] = rgb.map(Number)
+        elements.forEach((el: Element) => {
+          const htmlEl = el as HTMLElement
+          const computedStyle = window.getComputedStyle(htmlEl)
+          const color = computedStyle.color
 
-          // Check if color is dark (e.g., close to black)
-          // Threshold can be adjusted, < 100 is a safe bet for "dark text"
-          if (r < 100 && g < 100 && b < 100) {
-            htmlEl.style.setProperty('color', themeColor, 'important')
+          // Parse RGB
+          const rgb = color.match(/\d+/g)
+          if (rgb && rgb.length >= 3) {
+            const [r, g, b] = rgb.map(Number)
+
+            // Check if color is dark (e.g., close to black)
+            // Threshold can be adjusted, < 100 is a safe bet for "dark text"
+            if (r < 100 && g < 100 && b < 100) {
+              htmlEl.style.setProperty('color', themeColor, 'important')
+            }
           }
-        }
-      })
+        })
+      } else {
+        // Light mode: clear any forced color styles to restore original book colors
+        elements.forEach((el: Element) => {
+          const htmlEl = el as HTMLElement
+          htmlEl.style.removeProperty('color')
+        })
+      }
     }
   }, [rendition, typography, dark])
 
