@@ -66,20 +66,16 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         />
 
         <div className="mb-6 flex flex-col items-start gap-4 md:flex-row md:items-center">
-          <label className="flex h-10 w-full flex-col md:max-w-md">
-            <div className="flex h-full w-full flex-1 items-stretch rounded-lg">
-              <div className="text-subtle-light dark:text-subtle-dark bg-surface-light dark:bg-surface-dark border-border-light dark:border-border-dark flex items-center justify-center rounded-l-lg border border-r-0 pl-3">
-                <span className="material-symbols-outlined text-xl">
-                  search
-                </span>
-              </div>
-              <input
-                className="form-input text-text-light dark:text-text-dark focus:ring-primary/50 border-border-light dark:border-border-dark bg-surface-light dark:bg-surface-dark placeholder:text-subtle-light dark:placeholder:text-subtle-dark flex h-full w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg border border-l-0 px-4 text-base font-normal leading-normal focus:outline-0 focus:ring-2"
-                placeholder="Search by title or author..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+          <label className="relative block w-full md:max-w-md">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+              search
+            </span>
+            <input
+              className="focus:ring-primary focus:border-primary w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm text-gray-800 placeholder-gray-400 focus:ring-1 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500"
+              placeholder="Search by title or author..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </label>
           <div className="flex flex-wrap gap-2">
             {['All', 'Unread', 'In Progress', 'Finished'].map((f) => (

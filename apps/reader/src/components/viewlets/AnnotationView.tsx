@@ -3,7 +3,7 @@ import dayjs from 'dayjs'
 import React, { useMemo } from 'react'
 
 import { Annotation } from '@flow/reader/annotation'
-import { useTranslation } from '@flow/reader/hooks'
+import { useAction, useTranslation } from '@flow/reader/hooks'
 import { reader, useReaderSnapshot } from '@flow/reader/models'
 
 import { PaneViewProps } from '../base'
@@ -11,6 +11,7 @@ import { PaneViewProps } from '../base'
 export const AnnotationView: React.FC<PaneViewProps> = () => {
   const { focusedBookTab } = useReaderSnapshot()
   const t = useTranslation('annotation')
+  const [, setAction] = useAction()
 
   const annotations = useMemo(
     () => (focusedBookTab?.book.annotations as Annotation[]) ?? [],
@@ -30,13 +31,20 @@ export const AnnotationView: React.FC<PaneViewProps> = () => {
   return (
     <div className="flex h-full flex-col bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex h-16 shrink-0 items-center border-b border-gray-200 px-4 dark:border-gray-700">
-        <span className="material-symbols-outlined mr-2 text-xl text-gray-600 dark:text-gray-400">
-          format_underlined
-        </span>
-        <h2 className="font-semibold text-gray-800 dark:text-white">
-          {t('annotations')}
-        </h2>
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+        <div className="flex items-center">
+          <button
+            onClick={() => setAction(undefined)}
+            className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <span className="material-symbols-outlined text-xl">
+              format_underlined
+            </span>
+          </button>
+          <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
+            {t('annotations')}
+          </h2>
+        </div>
       </div>
 
       <div className="no-scrollbar flex-1 overflow-y-auto p-4">
@@ -120,7 +128,7 @@ const DefinitionCard: React.FC<{ text: string }> = ({ text }) => {
         </div>
 
         <p
-          className="line-clamp-3 whitespace-normal break-words font-serif text-xs italic leading-relaxed text-gray-600 dark:text-gray-300"
+          className="line-clamp-3 whitespace-normal break-words py-0.5 font-serif text-xs italic leading-relaxed text-gray-600 dark:text-gray-300"
           title={text}
         >
           &quot;{text}&quot;

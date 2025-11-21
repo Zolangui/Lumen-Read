@@ -293,7 +293,34 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
   const applyCustomStyle = useCallback(() => {
     const contents = rendition?.getContents()[0]
     updateCustomStyle(contents, typography)
-  }, [rendition, typography])
+
+    // Smart Color Inversion for Dark Mode
+    if (dark && contents) {
+      const doc = contents.document
+      const elements = doc.querySelectorAll(
+        'p, span, h1, h2, h3, h4, h5, h6, div, a, li, blockquote',
+      )
+      const themeColor = '#bfc8ca' // Light gray for dark mode
+
+      elements.forEach((el: Element) => {
+        const htmlEl = el as HTMLElement
+        const computedStyle = window.getComputedStyle(htmlEl)
+        const color = computedStyle.color
+
+        // Parse RGB
+        const rgb = color.match(/\d+/g)
+        if (rgb && rgb.length >= 3) {
+          const [r, g, b] = rgb.map(Number)
+
+          // Check if color is dark (e.g., close to black)
+          // Threshold can be adjusted, < 100 is a safe bet for "dark text"
+          if (r < 100 && g < 100 && b < 100) {
+            htmlEl.style.setProperty('color', themeColor, 'important')
+          }
+        }
+      })
+    }
+  }, [rendition, typography, dark])
 
   useEffect(() => {
     tab.onRender = applyCustomStyle
@@ -332,7 +359,9 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
   useEffect(() => {
     if (dark === undefined) return
     // set `!important` when in dark mode
-    rendition?.themes.override('color', dark ? '#bfc8ca' : '#3f484a', dark)
+    const color = dark ? '#bfc8ca' : '#3f484a'
+    rendition?.themes.override('color', color, dark)
+
     if (backgroundColor) {
       rendition?.themes.override('background-color', backgroundColor, true)
     }

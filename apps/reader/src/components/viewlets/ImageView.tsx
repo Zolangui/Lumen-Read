@@ -1,6 +1,7 @@
 import clsx from 'clsx'
 import { useMemo, useState } from 'react'
 
+import { useAction } from '@flow/reader/hooks'
 import {
   ISection,
   ISectionSnapshot,
@@ -12,6 +13,7 @@ import { PaneViewProps } from '../base'
 
 export const ImageView: React.FC<PaneViewProps> = () => {
   const { focusedBookTab } = useReaderSnapshot()
+  const [, setAction] = useAction()
 
   const sections = useMemo(() => {
     if (!focusedBookTab?.sections) return []
@@ -26,11 +28,18 @@ export const ImageView: React.FC<PaneViewProps> = () => {
 
   return (
     <div className="flex h-full flex-col bg-white dark:bg-gray-900">
-      <div className="flex h-16 shrink-0 items-center border-b border-gray-200 px-4 dark:border-gray-700">
-        <span className="material-symbols-outlined mr-2 text-xl text-gray-600 dark:text-gray-400">
-          image
-        </span>
-        <h2 className="font-semibold text-gray-800 dark:text-white">Imagens</h2>
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+        <div className="flex items-center">
+          <button
+            onClick={() => setAction(undefined)}
+            className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <span className="material-symbols-outlined text-xl">image</span>
+          </button>
+          <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
+            Images
+          </h2>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">

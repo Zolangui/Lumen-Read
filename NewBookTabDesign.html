@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Switch Book</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#3b82f6",
+            "background-light": "#f8fafc",
+            "background-dark": "#18181b",
+          },
+          fontFamily: {
+            display: ["Roboto", "sans-serif"],
+          },
+          borderRadius: {
+            DEFAULT: "0.5rem",
+          },
+        },
+      },
+    };
+  </script>
+<style type="text/tailwindcss">
+    .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+    .material-symbols-outlined.filled {
+        font-variation-settings:
+        'FILL' 1,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+  </style>
+</head>
+<body class="bg-white dark:bg-background-dark font-display text-gray-700 dark:text-gray-900">
+<div class="flex h-screen">
+<aside class="w-16 bg-background-light dark:bg-zinc-900/50 flex flex-col items-center py-4 border-r border-gray-200 dark:border-zinc-800">
+<div class="flex flex-col items-center justify-between h-full">
+<div class="flex flex-col items-center space-y-6">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">menu</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">search</span>
+</button>
+<button class="bg-blue-100 dark:bg-blue-500/20 text-primary dark:text-blue-400 p-2 rounded-lg">
+<span class="material-symbols-outlined filled text-2xl">auto_stories</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">bookmark</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">edit_note</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">format_size</span>
+</button>
+</div>
+<div class="flex flex-col items-center space-y-6">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">settings</span>
+</button>
+</div>
+</div>
+</aside>
+<div class="w-[340px] bg-background-light dark:bg-zinc-900/50 border-r border-gray-200 dark:border-zinc-800 flex flex-col">
+<div class="p-4 border-b border-gray-200 dark:border-zinc-800">
+<h2 class="text-lg font-semibold text-gray-900 dark:text-white">Switch Book</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400">Select another book to read</p>
+</div>
+<div class="p-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xl">search</span>
+<input class="w-full pl-10 pr-4 py-2 rounded-md bg-gray-100 dark:bg-zinc-800 border-transparent focus:border-primary focus:ring-primary text-gray-900 dark:text-gray-100 text-sm" placeholder="Search by title or author..." type="text"/>
+</div>
+</div>
+<div class="flex-grow overflow-y-auto px-4">
+<div class="space-y-1">
+<a class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 group" href="#">
+<img alt="Book cover for Cidadania no Brasil" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuApmk9iOipmvGrUk7UnAvzeTVv8o0cEOZAxk0cRLuUlZrIdWyEzNfR7628dXh4UNi1LBV1eXEmoBUbitw2AQQ8NLVvOidciXh2eWPbVDKBJw9li0N3hqTD70skz32LbOH-XmZuI7BJx2xW4zE3b7tO1soRi0WlF0CXZoa12jmLh8R0L2yvPK-BVc1eBWvoysu1lOiz1SnGYY9tjA0Lrjd1EqA0G9JJFk-pBEgOpgk8O_ZTlQdQD2h3aCyng73WnA-HMb5uwA5RKNjgi"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-gray-800 dark:text-gray-100">Cidadania no Brasil</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">José Murilo de Carvalho</p>
+</div>
+</a>
+<a class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 group" href="#">
+<img alt="Book cover for A arte da sedução" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvY3tFd6LZiSfJyceZTaz7w0sM1soea1MvqOdgC1KgO4O5L2QqDQcT8HWuEve0MewiT8mCc1lSUyavhjDri_kJZJpD9GreDbWAldf6w84JxrF8WHgwnFrx07mNICoG3BE-TJtvB56G-BGz2tTkXnyGtL9fk1D1abJhxPHAC7YsLs589_R6zVPt0OceMzTGFoadpfH0gcw76RXzGZ4-hLMjbDcEA2SUKCirI87DAHjicUFU1CyBnekBGJQJuZe6RKASWW9Mrx5HuH1i"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-gray-800 dark:text-gray-100">A arte da sedução</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Robert Greene</p>
+</div>
+</a>
+<a class="flex items-center p-2 rounded-md bg-blue-50 dark:bg-blue-500/10 group" href="#">
+<img alt="Book cover for As Leis da Natureza Humana" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoRrwGaIdYWqc4ulBWD9_IUco3CYpyVmbx5LqBt4XYh_EQZu30Ndz92h5PLeQC6LFO5Ila1t4PALwj25kx1NRZoR5TYXBUbZ1WSuWvo4D_fmDI030wIDTImaEkfEZfPapiz9IIWGMbIgq2fJKR4fevFoh6YH0kXi8x0T7pxvo-auFo0sOyYnvSngGvRIEIaqaCdZJyJUkqhSDSVnhkkdkmFQEa5HyPxf9Hj-M2052ygzHI6uYOKmmQLl5lLPvUgx3eO8FJW5eVV066"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-primary dark:text-blue-400">As Leis da Natureza Humana</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Robert Greene</p>
+</div>
+</a>
+<a class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 group" href="#">
+<img alt="Book cover for Modernidade Líquida" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-bkFufZUqbx2XQmBBbqXBBKIXN7_jvZnr8FOIp03pVwQpEjczuW6dcW2uGB1oc7leGfWHCOkmRA5glrkqx_oDkWIVSOhBAIJoD4W1KfF0CWcXioICJCFCfjJL76FyYCUMwi6iGqyX7jmi3IXe-Jonwac6ndVs7cP3BGXHLQidQBOwYzd0N12zU8ZJhSj-5T3LTwGqKVZmaD2SDZ9hekFntstA4JftRoR9CnkxmhNqkdTWc4WrVzF6ewMNdmxT8nib7jCM6TS2RsBy"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-gray-800 dark:text-gray-100">Modernidade Líquida</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Zygmunt Bauman</p>
+</div>
+</a>
+<a class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 group" href="#">
+<img alt="Book cover for Maestria" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAiSQUUQCjUkA_JMphIVn1WqVeV6rlh_qZvB_ARWXeAyh5IAv5TJoAU_S6dkjMFHpsEe9FBpsSkEY3CB0pDHytgjeVtxfE_SPy78hcM7_eP6K9AUSWLC-SSmub3ig_Tgg6DJaiYz3o4OudCTNGac7v3rTSED5ln17gCzDH0LEwTTd5BHmsCGsbj2dbJOrarF5WDXJ--gDIB6KEDTgsxaiZOV9f44nblPXjoKbTuZOJfbP3rKnesowNGAZiCM49az6zUI6lZmrXl6rPa"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-gray-800 dark:text-gray-100">Maestria</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Robert Greene</p>
+</div>
+</a>
+<a class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 group" href="#">
+<img alt="Book cover for Ideias para adiar o fim do mundo" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGDYao6rtJ1OQXjDev7c-_vhz9MFpI9FcrwDo9Qr0WhQNfwWTa0cWKrkGs8ZDn8hpZbYaP94QcByCjQ3egNo8Opjz9AxcCPhNZGxNE-otDcDDKG620dfwv_4mX2eZtzrOGmy_0NNgx-xBL2kzdU5ecpEIFfOj7dP9muWllQNOdMMHywahOVT5nEynhVGMyOcpd2AhcutHG7D3VnfbV_9ypqygwjpUF9aS6mi6Wr6OQ8Ob41doj1nkiLdjGVqkdoxaO0MqGnAbLs7N7"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-gray-800 dark:text-gray-100">Ideias para adiar o fim do...</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Krenak, Ailton</p>
+</div>
+</a>
+<a class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 group" href="#">
+<img alt="Book cover for Maestria" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCMnEHPVRVHQs_IoH6bjqbDi-CdruexJ07a-05eYCHV7pgQJ6UPmcpCq7OSw_-sl1S8O1h2QrRUbLD_5OR6O_V7Idg4adlkRodSK4bhMnHZscY-5RNe1BuOiRk-diF6GXD3tUBd2UH1hmlvHfwVxy9DOql1mLJyx-wy3Qy4Z7NKaJw017-eueSqtx-gXdYGaglY9Eb_CQNSuOGTjOnEI2q2m0XctTn9ela3yUhn3nU1TzbwATbrk7WV1uH_RR1bjEW-IHRfT0xTGA4p"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-gray-800 dark:text-gray-100">Maestria</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Robert Greene</p>
+</div>
+</a>
+<a class="flex items-center p-2 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-800 group" href="#">
+<img alt="Book cover for As Leis da Natureza Humana" class="w-10 h-14 object-cover rounded shadow-sm" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBhJUEAq5uXqnyDC5jUJ8-NNDrewkk8aEuifIAmZY003q9jXszWFW-z5qLh2EP1oma3kQaGokthyzeoaGXWZ640HzQiB1UnC_Qg4iFbJzj8H4f91gQtsME38B0MZPdQFN3Q2URJjvL9fhnfTuqy5XJiOVp69Jnlcyv5zpNQtfKNPGp51PdOiV_-DKceOi8npHONLjvw6Gvjv6jLFFKO-RZ7bAQqSlHJSaMUuPzK5Ok0oNc4zxSsjUK_mtilHFRTJ3SdMvQpH_dlihWs"/>
+<div class="ml-3">
+<h3 class="font-semibold text-sm text-gray-800 dark:text-gray-100">As Leis da Natureza Humana</h3>
+<p class="text-xs text-gray-500 dark:text-gray-400">Robert Greene</p>
+</div>
+</a>
+</div>
+</div>
+</div>
+<main class="flex-1 flex flex-col bg-white dark:bg-black">
+<header class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-zinc-800">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-gray-500 dark:text-gray-400 text-2xl">book_2</span>
+<h1 class="text-md font-medium text-gray-800 dark:text-gray-200">As Leis da Natureza Humana</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">chevron_left</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">chevron_right</span>
+</button>
+<button class="text-gray-500 dark:text-gray-400 hover:text-primary dark:hover:text-white">
+<span class="material-symbols-outlined text-2xl">more_horiz</span>
+</button>
+</div>
+</header>
+<div class="flex-grow p-8 lg:p-12 overflow-y-auto text-gray-800 dark:text-gray-300">
+<div class="max-w-2xl mx-auto">
+<p class="mb-4 leading-relaxed">
+            sombra e tomará consciência das suas próprias tendências passivo-agressivas, facilitando o processo de identificação desses elementos nos outros. O leitor também se tornará mais humilde, percebendo que não é superior aos outros da maneira como imaginava. Isso não o fará se sentir culpado ou sobrecarregado pela própria autoconsciência, muito pelo contrário. Você se aceitará como um indivíduo completo, abarcando tanto o bom quanto o mau, abandonando a sua falsa autoimagem de santo, e se sentirá aliviado sem as suas hipocrisias e livre para ser mais você mesmo. As outras pessoas, então, se sentirão atraídas por essa qualidade.
+          </p>
+<p class="leading-relaxed">
+            análise, sempre atualizando o que observa e aumentando o poder de ver o mundo pelos olhos dos outros. Vai notar uma sensação física de conexão entre você e as pessoas que emergirá dessa prática. Você vai precisar de uma dose de humildade durante esse processo. Nunca se sabe com exatidão o pensamento alheio e é fácil cometer erros, por isso não faça julgamentos apressados, mas se mantenha sempre aberto a aprender mais. O ser humano é mais complexo do que você imagina. O seu objetivo é somente ver melhor o ponto de vista do outro. Avançar nesse processo será como trabalhar um músculo do corpo, que se torna mais forte quanto mais você o exercita.
+          </p>
+</div>
+</div>
+<footer class="flex items-center justify-between p-4 border-t border-gray-200 dark:border-zinc-800">
+<div class="flex-1">
+<div class="w-full bg-gray-200 dark:bg-zinc-700 rounded-full h-1.5">
+<div class="bg-primary h-1.5 rounded-full" style="width: 45%"></div>
+</div>
+</div>
+<div class="text-sm text-gray-500 dark:text-gray-400 ml-4">2%</div>
+</footer>
+</main>
+</div>
+
+</body></html>

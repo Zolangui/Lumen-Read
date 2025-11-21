@@ -11,6 +11,7 @@ import {
   MdPalette,
   MdTextFields,
   MdSelfImprovement,
+  MdLibraryBooks,
 } from 'react-icons/md'
 import { RiHome6Line, RiSettings5Line } from 'react-icons/ri'
 import { useRecoilState } from 'recoil'
@@ -34,6 +35,7 @@ import { SplitView, useSplitViewItem } from './base'
 import { Settings } from './pages'
 import { AnnotationView } from './viewlets/AnnotationView'
 import { ImageView } from './viewlets/ImageView'
+import { LibrarySideView } from './viewlets/LibrarySideView'
 import { SearchView } from './viewlets/SearchView'
 import { ThemeView } from './viewlets/ThemeView'
 import { TimelineView } from './viewlets/TimelineView'
@@ -78,6 +80,13 @@ interface IViewAction extends IAction {
 }
 
 const viewActions: IViewAction[] = [
+  {
+    name: 'books',
+    title: 'books',
+    Icon: MdLibraryBooks,
+    View: LibrarySideView,
+    env: Env.Desktop | Env.Mobile,
+  },
   {
     name: 'toc',
     title: 'toc',

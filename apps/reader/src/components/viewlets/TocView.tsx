@@ -52,9 +52,7 @@ const TocPane: React.FC = () => {
             onClick={() => setAction(undefined)}
             className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
           >
-            <span className="material-symbols-outlined text-xl">
-              arrow_back
-            </span>
+            <span className="material-symbols-outlined text-xl">list</span>
           </button>
           <h2 className="ml-2 truncate font-semibold text-gray-800 dark:text-white">
             {bookTitle}

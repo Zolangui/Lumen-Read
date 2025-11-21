@@ -1,11 +1,15 @@
 import clsx from 'clsx'
 import React from 'react'
 
+import { useAction } from '../hooks'
+
 interface NewSidebarProps {
   className?: string
 }
 
 export const NewSidebar: React.FC<NewSidebarProps> = ({ className }) => {
+  const [action, setAction] = useAction()
+
   return (
     <aside
       className={clsx(
@@ -14,15 +18,52 @@ export const NewSidebar: React.FC<NewSidebarProps> = ({ className }) => {
       )}
     >
       <nav className="flex flex-col items-center gap-2">
-        <NavItem icon="menu" />
-        <NavItem icon="search" />
-        <NavItem icon="bookmark" />
-        <NavItem icon="image" active />
-        <NavItem icon="draw" />
-        <NavItem icon="text_fields" />
-        <NavItem icon="wb_sunny" />
-        <NavItem icon="graphic_eq" />
-        <NavItem icon="my_location" />
+        <NavItem
+          icon="menu"
+          active={action === 'toc'}
+          onClick={() => setAction(action === 'toc' ? undefined : 'toc')}
+        />
+        <NavItem
+          icon="library_books"
+          active={action === 'books'}
+          onClick={() => setAction(action === 'books' ? undefined : 'books')}
+        />
+        <NavItem
+          icon="search"
+          active={action === 'search'}
+          onClick={() => setAction(action === 'search' ? undefined : 'search')}
+        />
+        <NavItem
+          icon="format_underlined"
+          active={action === 'annotation'}
+          onClick={() =>
+            setAction(action === 'annotation' ? undefined : 'annotation')
+          }
+        />
+        <NavItem
+          icon="image"
+          active={action === 'image'}
+          onClick={() => setAction(action === 'image' ? undefined : 'image')}
+        />
+        <NavItem
+          icon="history"
+          active={action === 'timeline'}
+          onClick={() =>
+            setAction(action === 'timeline' ? undefined : 'timeline')
+          }
+        />
+        <NavItem
+          icon="text_fields"
+          active={action === 'typography'}
+          onClick={() =>
+            setAction(action === 'typography' ? undefined : 'typography')
+          }
+        />
+        <NavItem
+          icon="palette"
+          active={action === 'theme'}
+          onClick={() => setAction(action === 'theme' ? undefined : 'theme')}
+        />
       </nav>
       <div className="flex flex-col items-center">
         <button className="text-subtle-light dark:text-subtle-dark flex h-10 w-10 items-center justify-center rounded-lg transition-colors hover:bg-black/5 dark:hover:bg-white/5">
@@ -36,13 +77,13 @@ export const NewSidebar: React.FC<NewSidebarProps> = ({ className }) => {
 interface NavItemProps {
   icon: string
   active?: boolean
-  href?: string
+  onClick?: () => void
 }
 
-const NavItem: React.FC<NavItemProps> = ({ icon, active, href = '#' }) => {
+const NavItem: React.FC<NavItemProps> = ({ icon, active, onClick }) => {
   return (
-    <a
-      href={href}
+    <button
+      onClick={onClick}
       className={clsx(
         'flex h-10 w-10 items-center justify-center rounded-lg transition-colors',
         active
@@ -51,6 +92,6 @@ const NavItem: React.FC<NavItemProps> = ({ icon, active, href = '#' }) => {
       )}
     >
       <span className="material-symbols-outlined text-2xl">{icon}</span>
-    </a>
+    </button>
   )
 }

@@ -1,6 +1,7 @@
 import { useEventListener } from '@literal-ui/hooks'
 import Dexie from 'dexie'
 import { parseCookies, destroyCookie } from 'nookies'
+import React from 'react'
 
 import {
   ColorScheme,
@@ -8,12 +9,9 @@ import {
   useForceRender,
   useTranslation,
 } from '@flow/reader/hooks'
+import { reader } from '@flow/reader/models'
 import { useSettings } from '@flow/reader/state'
 import { dbx, mapToToken, OAUTH_SUCCESS_MESSAGE } from '@flow/reader/sync'
-
-import { Button } from '../Button'
-import { Select } from '../Form'
-import { Page } from '../Page'
 
 export const Settings: React.FC = () => {
   const { scheme, setScheme } = useColorScheme()
@@ -21,49 +19,115 @@ export const Settings: React.FC = () => {
   const t = useTranslation('settings')
 
   return (
-    <Page headline={t('title')}>
-      <div className="space-y-6">
-        <Item title={t('language')}>
-          <Select
-            value={settings.locale || 'en-US'}
-            onChange={(e) => {
-              setSettings({ ...settings, locale: e.target.value })
-            }}
-          >
-            <option value="en-US">English</option>
-            <option value="zh-CN">简体中文</option>
-            <option value="ja-JP">日本語</option>
-          </Select>
-        </Item>
-        <Item title={t('color_scheme')}>
-          <Select
-            value={scheme}
-            onChange={(e) => {
-              setScheme(e.target.value as ColorScheme)
-            }}
-          >
-            <option value="system">{t('color_scheme.system')}</option>
-            <option value="light">{t('color_scheme.light')}</option>
-            <option value="dark">{t('color_scheme.dark')}</option>
-          </Select>
-        </Item>
-
-        <Synchronization />
-        <Item title={t('cache')}>
-          <Button
-            variant="secondary"
-            onClick={() => {
-              window.localStorage.clear()
-              Dexie.getDatabaseNames().then((names) => {
-                names.forEach((n) => Dexie.delete(n))
-              })
-            }}
-          >
-            {t('cache.clear')}
-          </Button>
-        </Item>
+    <div className="h-full overflow-y-auto bg-white dark:bg-gray-900">
+      {/* Fixed Header */}
+      <div className="fixed top-0 left-0 right-0 z-10 flex h-16 items-center border-b border-gray-200 bg-white px-4 dark:border-gray-700 dark:bg-gray-900">
+        <button
+          onClick={() => {
+            if (reader.focusedGroup) {
+              reader.removeTab(reader.focusedGroup.selectedIndex)
+            }
+          }}
+          className="mr-2 rounded-full p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+        >
+          <span className="material-symbols-outlined text-xl">arrow_back</span>
+        </button>
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+          {t('title')}
+        </h1>
       </div>
-    </Page>
+
+      <div className="mx-auto max-w-3xl px-6 py-8 pt-24">
+        <div className="space-y-8">
+          {/* Language */}
+          <div className="border-b border-gray-200 pb-8 dark:border-gray-700">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              {t('language')}
+            </h2>
+            <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
+              Choose the application interface language.
+            </p>
+            <div className="relative w-full max-w-sm">
+              <select
+                className="focus:ring-primary w-full appearance-none rounded-lg border-none bg-gray-100 p-3 pr-10 focus:ring-2 dark:bg-gray-800"
+                style={{
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                  backgroundImage: 'none',
+                }}
+                value={settings.locale || 'en-US'}
+                onChange={(e) => {
+                  setSettings({ ...settings, locale: e.target.value })
+                }}
+              >
+                <option value="en-US">English</option>
+                <option value="zh-CN">简体中文</option>
+                <option value="ja-JP">日本語</option>
+              </select>
+              <span className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                expand_more
+              </span>
+            </div>
+          </div>
+
+          {/* Color Scheme */}
+          <div className="border-b border-gray-200 pb-8 dark:border-gray-700">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              {t('color_scheme')}
+            </h2>
+            <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
+              Select your preferred light or dark theme.
+            </p>
+            <div className="relative w-full max-w-sm">
+              <select
+                className="focus:ring-primary w-full appearance-none rounded-lg border-none bg-gray-100 p-3 pr-10 focus:ring-2 dark:bg-gray-800"
+                style={{
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                  backgroundImage: 'none',
+                }}
+                value={scheme}
+                onChange={(e) => {
+                  setScheme(e.target.value as ColorScheme)
+                }}
+              >
+                <option value="system">{t('color_scheme.system')}</option>
+                <option value="light">{t('color_scheme.light')}</option>
+                <option value="dark">{t('color_scheme.dark')}</option>
+              </select>
+              <span className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                expand_more
+              </span>
+            </div>
+          </div>
+
+          {/* Synchronization */}
+          <Synchronization />
+
+          {/* Cache */}
+          <div className="border-b border-gray-200 pb-8 dark:border-gray-700">
+            <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+              {t('cache')}
+            </h2>
+            <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
+              Clear locally stored data to free up space. This won&apos;t delete
+              your documents.
+            </p>
+            <button
+              className="bg-error-container text-on-error-container rounded-full px-6 py-2 font-medium shadow-sm transition-all hover:shadow-md"
+              onClick={() => {
+                window.localStorage.clear()
+                Dexie.getDatabaseNames().then((names) => {
+                  names.forEach((n) => Dexie.delete(n))
+                })
+              }}
+            >
+              {t('cache.clear')}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -75,61 +139,78 @@ const Synchronization: React.FC = () => {
 
   useEventListener('message', (e) => {
     if (e.data === OAUTH_SUCCESS_MESSAGE) {
-      // init app (generate access token, fetch remote data, etc.)
       window.location.reload()
     }
   })
 
   return (
-    <Item title={t('title')}>
-      <Select>
-        <option value="dropbox">Dropbox</option>
-      </Select>
-      <div className="mt-2">
-        {refreshToken ? (
-          <Button
-            variant="secondary"
-            onClick={() => {
-              destroyCookie(null, mapToToken['dropbox'])
-              render()
-            }}
+    <div className="border-b border-gray-200 pb-8 dark:border-gray-700">
+      <h2 className="text-lg font-medium text-gray-900 dark:text-white">
+        {t('title')}
+      </h2>
+      <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
+        Connect to a cloud service to sync your library.
+      </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
+        <div className="flex-grow">
+          <label
+            className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
+            htmlFor="sync-service"
           >
-            {t('unauthorize')}
-          </Button>
-        ) : (
-          <Button
-            onClick={() => {
-              const redirectUri =
-                window.location.origin + '/api/callback/dropbox'
+            Service
+          </label>
+          <div className="relative w-full">
+            <select
+              className="focus:ring-primary w-full appearance-none rounded-lg border-none bg-gray-100 p-3 pr-10 focus:ring-2 dark:bg-gray-800"
+              style={{
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                backgroundImage: 'none',
+              }}
+              id="sync-service"
+            >
+              <option value="dropbox">Dropbox</option>
+            </select>
+            <span className="material-symbols-outlined pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+              expand_more
+            </span>
+          </div>
+        </div>
+        <div className="sm:pb-0.5">
+          {refreshToken ? (
+            <button
+              className="bg-primary text-on-primary w-full rounded-full px-6 py-2.5 font-medium shadow-sm transition-all hover:shadow-md sm:w-auto"
+              onClick={() => {
+                destroyCookie(null, mapToToken['dropbox'])
+                render()
+              }}
+            >
+              {t('unauthorize')}
+            </button>
+          ) : (
+            <button
+              className="bg-primary text-on-primary w-full rounded-full px-6 py-2.5 font-medium shadow-sm transition-all hover:shadow-md sm:w-auto"
+              onClick={() => {
+                const redirectUri =
+                  window.location.origin + '/api/callback/dropbox'
 
-              dbx.auth
-                .getAuthenticationUrl(
-                  redirectUri,
-                  JSON.stringify({ redirectUri }),
-                  'code',
-                  'offline',
-                )
-                .then((url) => {
-                  window.open(url as string, '_blank')
-                })
-            }}
-          >
-            {t('authorize')}
-          </Button>
-        )}
+                dbx.auth
+                  .getAuthenticationUrl(
+                    redirectUri,
+                    JSON.stringify({ redirectUri }),
+                    'code',
+                    'offline',
+                  )
+                  .then((url) => {
+                    window.open(url as string, '_blank')
+                  })
+              }}
+            >
+              {t('authorize')}
+            </button>
+          )}
+        </div>
       </div>
-    </Item>
-  )
-}
-
-interface PartProps {
-  title: string
-}
-const Item: React.FC<PartProps> = ({ title, children }) => {
-  return (
-    <div>
-      <h3 className="typescale-title-small text-on-surface-variant">{title}</h3>
-      <div className="mt-2">{children}</div>
     </div>
   )
 }

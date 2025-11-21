@@ -28,7 +28,7 @@ function useIntermediateKeyword() {
 }
 
 export const SearchView: React.FC<PaneViewProps> = (_props) => {
-  const [action] = useAction()
+  const [action, setAction] = useAction()
   const { focusedBookTab } = useReaderSnapshot()
   const t = useTranslation()
 
@@ -38,11 +38,18 @@ export const SearchView: React.FC<PaneViewProps> = (_props) => {
 
   return (
     <div className="flex h-full flex-col bg-white dark:bg-gray-900">
-      <div className="flex h-16 shrink-0 items-center border-b border-gray-200 px-4 dark:border-gray-700">
-        <span className="material-symbols-outlined mr-2 text-xl text-gray-600 dark:text-gray-400">
-          search
-        </span>
-        <h2 className="font-semibold text-gray-800 dark:text-white">Search</h2>
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+        <div className="flex items-center">
+          <button
+            onClick={() => setAction(undefined)}
+            className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <span className="material-symbols-outlined text-xl">search</span>
+          </button>
+          <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
+            Search
+          </h2>
+        </div>
       </div>
 
       <div className="p-4 pb-0">

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 
-import { useList, useTranslation } from '@flow/reader/hooks'
+import { useAction, useList, useTranslation } from '@flow/reader/hooks'
 import { reader, useReaderSnapshot } from '@flow/reader/models'
 
 import { PaneViewProps } from '../base'
@@ -13,16 +13,22 @@ export const TimelineView: React.FC<PaneViewProps> = () => {
   const rows = focusedBookTab?.timeline || []
   const { outerRef, innerRef, items } = useList(rows)
   const t = useTranslation('timeline')
+  const [, setAction] = useAction()
 
   return (
     <div className="flex h-full flex-col bg-white dark:bg-gray-900">
-      <div className="flex h-16 shrink-0 items-center border-b border-gray-200 px-4 dark:border-gray-700">
-        <span className="material-symbols-outlined mr-2 text-xl text-gray-600 dark:text-gray-400">
-          history
-        </span>
-        <h2 className="font-semibold text-gray-800 dark:text-white">
-          {t('title')}
-        </h2>
+      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+        <div className="flex items-center">
+          <button
+            onClick={() => setAction(undefined)}
+            className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+          >
+            <span className="material-symbols-outlined text-xl">history</span>
+          </button>
+          <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
+            {t('title')}
+          </h2>
+        </div>
       </div>
 
       <div
