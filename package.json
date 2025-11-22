@@ -7,6 +7,7 @@
     "dev": "turbo run dev --parallel",
     "lint": "turbo run lint",
     "build:ext:chrome": "esno scripts/build-extension.js chrome",
+    "build:ext:chrome:prod": "cross-env FAST_BUILD=false SKIP_SENTRY=false esno scripts/build-extension.js chrome",
     "build:ext:firefox": "esno scripts/build-extension.js firefox",
     "package:chrome": "pnpm build:ext:chrome && cd apps/extension/dist && bestzip ../../flow-chrome.zip *",
     "package:firefox": "pnpm build:ext:firefox && cd apps/extension/dist && bestzip ../../flow-firefox.zip *",
