@@ -1,111 +1,89 @@
-# Flow Reader Extension
+<div align="center">
 
-This is a fork of the original [Flow](https://github.com/pacexy/flow) ePub reader, with a focus on improving and stabilizing the browser extension.
+  <!-- Logo -->
+  <img src="assets/icon.svg" alt="Lumen Read Logo" width="120" height="120" />
 
-<p align="center"><img src="apps/website/public/screenshots/en-US.webp"/>
-</p>
+# Lumen Read
 
-## Features
+### A modern, immersive EPUB reader for productivity and focus.
 
-- Grid layout
-- Search in book
-- Image preview
-- Custom typography
-- Highlight and Annotation
-- Theme
-- Data export
-- Cloud storage
+  <!-- Badges -->
+  <p>
+    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
+    <img src="https://img.shields.io/badge/Built%20with-Google%20Antigravity-blue.svg" alt="Built with: Google Antigravity" />
+    <img src="https://img.shields.io/badge/Model-Gemini%203-purple.svg" alt="Model: Gemini 3" />
+    <img src="https://img.shields.io/badge/Style-Material%20Design%203-orange.svg" alt="Style: Material Design 3" />
+  </p>
 
-## Setup and Development
+</div>
 
-Follow these steps to set up the development environment and build the extension from the source code.
+---
 
-### 1. Prerequisites
+## 📸 Showcase
 
-- [Node.js](https://nodejs.org) (v18 or higher)
-- [pnpm](https://pnpm.io/installation)
-- [Git](https://git-scm.com/downloads)
+<div align="center">
+  
+  <!-- Screenshot 1 -->
+  <img src="assets/library.png" alt="Library Grid" width="800" />
+  <p><em>A beautiful grid view for your collection.</em></p>
 
-### 2. Clone the Repository
+  <br />
+
+  <!-- Screenshot 2 -->
+  <img src="assets/analytics.png" alt="Reading Analytics" width="800" />
+  <p><em>Track your habits with heatmaps and streaks.</em></p>
+
+  <br />
+
+  <!-- Screenshot 3 -->
+  <img src="assets/darkmode.png" alt="Smart Dark Mode" width="800" />
+  <p><em>Eye-friendly reading at night.</em></p>
+
+</div>
+
+---
+
+## ✨ Features
+
+**Lumen Read** transforms your reading experience with features designed for flow:
+
+- 🔥 **Reading Analytics:** Visualize your progress with a GitHub-style **Heatmap Calendar** and keep your momentum with **Streak tracking**.
+- 🎨 **Dynamic Theming:** The entire UI (including the logo!) adapts to your chosen color, powered by Material Design 3.
+- 🌑 **Smart Inversion:** A sophisticated dark mode that respects book imagery while saving your eyes.
+
+---
+
+## 🚀 Installation & Usage
+
+### Development
+
+To run the project locally:
 
 ```bash
-git clone https://github.com/Zolangui/Flow-Reader-Extension.git
-cd Flow-Reader-Extension
+# Install dependencies
+pnpm install
+
+# Start the development server
+pnpm dev
 ```
 
-### 3. Install Dependencies
+### Loading in Chrome
 
-```bash
-pnpm i
-```
-
-### 4. Set Up Environment Variables
-
-This project uses environment variables for configuration. Copy the example files and fill in the required values.
-
-```bash
-cp apps/reader/.env.local.example apps/reader/.env.local
-# You may need to do this for other apps if you intend to use them.
-```
-
-### 5. Build the Extension
-
-The extension needs to be built before it can be loaded into a browser.
-
--   **For Chrome:**
+1.  Build the extension:
     ```bash
     pnpm build:ext:chrome
     ```
--   **For Firefox:**
-    ```bash
-    pnpm build:ext:firefox
-    ```
+2.  Open Chrome and navigate to `chrome://extensions`.
+3.  Enable **Developer mode** (top right).
+4.  Click **Load unpacked**.
+5.  Select the `apps/extension/dist` directory.
 
-The built extension files will be located in the `apps/extension/dist` directory.
+---
 
-### 6. Load the Extension in Your Browser
+## 🤝 Credits
 
-#### Chrome
+**Lumen Read** is an enhanced fork of the [Flow](https://github.com/pacexy/flow) project.
 
-1.  Open Google Chrome and navigate to `chrome://extensions`.
-2.  Enable "Developer mode" using the toggle switch in the top-right corner.
-3.  Click the "Load unpacked" button.
-4.  In the file dialog, select the `apps/extension/dist` directory from this project.
-5.  The "Flow" extension will now be installed.
+> _Refactored and reimagined using **Google Antigravity & Gemini 3**._
 
-#### Firefox
-
-1.  Open Mozilla Firefox and navigate to `about:debugging`.
-2.  Click on the "This Firefox" tab on the left.
-3.  Click the "Load Temporary Add-on..." button.
-4.  In the file dialog, navigate to the `apps/extension/dist` directory and select the `manifest.json` file.
-5.  The "Flow" extension will now be temporarily installed.
-
-### Packaging for Distribution
-
-If you want to create a distributable zip file of the extension:
-
--   **For Chrome:**
-    ```bash
-    pnpm package:chrome
-    ```
--   **For Firefox:**
-    ```bash
-    pnpm package:firefox
-    ```
-
-## Contributing
-
-All contributions are welcome!
-
-- [Submit bugs and feature requests](https://github.com/Zolangui/Flow-Reader-Extension/issues/new)
-- [Submit pull requests](https://github.com/Zolangui/Flow-Reader-Extension/pulls)
-
-## Credits
-
-- [Epub.js](https://github.com/futurepress/epub.js/)
-- [React](https://github.com/facebook/react)
-- [Next.js](https://nextjs.org/)
-- [TypeScript](https://www.typescriptlang.org)
-- [Vercel](https://vercel.com)
-- [Turborepo](https://turbo.build/repo)
+---
