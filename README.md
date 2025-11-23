@@ -9,13 +9,11 @@
 
   <!-- Badges -->
   <p>
-    <img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT" />
+    <img src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg" alt="License: AGPL v3" />
     <img src="https://img.shields.io/badge/Built%20with-Google%20Antigravity-blue.svg" alt="Built with: Google Antigravity" />
     <img src="https://img.shields.io/badge/Model-Gemini%203-purple.svg" alt="Model: Gemini 3" />
     <img src="https://img.shields.io/badge/Style-Material%20Design%203-orange.svg" alt="Style: Material Design 3" />
   </p>
-
-</div>
 
 ---
 
@@ -54,6 +52,19 @@
 ---
 
 ## 🚀 Installation & Usage
+
+### 📥 Installation (Manual)
+
+Currently, Lumen Read is available via manual installation. It takes 30 seconds!
+
+1. **Download** the latest `Lumen-chrome.zip` from the [Releases Page](https://github.com/Zolangui/Lumen-Read/releases).
+2. **Unzip** the file to a folder.
+3. Open Chrome/Edge/Brave and go to `chrome://extensions`.
+4. Toggle **Developer mode** (top right corner).
+5. Click **Load unpacked**.
+6. Select the unzipped folder.
+
+🎉 Done! The extension is now installed.
 
 ### Development
 

@@ -1,14 +1,13 @@
 {
-  "desc": "Flow 是一款免费在线 EPUB 阅读器，支持所有平台（Web, Windows, Linux, MacOS, Android, iOS）。同时阅读多本书籍。在不同设备间无缝阅读。",
+  "desc": "Lumen Read 是一款免费的 EPUB 阅读器浏览器扩展。同时阅读多本书籍。在浏览器中无缝阅读。",
   "page": {
     "home": {
-      "title": "Flow - 在线 EPUB 阅读器"
+      "title": "Lumen Read - EPUB 阅读器扩展"
     },
     "faq": {
       "title": "常见问题"
     }
   },
-
   "open_app": "打开 App",
   "terms": "使用条款",
   "privacy": "隐私政策",
@@ -16,9 +15,6 @@
   "feedback": "反馈",
   "faq": "常见问题",
   "roadmap": "开发计划",
-  "donate": "捐赠",
-  "donate_url": "https://afdian.com/a/pacexy",
-
   "redefine": "重新定义",
   "reader": "阅读器",
   "description": "免费。开源。基于浏览器。",
@@ -37,32 +33,31 @@
   },
   "feature": {
     "0": {
-      "title": "渐进式网页应用",
-      "desc": "Flow 是渐进式网页应用（PWA），这让它拥有跨平台的能力，并且支持安装。"
+      "title": "浏览器扩展",
+      "desc": "Lumen Read 是一款浏览器扩展，无缝集成到您的浏览体验中。"
     },
     "1": {
       "title": "离线优先",
-      "desc": "Flow 可以离线运行（在安装后），而非离线时，Flow 会自动更新。"
+      "desc": "Lumen Read 可以离线运行，并自动更新。"
     },
     "2": {
       "title": "网格布局",
-      "desc": "Flow 支持（水平）网格布局，允许您同时阅读多本书。"
+      "desc": "Lumen Read 支持（水平）网格布局，允许您同时阅读多本书。"
     },
     "3": {
       "title": "自定义云端存储",
       "desc": "存储您的书籍、笔记、阅读进度甚至其他数据在您指定的云端。"
     }
   },
-
   "frequently_asked_questions": "常见问题",
   "qa2": {
     "0": {
-      "q": "如何安装或卸载 Flow？",
-      "a": "Google Chrome: <a target='_blank' href='https://support.google.com/chrome/answer/9658361?hl=zh-Hans'>使用渐进式 Web 应用</a><br/>Microsoft Edge: <a target='_blank' href='https://learn.microsoft.com/zh-cn/microsoft-edge/progressive-web-apps-chromium/ux'>PWA 的用户体验</a><br/>Safari: <a target='_blank' href='https://support.apple.com/zh-cn/104996'>在 Mac 上使用 Safari 浏览器网页 App</a>"
+      "q": "如何安装 Lumen Read？",
+      "a": "从 Chrome 网上应用店下载，或在开发者模式下加载解压后的扩展程序。"
     },
     "1": {
-      "q": "如何将 Flow 设置为默认 ePub 阅读器?",
-      "a": "Google Chrome:  <a target='_blank' href='https://www.bilibili.com/read/cv19698386'>如何将 Flow 设置为默认 ePub 阅读器?</a><br/>"
+      "q": "如何打开书籍？",
+      "a": "点击扩展图标打开阅读器，然后拖放您的 EPUB 文件或点击添加按钮。"
     },
     "2": {
       "q": "我的数据存储在哪里？",

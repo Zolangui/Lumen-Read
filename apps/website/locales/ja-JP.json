@@ -1,14 +1,13 @@
 {
-  "desc": "Flowは、あらゆるプラットフォーム（Web、Windows、Linux、MacOS、Android、iOS）をサポートする無料のオンラインEPUBリーダーです。複数の書籍を同時に読むことができます。異なるデバイス間でもシームレスに読書できます。",
+  "desc": "Lumen Readは無料のEPUBリーダーブラウザ拡張機能です。複数の書籍を同時に読むことができます。ブラウザでシームレスに読書できます。",
   "page": {
     "home": {
-      "title": "Flow - Online EPUB Reader"
+      "title": "Lumen Read - EPUB Reader Extension"
     },
     "faq": {
       "title": "よくある質問"
     }
   },
-
   "open_app": "アプリを開く",
   "terms": "利用規約",
   "privacy": "プライバシー",
@@ -16,9 +15,6 @@
   "feedback": "フィードバック",
   "faq": "よくある質問",
   "roadmap": "ロードマップ",
-  "donate": "寄付",
-  "donate_url": "https://ko-fi.com/pacexy",
-
   "redefine": "再定義",
   "reader": "リーダー",
   "description": "無料。オープンソース。ブラウザベース。",
@@ -37,32 +33,31 @@
   },
   "feature": {
     "0": {
-      "title": "プログレッシブウェブアプリ",
-      "desc": "Flowはプログレッシブウェブアプリ（PWA）であり、クロスプラットフォームでインストール可能です。"
+      "title": "ブラウザ拡張機能",
+      "desc": "Lumen Readはブラウザ拡張機能であり、ブラウジング体験にシームレスに統合されています。"
     },
     "1": {
       "title": "オフラインファースト",
-      "desc": "Flowは（インストール後）オフラインで実行でき、オフラインでない場合は自動的に更新されます。"
+      "desc": "Lumen Readはオフラインで実行でき、自動的に更新されます。"
     },
     "2": {
       "title": "グリッドレイアウト",
-      "desc": "Flowは（水平）グリッドレイアウトをサポートしており、複数の書籍を同時に読むことができます。"
+      "desc": "Lumen Readは（水平）グリッドレイアウトをサポートしており、複数の書籍を同時に読むことができます。"
     },
     "3": {
       "title": "カスタムクラウドストレージ",
       "desc": "指定したクラウドに書籍、メモ、読書進捗、その他のデータを保存します。"
     }
   },
-
   "frequently_asked_questions": "よくある質問",
   "qa2": {
     "0": {
-      "q": "Flowをインストールまたはアンインストールする方法は？",
-      "a": "Google Chrome: <a target='_blank' href='https://support.google.com/chrome/answer/9658361?hl=en'>プログレッシブ ウェブアプリを使用する</a><br/>Microsoft Edge: <a target='_blank' href='https://learn.microsoft.com/ja-jp/microsoft-edge/progressive-web-apps-chromium/ux'>PWA のユーザー エクスペリエンス</a><br/>Safari: <a target='_blank' href='https://support.apple.com/ja-jp/104996'>Mac で Safari Web App を使う</a>"
+      "q": "Lumen Readをインストールするには？",
+      "a": "Chromeウェブストアからダウンロードするか、デベロッパーモードでパッケージ化されていない拡張機能を読み込みます。"
     },
     "1": {
-      "q": "FlowをデフォルトのePubリーダーとして設定する方法は？",
-      "a": "Google Chrome: <a target='_blank' href='https://pacexy.notion.site/How-to-set-Flow-as-the-default-ePub-reader-35e44bd24aef4d63a3c55f054929f064'>FlowをデフォルトのePubリーダーとして設定する方法は？</a><br/>"
+      "q": "本を開くには？",
+      "a": "拡張機能アイコンをクリックしてリーダーを開き、EPUBファイルをドラッグアンドドロップするか、追加ボタンをクリックします。"
     },
     "2": {
       "q": "データはどこに保存されますか？",

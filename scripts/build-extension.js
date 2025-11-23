@@ -51,7 +51,7 @@ async function build() {
     const manifestFile =
       browser === 'chrome'
         ? 'chrome_manifest_v3.json'
-        : 'firefox_manifest_v2.json'
+        : 'firefox_manifest_v3.json'
 
     // 4. Copy files
     // Copy static files first (bulk copy)

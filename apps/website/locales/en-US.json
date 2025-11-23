@@ -1,14 +1,13 @@
 {
-  "desc": "Flow is a free online EPUB reader, support all platforms (Web, Windows, Linux, MacOS, Android, iOS). Read multiple books at the same time. Read seamlessly between different devices.",
+  "desc": "Lumen Read is a free EPUB reader browser extension. Read multiple books at the same time. Read seamlessly in your browser.",
   "page": {
     "home": {
-      "title": "Flow - Online EPUB reader"
+      "title": "Lumen Read - EPUB Reader Extension"
     },
     "faq": {
       "title": "Frequently asked questions"
     }
   },
-
   "open_app": "Open App",
   "terms": "Terms",
   "privacy": "Privacy",
@@ -16,9 +15,6 @@
   "feedback": "Feedback",
   "faq": "FAQ",
   "roadmap": "Roadmap",
-  "donate": "Donate",
-  "donate_url": "https://ko-fi.com/pacexy",
-
   "redefine": "Redefine",
   "reader": "reader",
   "description": "Free. Open source. Browser-based.",
@@ -37,32 +33,31 @@
   },
   "feature": {
     "0": {
-      "title": "Progressive web app",
-      "desc": "Flow is progressive web app (PWA), which means it is cross-platform and installable."
+      "title": "Browser Extension",
+      "desc": "Lumen Read is a browser extension, seamlessly integrated into your browsing experience."
     },
     "1": {
       "title": "Offline first",
-      "desc": "Flow can be run offline (after installation), and when not offline, Flow will update automatically."
+      "desc": "Lumen Read can be run offline, and updates automatically."
     },
     "2": {
       "title": "Grid layout",
-      "desc": "Flow supports (horizontal) grid layout, which allows you to read multiple books at the same time."
+      "desc": "Lumen Read supports (horizontal) grid layout, which allows you to read multiple books at the same time."
     },
     "3": {
       "title": "Custom cloud storage",
       "desc": "Store your books, notes, reading progress and even other data in the cloud you specified."
     }
   },
-
   "frequently_asked_questions": "Frequently asked questions",
   "qa2": {
     "0": {
-      "q": "How to install or uninstall Flow?",
-      "a": "Google Chrome: <a target='_blank' href='https://support.google.com/chrome/answer/9658361?hl=en'>Use Progressive Web Apps</a><br/>Microsoft Edge: <a target='_blank' href='https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps-chromium/ux'>The user experience of PWAs</a><br/>Safari: <a target='_blank' href='https://support.apple.com/en-us/104996'>Use Safari web apps on Mac</a>"
+      "q": "How to install Lumen Read?",
+      "a": "Download from the Chrome Web Store or load the unpacked extension in developer mode."
     },
     "1": {
-      "q": "How to set Flow as the default ePub reader?",
-      "a": "Google Chrome: <a target='_blank' href='https://pacexy.notion.site/How-to-set-Flow-as-the-default-ePub-reader-35e44bd24aef4d63a3c55f054929f064'>How to set Flow as the default ePub reader?</a><br/>"
+      "q": "How to open books?",
+      "a": "Click the extension icon to open the reader, then drag and drop your EPUB files or click the add button."
     },
     "2": {
       "q": "Where are my data stored?",
