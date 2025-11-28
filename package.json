@@ -1,6 +1,7 @@
 {
   "name": "@flow/monorepo",
   "private": true,
+  "license": "AGPL-3.0-only",
   "packageManager": "pnpm@10.6.4+sha512.da3d715bfd22a9a105e6e8088cfc7826699332ded60c423b14ec613a185f1602206702ff0fe4c438cb15c979081ce4cb02568e364b15174503a63c7a8e2a5f6c",
   "scripts": {
     "build": "turbo run build",
@@ -10,7 +11,7 @@
     "build:ext:chrome:prod": "cross-env FAST_BUILD=false SKIP_SENTRY=false esno scripts/build-extension.js chrome",
     "build:ext:firefox": "esno scripts/build-extension.js firefox",
     "build:ext:firefox:prod": "cross-env FAST_BUILD=false SKIP_SENTRY=false esno scripts/build-extension.js firefox",
-    "package:chrome": "pnpm build:ext:chrome && cd apps/extension/dist && bestzip ../../Lumen-chrome.zip *",
+    "package:chrome": "pnpm build:ext:chrome:prod && cd apps/extension/dist && bestzip ../../Lumen-chrome.zip *",
     "package:firefox": "pnpm build:ext:firefox:prod && cd apps/extension/dist && bestzip ../../Lumen-firefox.zip *",
     "release": "pnpm -r publish --access public",
     "prepare": "husky install"

@@ -4,11 +4,7 @@ import { useCallback, useRef, useState } from 'react'
 import { RenditionSpread } from '@flow/epubjs/types/rendition'
 import { useAction, useTranslation } from '@flow/reader/hooks'
 import { reader, useReaderSnapshot } from '@flow/reader/models'
-import {
-  defaultSettings,
-  TypographyConfiguration,
-  useSettings,
-} from '@flow/reader/state'
+import { TypographyConfiguration, useSettings } from '@flow/reader/state'
 
 import { PaneViewProps } from '../base'
 
@@ -36,7 +32,10 @@ export const TypographyView: React.FC<PaneViewProps> = () => {
     contentWidthPercent,
   } =
     scope === TypographyScope.Book
-      ? focusedBookTab?.book.configuration?.typography ?? defaultSettings
+      ? {
+          ...settings,
+          ...(focusedBookTab?.book.configuration?.typography ?? {}),
+        }
       : settings
 
   const setTypography = useCallback(
@@ -175,7 +174,7 @@ export const TypographyView: React.FC<PaneViewProps> = () => {
           <input
             type="text"
             list="local-fonts"
-            className="focus:ring-primary focus:border-primary w-full rounded-md border border-gray-300 bg-gray-100 py-2 px-3 text-sm text-gray-800 dark:border-gray-600 dark:bg-gray-800 dark:text-white"
+            className="focus:ring-primary focus:border-primary w-full rounded-md border border-gray-300 bg-gray-100 py-2 px-3 text-sm text-gray-800 focus:placeholder-transparent dark:border-gray-600 dark:bg-gray-800 dark:text-white"
             id="font-family"
             value={fontFamily || ''}
             placeholder="default"
@@ -199,7 +198,7 @@ export const TypographyView: React.FC<PaneViewProps> = () => {
           name={t('font_size')}
           min={14}
           max={28}
-          defaultValue={fontSize && parseInt(fontSize)}
+          value={fontSize ? parseInt(fontSize) : undefined}
           onChange={(v) => {
             setTypography('fontSize', v ? v + 'px' : undefined)
           }}
@@ -211,7 +210,7 @@ export const TypographyView: React.FC<PaneViewProps> = () => {
           min={100}
           max={900}
           step={100}
-          defaultValue={fontWeight}
+          value={fontWeight}
           onChange={(v) => {
             setTypography('fontWeight', v || undefined)
           }}
@@ -222,7 +221,7 @@ export const TypographyView: React.FC<PaneViewProps> = () => {
           name={t('line_height')}
           min={1}
           step={0.1}
-          defaultValue={lineHeight}
+          value={lineHeight}
           onChange={(v) => {
             setTypography('lineHeight', v || undefined)
           }}
@@ -234,7 +233,7 @@ export const TypographyView: React.FC<PaneViewProps> = () => {
           min={50}
           max={100}
           step={5}
-          defaultValue={contentWidthPercent || 90}
+          value={contentWidthPercent || 90}
           onChange={(v) => {
             setTypography('contentWidthPercent', v || undefined)
           }}
@@ -245,11 +244,34 @@ export const TypographyView: React.FC<PaneViewProps> = () => {
           name={t('zoom')}
           min={1}
           step={0.1}
-          defaultValue={zoom}
+          value={zoom}
           onChange={(v) => {
             setTypography('zoom', v || undefined)
           }}
         />
+
+        {/* Reset Button */}
+        {scope === TypographyScope.Book && (
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                const bookTab = reader.focusedBookTab
+                if (bookTab) {
+                  const newConfiguration = JSON.parse(
+                    JSON.stringify(bookTab.book.configuration || {}),
+                  )
+                  newConfiguration.typography = {}
+                  bookTab.updateBook({
+                    configuration: newConfiguration,
+                  })
+                }
+              }}
+              className="w-full rounded-md border border-gray-300 bg-white py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            >
+              {t('reset_to_global')}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Footer removed - use settings icon in main sidebar instead */}
@@ -263,7 +285,7 @@ interface NumberFieldProps {
   min?: number
   max?: number
   step?: number
-  defaultValue?: number
+  value?: number
 }
 
 const NumberField: React.FC<NumberFieldProps> = ({
@@ -272,16 +294,21 @@ const NumberField: React.FC<NumberFieldProps> = ({
   min,
   max,
   step,
-  defaultValue,
+  value,
 }) => {
   const ref = useRef<HTMLInputElement>(null)
+
+  // Sync ref with value prop
+  if (ref.current && value !== undefined) {
+    ref.current.value = value.toString()
+  }
 
   return (
     <div>
       <label className="mb-1 block text-xs font-medium text-gray-500 dark:text-gray-400">
         {name}
       </label>
-      <div className="flex items-center rounded-md border border-gray-300 dark:border-gray-600">
+      <div className="focus-within:border-primary focus-within:ring-primary flex items-center rounded-md border border-gray-300 focus-within:ring-1 dark:border-gray-600">
         <button
           onClick={() => {
             if (!ref.current) return
@@ -298,15 +325,19 @@ const NumberField: React.FC<NumberFieldProps> = ({
           min={min}
           max={max}
           step={step}
-          defaultValue={defaultValue}
+          value={value ?? ''}
           placeholder="default"
-          className="w-full border-0 bg-transparent py-1.5 text-center text-sm text-gray-800 [appearance:textfield] focus:outline-none dark:text-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-          onBlur={(e) => {
-            onChange(Number(e.target.value))
+          className="w-full border-0 bg-transparent py-1.5 text-center text-sm text-gray-800 [appearance:textfield] focus:placeholder-transparent focus:outline-none focus:ring-0 dark:text-white [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          onChange={(e) => {
+            onChange(e.target.value ? Number(e.target.value) : undefined)
           }}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
-              onChange(Number(e.currentTarget.value))
+              onChange(
+                e.currentTarget.value
+                  ? Number(e.currentTarget.value)
+                  : undefined,
+              )
             }
           }}
         />

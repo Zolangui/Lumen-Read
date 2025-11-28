@@ -268,6 +268,93 @@ export class BookTab extends BaseTab {
     }
   }
 
+  /**
+   * Calculate and cache page count using multi-tier strategy:
+   * Tier 0: Restore locations mapping from cache (for CFI→page mapping)
+   * Tier 1: Use embedded print pages from pageList if available
+   * Tier 2: Generate locations asynchronously (non-blocking)
+   * Tier 3: Provide immediate estimate while Tier 2 generates
+   */
+  private calculatePageCount() {
+    if (!this.epub) return
+
+    // Tier 0: Restore locations from cache (CRITICAL for CFI→page mapping)
+    if (this.book.locations) {
+      this.epub.locations.load(this.book.locations)
+      console.log('Restored locations mapping from cache')
+    }
+
+    // Tier 1: Check for embedded print pages (instant, most accurate)
+    this.epub.loaded.pageList
+      .then((pageListItems) => {
+        // Calculate total pages from the pageList items if available
+        if (pageListItems && pageListItems.length > 0) {
+          const pageNumbers = pageListItems.map((item) =>
+            parseInt(item.page, 10),
+          )
+          const firstPage = Math.min(...pageNumbers)
+          const lastPage = Math.max(...pageNumbers)
+          const totalPages = lastPage - firstPage + 1
+
+          this.updateBook({
+            pageCount: totalPages,
+            pageCountEstimated: false,
+          })
+          console.log(`Using embedded page list: ${totalPages} pages`)
+          return // We're done!
+        }
+
+        // Tier 2: No pageList, check if we already generated/cached
+        if (
+          this.book.pageCount &&
+          !this.book.pageCountEstimated &&
+          this.book.locations
+        ) {
+          console.log(`Using cached page count: ${this.book.pageCount}`)
+          return
+        }
+
+        // Tier 3: Provide immediate estimate while generating precise count
+        if (this.totalLength > 0 && !this.book.pageCount) {
+          const estimatedPages = Math.ceil(this.totalLength / 2200)
+          this.updateBook({
+            pageCount: estimatedPages,
+            pageCountEstimated: true,
+          })
+          console.log(`Showing estimated page count: ${estimatedPages} pages`)
+        }
+
+        // Tier 2 (async): Generate precise locations in background
+        this.epub!.locations.generate(2200)
+          .then(() => {
+            const precisePages = this.epub!.locations.length()
+            const locationsString = this.epub!.locations.save() // SAVE THE MAP!
+
+            this.updateBook({
+              pageCount: precisePages,
+              pageCountEstimated: false,
+              locations: locationsString, // Persist to DB for CFI mapping
+            })
+            console.log(`Generated precise page count: ${precisePages} pages`)
+          })
+          .catch((err: Error) => {
+            console.warn('Failed to generate locations:', err)
+            // Keep the estimate
+          })
+      })
+      .catch((err: Error) => {
+        console.warn('Failed to load pageList:', err)
+        // Fallback to estimate if pageList fails
+        if (this.totalLength > 0 && !this.book.pageCount) {
+          const estimatedPages = Math.ceil(this.totalLength / 2200)
+          this.updateBook({
+            pageCount: estimatedPages,
+            pageCountEstimated: true,
+          })
+        }
+      })
+  }
+
   toggleResult(id: string) {
     if (this.searchTimer) {
       clearTimeout(this.searchTimer)
@@ -401,6 +488,9 @@ export class BookTab extends BaseTab {
           })
         })
         this.sections = ref(sections)
+
+        // Calculate page count after sections are loaded
+        this.calculatePageCount()
       })
     })
     this.rendition = ref(

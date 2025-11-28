@@ -25,7 +25,7 @@ export default {
 
   'image.title': 'Image',
 
-  'timeline.title': 'Timeline',
+  'timeline.title': 'Reading Stats',
 
   'typography.title': 'Typography',
   'typography.scope.book': 'Book',
@@ -39,6 +39,7 @@ export default {
   'typography.line_height': 'Line Height',
   'typography.content_width': 'Content Width (%)',
   'typography.zoom': 'Zoom',
+  'typography.reset_to_global': 'Reset to Global',
 
   'theme.title': 'Theme',
   'audio.title': 'Ambience',

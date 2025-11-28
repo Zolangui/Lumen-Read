@@ -159,7 +159,8 @@ interface EnvActionBarProps extends ComponentProps<'div'> {
 function ViewActionBar({ className, env }: EnvActionBarProps) {
   const [action, setAction] = useAction()
   const t = useTranslation()
-  const [isZenMode, setZenMode] = useZenMode()
+  const [isZenMode] = useZenMode()
+  const { toggleZenMode } = useZenModeHandler()
 
   return (
     <ActionBar className={className}>
@@ -181,7 +182,7 @@ function ViewActionBar({ className, env }: EnvActionBarProps) {
         title={t('zen.title')}
         Icon={MdSelfImprovement}
         active={isZenMode}
-        onClick={() => setZenMode(!isZenMode)}
+        onClick={toggleZenMode}
       />
     </ActionBar>
   )

@@ -22,9 +22,9 @@ export const ThemeView: React.FC<PaneViewProps> = () => {
   // Background colors mapping (light mode)
   const backgroundColors = [
     { value: -1, bg: 'bg-white', label: 'White' },
-    { value: 1, bg: 'bg-gray-100 dark:bg-gray-800', label: 'Light Gray' },
-    { value: 3, bg: 'bg-gray-200 dark:bg-gray-700', label: 'Medium Gray' },
-    { value: 5, bg: 'bg-gray-800 dark:bg-gray-600', label: 'Dark Gray' },
+    { value: 1, bg: 'bg-gray-100', label: 'Light Gray' },
+    { value: 3, bg: 'bg-gray-200', label: 'Medium Gray' },
+    { value: 5, bg: 'bg-gray-800', label: 'Dark Gray' },
   ]
 
   return (
@@ -95,7 +95,7 @@ export const ThemeView: React.FC<PaneViewProps> = () => {
                   bg.bg,
                   scheme === 'light' && backgroundLevel === bg.value
                     ? 'border-primary ring-primary/20 border-2 ring-2'
-                    : 'border-gray-300 dark:border-gray-600',
+                    : 'border-gray-300 dark:border-white/10',
                 )}
               ></button>
             ))}

@@ -116,31 +116,32 @@ const Block: React.FC<BlockProps> = ({ section }) => {
 
             if (!blob) return null
             return (
-              <img
-                className="w-full cursor-pointer rounded-md border border-gray-200 object-cover shadow-md transition-shadow hover:shadow-lg dark:border-gray-700"
-                key={i}
-                src={blob}
-                alt={asset.href}
-                onClick={() => {
-                  const bookSections = reader.focusedBookTab?.sections
-                  if (!bookSections) return
+              <div key={i} className="mb-4 flex justify-center">
+                <img
+                  className="h-auto max-w-full cursor-pointer rounded-md border border-gray-200 object-contain shadow-md transition-shadow hover:shadow-lg dark:border-gray-700"
+                  src={blob}
+                  alt={asset.href}
+                  onClick={() => {
+                    const bookSections = reader.focusedBookTab?.sections
+                    if (!bookSections) return
 
-                  // Cast to ISection[] because displayFromSelector needs the full object with methods, not just the snapshot
-                  const sectionsArray = Array.from(
-                    bookSections as any,
-                  ) as ISection[]
-                  const realSection = sectionsArray.find(
-                    (s) => s.href === section.href,
-                  )
-                  if (realSection) {
-                    const filename = src.split('/').pop()
-                    reader.focusedBookTab?.displayFromSelector(
-                      `img[src*="${filename}"]`,
-                      realSection,
+                    // Cast to ISection[] because displayFromSelector needs the full object with methods, not just the snapshot
+                    const sectionsArray = Array.from(
+                      bookSections as any,
+                    ) as ISection[]
+                    const realSection = sectionsArray.find(
+                      (s) => s.href === section.href,
                     )
-                  }
-                }}
-              />
+                    if (realSection) {
+                      const filename = src.split('/').pop()
+                      reader.focusedBookTab?.displayFromSelector(
+                        `img[src*="${filename}"]`,
+                        realSection,
+                      )
+                    }
+                  }}
+                />
+              </div>
             )
           })}
         </div>

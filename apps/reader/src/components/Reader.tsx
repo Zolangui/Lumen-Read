@@ -321,12 +321,28 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
               htmlEl.style.setProperty('color', themeColor, 'important')
             }
           }
+
+          const backgroundColor = computedStyle.backgroundColor
+          const bgRgb = backgroundColor.match(/\d+/g)
+          if (bgRgb && bgRgb.length >= 3) {
+            const [r, g, b] = bgRgb.map(Number)
+            // If background is light (close to white), make it dark gray
+            // This fixes "white boxes" in dark mode while keeping the box visible
+            if (r > 200 && g > 200 && b > 200) {
+              htmlEl.style.setProperty(
+                'background-color',
+                '#374151', // gray-700
+                'important',
+              )
+            }
+          }
         })
       } else {
         // Light mode: clear any forced color styles to restore original book colors
         elements.forEach((el: Element) => {
           const htmlEl = el as HTMLElement
           htmlEl.style.removeProperty('color')
+          htmlEl.style.removeProperty('background-color')
         })
       }
     }

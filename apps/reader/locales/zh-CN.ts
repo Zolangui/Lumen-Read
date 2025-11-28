@@ -25,7 +25,7 @@ export default {
 
   'image.title': '图片',
 
-  'timeline.title': '时间线',
+  'timeline.title': '阅读统计',
 
   'typography.title': '排版',
   'typography.scope.book': '书籍',

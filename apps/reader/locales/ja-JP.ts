@@ -25,7 +25,7 @@ export default {
 
   'image.title': '画像',
 
-  'timeline.title': 'タイムライン',
+  'timeline.title': '読書統計',
 
   'typography.title': 'タイポグラフィ',
   'typography.scope.book': '本',

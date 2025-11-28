@@ -13,7 +13,8 @@ export const TimelineView: React.FC<PaneViewProps> = () => {
 
   // Calculate current book progress
   const currentBook = focusedBookTab?.book
-  const totalPages = currentBook?.metadata?.['page-count'] || 400 // Fallback
+  const totalPages = currentBook?.pageCount || 400 // Fallback to 400 if not calculated yet
+  const isEstimated = currentBook?.pageCountEstimated ?? false
   const pagesRead = focusedBookTab?.book.percentage
     ? Math.round((focusedBookTab.book.percentage as number) * totalPages)
     : 0
@@ -169,6 +170,7 @@ export const TimelineView: React.FC<PaneViewProps> = () => {
                 </p>
                 <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
                   {pagesRead} / {totalPages}
+                  {isEstimated ? ' ~' : ''}
                 </p>
               </div>
               <div className="h-2 rounded-full bg-gray-200 dark:bg-gray-700">
