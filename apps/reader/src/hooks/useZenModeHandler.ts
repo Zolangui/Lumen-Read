@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useCallback } from 'react'
 
 import { useZenMode } from '../state'
 
@@ -7,7 +7,7 @@ declare const chrome: any
 export function useZenModeHandler() {
   const [isZenMode, setZenMode] = useZenMode()
 
-  const toggleZenMode = async () => {
+  const toggleZenMode = useCallback(async () => {
     const newState = !isZenMode
 
     // Chrome Extension environment
@@ -48,7 +48,7 @@ export function useZenModeHandler() {
     }
 
     setZenMode(newState)
-  }
+  }, [isZenMode, setZenMode])
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -85,7 +85,7 @@ export function useZenModeHandler() {
       document.removeEventListener('fullscreenchange', handleFullscreenChange)
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isZenMode, setZenMode])
+  }, [isZenMode, setZenMode, toggleZenMode])
 
   return { toggleZenMode }
 }

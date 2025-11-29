@@ -14,6 +14,10 @@ interface LibraryViewProps {
   onAddBook: () => void
   onBookClick: (book: BookRecord) => void
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void
+  onToggleFavorite: (book: BookRecord) => void
+  onDownload: (book: BookRecord) => void
+  onRemove: (book: BookRecord) => void
+  onViewDetails: (book: BookRecord) => void
 }
 
 export const LibraryView: React.FC<LibraryViewProps> = ({
@@ -22,6 +26,10 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   onAddBook,
   onBookClick,
   onDrop,
+  onToggleFavorite,
+  onDownload,
+  onRemove,
+  onViewDetails,
 }) => {
   const [{ viewMode, filter }, setLibraryState] = useLibraryState()
   const [searchQuery, setSearchQuery] = useState('')
@@ -29,8 +37,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   const setViewMode = (mode: 'grid' | 'list') =>
     setLibraryState((prev) => ({ ...prev, viewMode: mode }))
 
-  const setFilter = (f: 'All' | 'Unread' | 'In Progress' | 'Finished') =>
-    setLibraryState((prev) => ({ ...prev, filter: f }))
+  const setFilter = (
+    f: 'All' | 'Favorites' | 'Unread' | 'In Progress' | 'Finished',
+  ) => setLibraryState((prev) => ({ ...prev, filter: f }))
 
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
@@ -45,6 +54,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
       if (!matchesSearch) return false
 
       const percentage = book.percentage || 0
+      if (filter === 'Favorites') return book.favorite
       if (filter === 'Unread') return percentage === 0
       if (filter === 'In Progress') return percentage > 0 && percentage < 1
       if (filter === 'Finished') return percentage === 1
@@ -78,20 +88,22 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
             />
           </label>
           <div className="flex flex-wrap gap-2">
-            {['All', 'Unread', 'In Progress', 'Finished'].map((f) => (
-              <button
-                key={f}
-                onClick={() => setFilter(f as any)}
-                className={clsx(
-                  'flex h-9 shrink-0 items-center justify-center gap-x-2 whitespace-nowrap rounded-full px-4 transition-colors',
-                  filter === f
-                    ? 'bg-primary/20 dark:bg-primary/30 text-primary'
-                    : 'bg-surface-light dark:bg-surface-dark border-border-light dark:border-border-dark border hover:bg-black/5 dark:hover:bg-white/5',
-                )}
-              >
-                <p className="text-sm font-medium leading-normal">{f}</p>
-              </button>
-            ))}
+            {['All', 'Favorites', 'Unread', 'In Progress', 'Finished'].map(
+              (f) => (
+                <button
+                  key={f}
+                  onClick={() => setFilter(f as any)}
+                  className={clsx(
+                    'flex h-9 shrink-0 items-center justify-center gap-x-2 whitespace-nowrap rounded-full px-4 transition-colors',
+                    filter === f
+                      ? 'bg-primary/20 dark:bg-primary/30 text-primary'
+                      : 'bg-surface-light dark:bg-surface-dark border-border-light dark:border-border-dark border hover:bg-black/5 dark:hover:bg-white/5',
+                  )}
+                >
+                  <p className="text-sm font-medium leading-normal">{f}</p>
+                </button>
+              ),
+            )}
             <button className="bg-surface-light dark:bg-surface-dark border-border-light dark:border-border-dark flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full border pl-4 pr-3 transition-colors hover:bg-black/5 dark:hover:bg-white/5">
               <p className="text-sm font-medium leading-normal">Sort By</p>
               <span className="material-symbols-outlined text-lg">
@@ -115,6 +127,10 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               cover={covers.find((c) => c.id === book.id)?.cover}
               viewMode={viewMode}
               onClick={() => onBookClick(book)}
+              onToggleFavorite={() => onToggleFavorite(book)}
+              onDownload={() => onDownload(book)}
+              onRemove={() => onRemove(book)}
+              onViewDetails={() => onViewDetails(book)}
             />
           ))}
         </div>

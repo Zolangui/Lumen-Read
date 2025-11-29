@@ -65,7 +65,43 @@ export async function addFile(id: string, file: File, epub?: Book) {
     epub = await fileToEpub(file)
   }
 
-  const url = await epub.coverUrl()
+  let url = await epub.coverUrl()
+
+  // Fallback: Try to find cover manually if epub.js fails
+  if (!url && (epub.archive as any)?.zip) {
+    console.warn('epub.coverUrl() failed, attempting manual fallback...')
+    const zip = (epub.archive as any).zip
+    const files = Object.keys(zip.files)
+    // Common cover filenames
+    const coverCandidates = [
+      'cover.jpg',
+      'cover.jpeg',
+      'cover.png',
+      'OEBPS/cover.jpg',
+      'OPS/cover.jpg',
+    ]
+
+    // 1. Try exact candidates
+    let match = coverCandidates.find((c) => files.includes(c))
+
+    // 2. Try fuzzy match for "cover" + image extension
+    if (!match) {
+      match = files.find(
+        (f) =>
+          f.toLowerCase().includes('cover') && /\.(jpg|jpeg|png)$/i.test(f),
+      )
+    }
+
+    if (match) {
+      console.log(`Found cover via fallback: ${match}`)
+      const file = zip.file(match)
+      if (file) {
+        const blob = await file.async('blob')
+        url = URL.createObjectURL(blob)
+      }
+    }
+  }
+
   const cover = url && (await toDataUrl(url))
   db?.covers.add({ id, cover })
 }

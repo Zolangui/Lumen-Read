@@ -1,12 +1,19 @@
 import React from 'react'
+import { MdStar } from 'react-icons/md'
 
 import { BookRecord } from '../db'
+
+import { BookMenu } from './BookMenu'
 
 interface BookCardProps {
   book: BookRecord
   cover?: string | null
   viewMode: 'grid' | 'list'
   onClick: () => void
+  onToggleFavorite: () => void
+  onDownload: () => void
+  onRemove: () => void
+  onViewDetails: () => void
 }
 
 const placeholder = `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1 1"><rect fill="gray" fill-opacity="0.1" width="1" height="1"/></svg>`
@@ -16,6 +23,10 @@ export const BookCard: React.FC<BookCardProps> = ({
   cover,
   viewMode,
   onClick,
+  onToggleFavorite,
+  onDownload,
+  onRemove,
+  onViewDetails,
 }) => {
   const title = book.metadata?.title || book.name
   const author = book.metadata?.creator || 'Unknown Author'
@@ -29,9 +40,15 @@ export const BookCard: React.FC<BookCardProps> = ({
         className="bg-surface-light dark:bg-surface-dark hover:border-border-light dark:hover:border-border-dark group grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-4 rounded-lg border border-transparent p-4 transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5 sm:grid-cols-[auto_1fr_120px_auto]"
       >
         <div
-          className="aspect-[2/3] h-[72px] w-12 rounded bg-cover bg-center bg-no-repeat shadow-md"
+          className="relative aspect-[2/3] h-[72px] w-12 rounded bg-cover bg-center bg-no-repeat shadow-md"
           style={{ backgroundImage: `url("${cover || placeholder}")` }}
-        ></div>
+        >
+          {book.favorite && (
+            <div className="size-5 absolute -top-1 -left-1 flex items-center justify-center rounded-md bg-black/60 p-0.5 text-yellow-400 backdrop-blur-sm">
+              <MdStar className="text-xs" />
+            </div>
+          )}
+        </div>
         <div className="flex flex-col gap-1">
           <p className="text-text-light dark:text-text-dark truncate text-base font-medium leading-normal">
             {title}
@@ -56,9 +73,13 @@ export const BookCard: React.FC<BookCardProps> = ({
             ></div>
           </div>
         </div>
-        <button className="size-8 text-subtle-light dark:text-subtle-dark flex items-center justify-center rounded-full transition-colors hover:bg-black/5 dark:hover:bg-white/10">
-          <span className="material-symbols-outlined text-lg">more_horiz</span>
-        </button>
+        <BookMenu
+          isFavorite={book.favorite}
+          onToggleFavorite={onToggleFavorite}
+          onDownload={onDownload}
+          onRemove={onRemove}
+          onViewDetails={onViewDetails}
+        />
       </div>
     )
   }
@@ -73,13 +94,13 @@ export const BookCard: React.FC<BookCardProps> = ({
           className="aspect-[2/3] w-full rounded-lg bg-cover bg-center bg-no-repeat shadow-md transition-transform group-hover:scale-105"
           style={{ backgroundImage: `url("${cover || placeholder}")` }}
         ></div>
-        <div className="absolute top-2 right-2 opacity-0 transition-opacity group-hover:opacity-100">
-          <button className="size-8 flex items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70">
-            <span className="material-symbols-outlined text-lg">
-              more_horiz
-            </span>
-          </button>
-        </div>
+
+        {book.favorite && (
+          <div className="size-8 absolute top-2 left-2 z-10 flex items-center justify-center rounded-md bg-black/60 text-yellow-400 backdrop-blur-md transition-colors hover:bg-black/80">
+            <MdStar className="text-2xl" />
+          </div>
+        )}
+
         <div className="absolute bottom-0 left-0 right-0 mx-2 mb-2 h-1 overflow-hidden rounded-full bg-white/80 shadow-sm">
           <div
             className="bg-primary h-full rounded-full"
@@ -87,6 +108,18 @@ export const BookCard: React.FC<BookCardProps> = ({
           ></div>
         </div>
       </div>
+
+      <div className="absolute top-2 right-2 z-20 opacity-0 transition-opacity group-hover:opacity-100">
+        <BookMenu
+          isFavorite={book.favorite}
+          onToggleFavorite={onToggleFavorite}
+          onDownload={onDownload}
+          onRemove={onRemove}
+          onViewDetails={onViewDetails}
+          className="size-8 flex items-center justify-center rounded-md bg-black/60 text-white backdrop-blur-md transition-colors hover:bg-black/80"
+        />
+      </div>
+
       <div>
         <p className="text-text-light dark:text-text-dark truncate text-base font-medium leading-normal">
           {title}

@@ -71,7 +71,7 @@ export function useSettings() {
 
 export interface LibraryState {
   viewMode: 'grid' | 'list'
-  filter: 'All' | 'Unread' | 'In Progress' | 'Finished'
+  filter: 'All' | 'Favorites' | 'Unread' | 'In Progress' | 'Finished'
 }
 
 export const libraryState = atom<LibraryState>({

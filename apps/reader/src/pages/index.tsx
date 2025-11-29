@@ -1,5 +1,6 @@
 // @ts-ignore
 import { useLiveQuery } from 'dexie-react-hooks'
+import { saveAs } from 'file-saver'
 // @ts-ignore
 import Head from 'next/head'
 // @ts-ignore
@@ -145,6 +146,42 @@ const Library: React.FC = () => {
     })
   }, [readyToSync, remoteFiles])
 
+  const handleToggleFavorite = async (book: BookRecord) => {
+    await db?.books.update(book.id, { favorite: !book.favorite })
+  }
+
+  const handleDownload = async (book: BookRecord) => {
+    const fileRecord = await db?.files.get(book.id)
+    if (fileRecord) {
+      saveAs(fileRecord.file, `${book.name}.epub`)
+    }
+  }
+
+  const handleRemove = async (book: BookRecord) => {
+    console.log('Attempting to remove book:', book.id, book.name)
+    // Removed confirm dialog as it was causing issues.
+    // TODO: Implement a better confirmation UI (modal or double-click)
+    try {
+      await db?.books.delete(book.id)
+      await db?.files.delete(book.id)
+      await db?.covers.delete(book.id)
+      console.log('Book removed successfully')
+    } catch (error) {
+      console.error('Failed to remove book:', error)
+    }
+  }
+
+  const handleViewDetails = (book: BookRecord) => {
+    // Placeholder for details view
+    alert(
+      `Details for: ${book.name}\nAuthor: ${book.metadata?.creator}\nSize: ${(
+        book.size /
+        1024 /
+        1024
+      ).toFixed(2)} MB`,
+    )
+  }
+
   if (groups.length) return null
   if (!books) return null
 
@@ -173,6 +210,10 @@ const Library: React.FC = () => {
 
           handleFiles(e.dataTransfer.files)
         }}
+        onToggleFavorite={handleToggleFavorite}
+        onDownload={handleDownload}
+        onRemove={handleRemove}
+        onViewDetails={handleViewDetails}
       />
     </>
   )

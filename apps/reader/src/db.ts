@@ -35,6 +35,7 @@ export interface BookRecord {
   configuration?: {
     typography?: TypographyConfiguration
   }
+  favorite?: boolean
 }
 
 export class DB extends Dexie {
@@ -46,6 +47,11 @@ export class DB extends Dexie {
 
   constructor(name: string) {
     super(name)
+
+    this.version(7).stores({
+      books:
+        'id, name, size, metadata, createdAt, updatedAt, cfi, percentage, pageCount, pageCountEstimated, locations, definitions, annotations, configuration, favorite',
+    })
 
     this.version(6).stores({
       books:
