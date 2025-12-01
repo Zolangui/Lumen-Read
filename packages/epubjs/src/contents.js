@@ -72,7 +72,16 @@ class Contents {
       // this.content.style.width = w;
     }
 
-    return parseInt(this.window.getComputedStyle(frame)['width'])
+    if (!this.window || !frame) {
+      return 0
+    }
+
+    const computedStyle = this.window.getComputedStyle(frame)
+    if (!computedStyle) {
+      return 0
+    }
+
+    return parseInt(computedStyle['width'])
   }
 
   /**
@@ -93,7 +102,16 @@ class Contents {
       // this.content.style.height = h;
     }
 
-    return parseInt(this.window.getComputedStyle(frame)['height'])
+    if (!this.window || !frame) {
+      return 0
+    }
+
+    const computedStyle = this.window.getComputedStyle(frame)
+    if (!computedStyle) {
+      return 0
+    }
+
+    return parseInt(computedStyle['height'])
   }
 
   /**
@@ -112,7 +130,16 @@ class Contents {
       content.style.width = w
     }
 
-    return parseInt(this.window.getComputedStyle(content)['width'])
+    if (!this.window || !content) {
+      return 0
+    }
+
+    const computedStyle = this.window.getComputedStyle(content)
+    if (!computedStyle) {
+      return 0
+    }
+
+    return parseInt(computedStyle['width'])
   }
 
   /**
@@ -131,7 +158,16 @@ class Contents {
       content.style.height = h
     }
 
-    return parseInt(this.window.getComputedStyle(content)['height'])
+    if (!this.window || !content) {
+      return 0
+    }
+
+    const computedStyle = this.window.getComputedStyle(content)
+    if (!computedStyle) {
+      return 0
+    }
+
+    return parseInt(computedStyle['height'])
   }
 
   /**
@@ -206,7 +242,16 @@ class Contents {
       this.documentElement.style.overflow = overflow
     }
 
-    return this.window.getComputedStyle(this.documentElement)['overflow']
+    if (!this.window || !this.documentElement) {
+      return ''
+    }
+
+    const computedStyle = this.window.getComputedStyle(this.documentElement)
+    if (!computedStyle) {
+      return ''
+    }
+
+    return computedStyle['overflow']
   }
 
   /**
@@ -218,7 +263,16 @@ class Contents {
       this.documentElement.style.overflowX = overflow
     }
 
-    return this.window.getComputedStyle(this.documentElement)['overflowX']
+    if (!this.window || !this.documentElement) {
+      return ''
+    }
+
+    const computedStyle = this.window.getComputedStyle(this.documentElement)
+    if (!computedStyle) {
+      return ''
+    }
+
+    return computedStyle['overflowX']
   }
 
   /**
@@ -230,7 +284,16 @@ class Contents {
       this.documentElement.style.overflowY = overflow
     }
 
-    return this.window.getComputedStyle(this.documentElement)['overflowY']
+    if (!this.window || !this.documentElement) {
+      return ''
+    }
+
+    const computedStyle = this.window.getComputedStyle(this.documentElement)
+    if (!computedStyle) {
+      return ''
+    }
+
+    return computedStyle['overflowY']
   }
 
   /**
@@ -248,7 +311,16 @@ class Contents {
       content.style.removeProperty(property)
     }
 
-    return this.window.getComputedStyle(content)[property]
+    if (!this.window || !content) {
+      return ''
+    }
+
+    const computedStyle = this.window.getComputedStyle(content)
+    if (!computedStyle) {
+      return ''
+    }
+
+    return computedStyle[property]
   }
 
   /**
@@ -1234,9 +1306,16 @@ class Contents {
       this.documentElement.style[WRITING_MODE] = mode
     }
 
-    return (
-      this.window.getComputedStyle(this.documentElement)[WRITING_MODE] || ''
-    )
+    if (!this.window || !this.documentElement) {
+      return ''
+    }
+
+    const computedStyle = this.window.getComputedStyle(this.documentElement)
+    if (!computedStyle) {
+      return ''
+    }
+
+    return computedStyle[WRITING_MODE] || ''
   }
 
   /**

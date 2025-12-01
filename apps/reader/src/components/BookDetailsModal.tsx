@@ -50,21 +50,18 @@ export const BookDetailsModal: React.FC<BookDetailsModalProps> = ({
   const sizeMb = (book.size / (1024 * 1024)).toFixed(2)
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 transition-all duration-300">
-      {/* Backdrop with blur and subtle gradient */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-md"
-        onClick={onClose}
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Backdrop - solid for better performance */}
+      <div className="absolute inset-0 bg-black/60" onClick={onClose} />
 
       <div
         ref={modalRef}
-        className="bg-background-light/95 dark:bg-background-dark/95 relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl shadow-2xl backdrop-blur-xl md:flex-row"
+        className="bg-background-light dark:bg-background-dark relative flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-3xl shadow-2xl md:flex-row"
       >
         {/* Close Button (Mobile) */}
         <button
           onClick={onClose}
-          className="text-text-light dark:text-text-dark absolute right-4 top-4 z-20 rounded-full bg-black/10 p-2 backdrop-blur-md transition-colors hover:bg-black/20 md:hidden"
+          className="text-text-light dark:text-text-dark absolute right-4 top-4 z-20 rounded-full bg-black/20 p-2 transition-colors hover:bg-black/30 md:hidden"
         >
           <MdClose size={24} />
         </button>
