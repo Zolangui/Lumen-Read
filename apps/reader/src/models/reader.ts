@@ -586,9 +586,17 @@ export class BookTab extends BaseTab {
           this.sections[i]!.length / this.totalLength
         const displayedPercentage = start.displayed.page / start.displayed.total
 
-        const percentage =
+        let percentage =
           previousSectionsPercentage +
           currentSectionPercentage * displayedPercentage
+
+        // If we are in the last section and at the last page, mark as finished (100%)
+        if (
+          i === this.sections.length - 1 &&
+          start.displayed.page === start.displayed.total
+        ) {
+          percentage = 1
+        }
 
         this.updateBook({ cfi: start.cfi, percentage })
       }
@@ -760,9 +768,11 @@ export class Reader {
     this.groups.forEach(({ bookTabs }) => {
       bookTabs.forEach(({ rendition }) => {
         try {
-          rendition?.resize()
+          if (rendition?.manager) {
+            rendition.resize()
+          }
         } catch (error) {
-          console.error(error)
+          console.error('Error resizing rendition:', error)
         }
       })
     })

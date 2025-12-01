@@ -20,6 +20,7 @@ import {
   useMobile,
   useSync,
   useTypography,
+  useTranslation,
 } from '../hooks'
 import { BookTab, reader, useReaderSnapshot } from '../models'
 import { isTouchScreen } from '../platform'
@@ -258,7 +259,7 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
     const observer = new ResizeObserver(() => {
       clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
-        if (rendition) {
+        if (rendition?.manager) {
           try {
             const width = el.clientWidth
             const height = el.clientHeight
@@ -267,7 +268,7 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
             console.log('ContentWidthPercent:', contentWidthPercent)
             if (width > 0 && height > 0) {
               rendition.resize(width, height)
-              // Apply centering after resize
+              //Apply centering after resize
               setTimeout(() => centerContent(), 100)
             }
           } catch (error) {
@@ -395,7 +396,7 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
 
   // Force resize after initial render
   useEffect(() => {
-    if (rendition && rendered) {
+    if (rendition?.manager && rendered) {
       try {
         // Call resize() without arguments to let epub.js recalculate
         rendition.resize()
@@ -674,6 +675,7 @@ const ReaderPaneHeader: React.FC<ReaderPaneHeaderProps> = ({
   onClose,
   onMenu,
 }) => {
+  const t = useTranslation()
   // Truncate title if too long
   const truncatedTitle =
     title && title.length > 40 ? `${title.substring(0, 40)}...` : title
@@ -693,7 +695,7 @@ const ReaderPaneHeader: React.FC<ReaderPaneHeaderProps> = ({
         <button
           onClick={() => reader.clear()}
           className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-          title="Back to Library"
+          title={t('reader.back_to_library')}
         >
           <span className="material-symbols-outlined text-xl">home</span>
         </button>

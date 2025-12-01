@@ -25,6 +25,7 @@ export interface PackagingMetadataObject {
   flow: string
   viewport: string
   spread: string
+  subject?: string | string[]
 }
 
 export interface PackagingSpineItem {

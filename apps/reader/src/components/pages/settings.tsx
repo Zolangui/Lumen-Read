@@ -45,7 +45,7 @@ export const Settings: React.FC = () => {
               {t('language')}
             </h2>
             <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
-              Choose the application interface language.
+              {t('language_desc')}
             </p>
             <div className="relative w-full max-w-sm">
               <select
@@ -76,7 +76,7 @@ export const Settings: React.FC = () => {
               {t('color_scheme')}
             </h2>
             <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
-              Select your preferred light or dark theme.
+              {t('color_scheme_desc')}
             </p>
             <div className="relative w-full max-w-sm">
               <select
@@ -110,8 +110,7 @@ export const Settings: React.FC = () => {
               {t('cache')}
             </h2>
             <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
-              Clear locally stored data to free up space. This won&apos;t delete
-              your documents.
+              {t('cache_desc')}
             </p>
             <button
               className="bg-error-container text-on-error-container rounded-full px-6 py-2 font-medium shadow-sm transition-all hover:shadow-md"
@@ -149,7 +148,7 @@ const Synchronization: React.FC = () => {
         {t('title')}
       </h2>
       <p className="mt-1 mb-3 text-sm text-gray-600 dark:text-gray-400">
-        Connect to a cloud service to sync your library.
+        {t('synchronization_desc')}
       </p>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:gap-4">
         <div className="flex-grow">
@@ -157,7 +156,7 @@ const Synchronization: React.FC = () => {
             className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-300"
             htmlFor="sync-service"
           >
-            Service
+            {t('service')}
           </label>
           <div className="relative w-full">
             <select

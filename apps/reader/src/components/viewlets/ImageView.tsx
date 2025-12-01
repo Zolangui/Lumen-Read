@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { useMemo, useState } from 'react'
 
-import { useAction } from '@flow/reader/hooks'
+import { useAction, useTranslation } from '@flow/reader/hooks'
 import {
   ISection,
   ISectionSnapshot,
@@ -14,6 +14,7 @@ import { PaneViewProps } from '../base'
 export const ImageView: React.FC<PaneViewProps> = () => {
   const { focusedBookTab } = useReaderSnapshot()
   const [, setAction] = useAction()
+  const t = useTranslation()
 
   const sections = useMemo(() => {
     if (!focusedBookTab?.sections) return []
@@ -27,26 +28,28 @@ export const ImageView: React.FC<PaneViewProps> = () => {
   if ((sections?.length ?? 0) > 500) return null
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-gray-900">
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-        <div className="flex items-center">
-          <button
-            onClick={() => setAction(undefined)}
-            className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-          >
-            <span className="material-symbols-outlined text-xl">image</span>
-          </button>
-          <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
-            Images
-          </h2>
+    <div className="h-full w-full overflow-hidden bg-white dark:bg-gray-900">
+      <div className="flex h-full min-w-[220px] flex-col">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+          <div className="flex items-center">
+            <button
+              onClick={() => setAction(undefined)}
+              className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <span className="material-symbols-outlined text-xl">image</span>
+            </button>
+            <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
+              {t('image.header')}
+            </h2>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="space-y-2">
-          {sections?.map((s) => (
-            <Block key={s.href} section={s} />
-          ))}
+        <div className="flex-1 overflow-y-auto p-4">
+          <div className="space-y-2">
+            {sections?.map((s) => (
+              <Block key={s.href} section={s} />
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -60,6 +63,7 @@ interface BlockProps {
 const Block: React.FC<BlockProps> = ({ section }) => {
   const { focusedBookTab } = useReaderSnapshot()
   const [expanded, setExpanded] = useState(false)
+  const t = useTranslation()
 
   const resources = focusedBookTab?.epub?.resources
   if (!resources) return null
@@ -93,7 +97,7 @@ const Block: React.FC<BlockProps> = ({ section }) => {
             expanded ? 'text-primary' : 'text-gray-900 dark:text-white',
           )}
         >
-          {section.navitem?.label || 'Seção sem título'}
+          {section.navitem?.label || t('image.untitled_section')}
         </span>
         <span
           className={clsx(

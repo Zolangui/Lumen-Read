@@ -19,8 +19,6 @@ export default {
   'search.files.result': '{n} results in {m} sections',
 
   'annotation.title': 'Annotation',
-  'annotation.definitions': 'Definitions',
-  'annotation.annotations': 'Annotations',
   'annotation.copy_as_markdown': 'Copy as Markdown',
 
   'image.title': 'Image',
@@ -40,6 +38,7 @@ export default {
   'typography.content_width': 'Content Width (%)',
   'typography.zoom': 'Zoom',
   'typography.reset_to_global': 'Reset to Global',
+  'typography.default': 'Default',
 
   'theme.title': 'Theme',
   'audio.title': 'Ambience',
@@ -49,14 +48,23 @@ export default {
 
   'settings.title': 'Settings',
   'settings.language': 'Language',
+  'settings.language_desc': 'Choose the application interface language.',
   'settings.color_scheme': 'Color Scheme',
+  'settings.color_scheme_desc': 'Select your preferred light or dark theme.',
   'settings.color_scheme.system': 'System',
   'settings.color_scheme.light': 'Light',
   'settings.color_scheme.dark': 'Dark',
   'settings.synchronization.title': 'Synchronization',
+  'settings.synchronization_desc':
+    'Connect to a cloud service to sync your library.',
   'settings.synchronization.authorize': 'Authorize',
   'settings.synchronization.unauthorize': 'Unauthorize',
+  'settings.synchronization.service': 'Service',
   'settings.cache': 'Cache',
+
+  'reader.back_to_library': 'Back to Library',
+  'settings.cache_desc':
+    "Clear locally stored data to free up space. This won't delete your documents.",
   'settings.cache.clear': 'Clear',
 
   'menu.copy': 'Copy',
@@ -67,6 +75,11 @@ export default {
   'menu.create': 'Create',
   'menu.delete': 'Delete',
   'menu.update': 'Update',
+  'menu.add_to_favorites': 'Add to Favorites',
+  'menu.remove_favorite': 'Remove Favorite',
+  'menu.view_details': 'View Details',
+  'menu.download': 'Download',
+  'menu.remove_from_library': 'Remove from Library',
 
   'action.expand_all': 'Expand All',
   'action.collapse_all': 'Collapse All',
@@ -74,6 +87,104 @@ export default {
   'action.clear': 'Clear',
   'action.step_down': 'Step Down',
   'action.step_up': 'Step Up',
+
+  // Book Details
+  'details.file_info': 'File Info',
+  'details.size': 'Size',
+  'details.format': 'Format',
+  'details.language': 'Language',
+  'details.details': 'Details',
+  'details.publisher': 'Publisher',
+  'details.pub_date': 'Publication Date',
+  'details.genre': 'Genre',
+  'details.isbn_id': 'ISBN/ID',
+  'details.progress_info': 'Progress & Info',
+  'details.complete': 'Complete',
+  'details.pages': 'Pages',
+  'details.last_read': 'Last Read',
+  'details.never': 'Never',
+  'details.synopsis': 'Synopsis',
+  'details.close': 'Close',
+  'details.read_book': 'Read Book',
+  'details.unknown_author': 'Unknown Author',
+
+  // Library Side View
+  'books.title': 'Books',
+  'books.subtitle': 'Open a book in a new tab',
+  'books.search_placeholder': 'Search books...',
+  'books.unknown_author': 'Unknown Author',
+  'books.progress': 'Progress',
+
+  // Sidebar
+  'sidebar.toc': 'Table of Contents',
+  'sidebar.books': 'Books',
+  'sidebar.search': 'Search',
+  'sidebar.annotation': 'Annotations',
+  'sidebar.image': 'Images',
+  'sidebar.timeline': 'Timeline',
+  'sidebar.typography': 'Typography',
+  'sidebar.theme': 'Theme',
+  'sidebar.settings': 'Settings',
+
+  // Library
+  'library.title': 'My Library',
+  'library.add_book': 'Add New Book',
+  'library.search_placeholder': 'Search by title or author...',
+  'library.sort_by': 'Sort By:',
+  'library.sort.recent': 'Recent',
+  'library.sort.title': 'Title',
+  'library.sort.author': 'Author',
+  'library.sort.custom': 'Custom',
+  'library.filter.all': 'All',
+  'library.filter.favorites': 'Favorites',
+  'library.filter.unread': 'Unread',
+  'library.filter.in_progress': 'In Progress',
+  'library.filter.finished': 'Finished',
+
+  // Annotation View
+  'annotation.definitions': 'Definitions',
+  'annotation.annotations': 'Annotations',
+  'annotation.notes': 'Notes',
+  'annotation.definition_label': 'Definition',
+  'annotation.remove_definition': 'Remove definition',
+  'annotation.note_label': 'Note',
+  'annotation.highlight_label': 'Highlight',
+  'annotation.remove_annotation': 'Remove annotation',
+  'annotation.empty_definitions':
+    'Select text and click the book icon to add definitions.',
+  'annotation.empty_annotations': 'Highlight text to add annotations or notes.',
+
+  // TOC View
+  'toc.header': 'Table of Contents',
+
+  // Image View
+  'image.header': 'Images',
+  'image.untitled_section': 'Untitled Section',
+
+  // Search View
+  'search.header': 'Search',
+  'search.untitled': 'Untitled Section',
+  'search.expand_results': 'Expand results',
+  'search.collapse_results': 'Collapse results',
+
+  // Timeline View
+  'timeline.header': 'Reading Stats',
+  'timeline.today_time': "Today's Time",
+  'timeline.streak': 'Streak',
+  'timeline.day': 'Day',
+  'timeline.days': 'Days',
+  'timeline.current_book_progress': 'Current Book Progress',
+  'timeline.pages_read': 'Pages Read',
+  'timeline.avg_speed': 'Avg. Speed',
+  'timeline.est_finish': 'Est. Finish',
+  'timeline.reading_calendar': 'Reading Calendar',
+  'timeline.less': 'Less',
+  'timeline.more': 'More',
+
+  // Theme View
+  'theme.header': 'Theme',
+  'theme.source_color_label': 'Source Color',
+  'theme.background_color_label': 'Background Color',
 
   untitled: 'Untitled',
 } as const

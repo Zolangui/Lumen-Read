@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 import { memo, useMemo, useState } from 'react'
 
-import { useAction, useList } from '@flow/reader/hooks'
+import { useAction, useList, useTranslation } from '@flow/reader/hooks'
 import {
   flatTree,
   INavItemSnapshot,
@@ -15,8 +15,10 @@ const EMPTY_OBJECT = {}
 
 export const TocView: React.FC<PaneViewProps> = () => {
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-gray-900">
-      <TocPane />
+    <div className="h-full w-full overflow-hidden bg-white dark:bg-gray-900">
+      <div className="flex h-full min-w-[220px] flex-col">
+        <TocPane />
+      </div>
     </div>
   )
 }
@@ -24,6 +26,7 @@ export const TocView: React.FC<PaneViewProps> = () => {
 const TocPane: React.FC = () => {
   const { focusedBookTab } = useReaderSnapshot()
   const [, setAction] = useAction()
+  const t = useTranslation()
   const toc = focusedBookTab?.nav?.toc as INavItemSnapshot[] | undefined
   const expandedState = focusedBookTab?.tocExpandedState ?? EMPTY_OBJECT
   const rows = useMemo(
@@ -41,13 +44,13 @@ const TocPane: React.FC = () => {
   const bookTitle =
     focusedBookTab?.book?.metadata?.title ||
     focusedBookTab?.book?.name ||
-    'Table of Contents'
+    t('toc.header')
 
   return (
     <div className="flex flex-grow flex-col">
       {/* Header */}
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-        <div className="flex items-center">
+        <div className="flex min-w-0 items-center">
           <button
             onClick={() => setAction(undefined)}
             className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
@@ -63,7 +66,7 @@ const TocPane: React.FC = () => {
       {/* Content */}
       <div className="flex-grow overflow-y-auto p-4" ref={outerRef}>
         <h3 className="mb-2 px-2 text-sm font-semibold text-gray-500 dark:text-gray-400">
-          Table of Contents
+          {t('toc.header')}
         </h3>
         {rows && (
           <div ref={innerRef}>
@@ -121,7 +124,7 @@ const TocRow = memo<TocRowProps>(
     return (
       <li
         className={clsx(
-          'rounded transition-colors',
+          'overflow-hidden rounded transition-colors',
           isActive
             ? 'bg-primary/10 dark:bg-primary/20 hover:bg-primary/20 dark:hover:bg-primary/30'
             : 'hover:bg-gray-100 dark:hover:bg-gray-800',

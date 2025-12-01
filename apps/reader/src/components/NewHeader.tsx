@@ -2,7 +2,7 @@ import { Hct, argbFromHex } from '@material/material-color-utilities'
 import clsx from 'clsx'
 import React, { useMemo } from 'react'
 
-import { useSourceColor } from '../hooks'
+import { useSourceColor, useTranslation } from '../hooks'
 
 interface NewHeaderProps {
   viewMode: 'grid' | 'list'
@@ -16,6 +16,7 @@ export const NewHeader: React.FC<NewHeaderProps> = ({
   onAddBook,
 }) => {
   const { sourceColor } = useSourceColor()
+  const t = useTranslation()
 
   const hueRotation = useMemo(() => {
     try {
@@ -41,7 +42,7 @@ export const NewHeader: React.FC<NewHeaderProps> = ({
             />
           </div>
           <h2 className="text-2xl font-bold leading-tight tracking-tighter">
-            My Library
+            {t('library.title')}
           </h2>
         </div>
       </div>
@@ -50,7 +51,7 @@ export const NewHeader: React.FC<NewHeaderProps> = ({
           onClick={onAddBook}
           className="bg-primary flex h-10 min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg px-4 text-sm font-bold leading-normal tracking-wide text-white transition-opacity hover:opacity-90"
         >
-          <span className="truncate">Add New Book</span>
+          <span className="truncate">{t('library.add_book')}</span>
         </button>
         <div className="bg-background-light dark:bg-surface-dark border-border-light dark:border-border-dark flex items-center rounded-lg border">
           <button

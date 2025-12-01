@@ -29,70 +29,71 @@ export const AnnotationView: React.FC<PaneViewProps> = () => {
   }, [annotations])
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-gray-900">
-      {/* Header */}
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-        <div className="flex items-center">
-          <button
-            onClick={() => setAction(undefined)}
-            className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-          >
-            <span className="material-symbols-outlined text-xl">
-              format_underlined
-            </span>
-          </button>
-          <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
-            {t('annotations')}
-          </h2>
-        </div>
-      </div>
-
-      <div className="no-scrollbar flex-1 overflow-y-auto p-4">
-        {/* Definitions Section */}
-        <div className="mb-8">
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-              {t('definitions')}
-            </h3>
+    <div className="h-full w-full overflow-hidden bg-white dark:bg-gray-900">
+      <div className="flex h-full min-w-[220px] flex-col">
+        {/* Header */}
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+          <div className="flex items-center">
+            <button
+              onClick={() => setAction(undefined)}
+              className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <span className="material-symbols-outlined text-xl">
+                format_underlined
+              </span>
+            </button>
+            <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
+              {t('annotations')}
+            </h2>
           </div>
-
-          {definitions.length > 0 ? (
-            <div className="space-y-3">
-              {definitions.map((def) => (
-                <DefinitionCard key={def} text={def} />
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-lg border-2 border-dashed border-gray-100 p-4 text-center dark:border-gray-800">
-              <p className="text-xs italic text-gray-400">
-                Selecione um texto e clique no ícone de livro para adicionar
-                definições.
-              </p>
-            </div>
-          )}
         </div>
 
-        {/* Annotations Section */}
-        <div>
-          <div className="mb-3 flex items-center justify-between px-1">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
-              {t('annotations')} & Notas
-            </h3>
+        <div className="no-scrollbar flex-1 overflow-y-auto p-4">
+          {/* Definitions Section */}
+          <div className="mb-8">
+            <div className="mb-3 flex items-center justify-between px-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                {t('definitions')}
+              </h3>
+            </div>
+
+            {definitions.length > 0 ? (
+              <div className="space-y-3">
+                {definitions.map((def) => (
+                  <DefinitionCard key={def} text={def} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border-2 border-dashed border-gray-100 p-4 text-center dark:border-gray-800">
+                <p className="text-xs italic text-gray-400">
+                  {t('empty_definitions')}
+                </p>
+              </div>
+            )}
           </div>
 
-          {sortedAnnotations.length > 0 ? (
-            <div className="space-y-3">
-              {sortedAnnotations.map((a) => (
-                <AnnotationCard key={a.id} annotation={a} />
-              ))}
+          {/* Annotations Section */}
+          <div>
+            <div className="mb-3 flex items-center justify-between px-1">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-gray-400">
+                {t('annotations')} & {t('notes')}
+              </h3>
             </div>
-          ) : (
-            <div className="rounded-lg border-2 border-dashed border-gray-100 p-4 text-center dark:border-gray-800">
-              <p className="text-xs italic text-gray-400">
-                Destaque um texto para adicionar anotações ou notas.
-              </p>
-            </div>
-          )}
+
+            {sortedAnnotations.length > 0 ? (
+              <div className="space-y-3">
+                {sortedAnnotations.map((a) => (
+                  <AnnotationCard key={a.id} annotation={a} />
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-lg border-2 border-dashed border-gray-100 p-4 text-center dark:border-gray-800">
+                <p className="text-xs italic text-gray-400">
+                  {t('empty_annotations')}
+                </p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -100,6 +101,7 @@ export const AnnotationView: React.FC<PaneViewProps> = () => {
 }
 
 const DefinitionCard: React.FC<{ text: string }> = ({ text }) => {
+  const t = useTranslation('annotation')
   return (
     <div className="group relative mb-2 flex cursor-pointer items-start gap-3 rounded-lg border border-gray-100 bg-white p-3 shadow-sm transition-all hover:shadow-md dark:border-gray-800 dark:bg-gray-800/50">
       {/* Icon Left */}
@@ -111,7 +113,7 @@ const DefinitionCard: React.FC<{ text: string }> = ({ text }) => {
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 opacity-80 dark:text-gray-400">
-            Definição
+            {t('definition_label')}
           </span>
           <button
             onClick={(e) => {
@@ -119,7 +121,7 @@ const DefinitionCard: React.FC<{ text: string }> = ({ text }) => {
               reader.focusedBookTab?.undefine(text)
             }}
             className="opacity-0 transition-opacity group-hover:opacity-100"
-            title="Remover definição"
+            title={t('remove_definition')}
           >
             <span className="material-symbols-outlined text-base text-gray-400 hover:text-red-500">
               close
@@ -151,8 +153,9 @@ const DefinitionCard: React.FC<{ text: string }> = ({ text }) => {
 const AnnotationCard: React.FC<{ annotation: Annotation }> = ({
   annotation,
 }) => {
+  const t = useTranslation('annotation')
   const isNote = !!annotation.notes
-  const typeLabel = isNote ? 'Nota' : 'Destaque'
+  const typeLabel = isNote ? t('note_label') : t('highlight_label')
   const iconName = isNote ? 'comment' : 'ink_highlighter'
 
   // Color mapping
@@ -219,7 +222,7 @@ const AnnotationCard: React.FC<{ annotation: Annotation }> = ({
               reader.focusedBookTab?.removeAnnotation(annotation.cfi)
             }}
             className="opacity-0 transition-opacity group-hover:opacity-100"
-            title="Remover anotação"
+            title={t('remove_annotation')}
           >
             <span className="material-symbols-outlined text-base text-gray-400 hover:text-red-500">
               close

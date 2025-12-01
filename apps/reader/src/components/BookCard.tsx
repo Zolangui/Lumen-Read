@@ -2,10 +2,11 @@ import React from 'react'
 import { MdStar } from 'react-icons/md'
 
 import { BookRecord } from '../db'
+import { useTranslation } from '../hooks'
 
 import { BookMenu } from './BookMenu'
 
-interface BookCardProps {
+export interface BookCardProps {
   book: BookRecord
   cover?: string | null
   viewMode: 'grid' | 'list'
@@ -28,8 +29,9 @@ export const BookCard: React.FC<BookCardProps> = ({
   onRemove,
   onViewDetails,
 }) => {
+  const t = useTranslation()
   const title = book.metadata?.title || book.name
-  const author = book.metadata?.creator || 'Unknown Author'
+  const author = book.metadata?.creator || t('books.unknown_author')
   const percentage =
     book.percentage !== undefined ? Math.round(book.percentage * 100) : 0
 
@@ -37,7 +39,7 @@ export const BookCard: React.FC<BookCardProps> = ({
     return (
       <div
         onClick={onClick}
-        className="bg-surface-light dark:bg-surface-dark hover:border-border-light dark:hover:border-border-dark group grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-4 rounded-lg border border-transparent p-4 transition-colors duration-200 hover:bg-black/5 dark:hover:bg-white/5 sm:grid-cols-[auto_1fr_120px_auto]"
+        className="bg-surface-light dark:bg-surface-dark hover:border-border-light dark:hover:border-border-dark group grid cursor-pointer grid-cols-[auto_1fr_auto] items-center gap-4 rounded-lg border border-transparent p-4 transition-colors duration-200 sm:grid-cols-[auto_1fr_120px_auto] [&:not(:has(.book-menu-container:hover))]:hover:bg-black/5 dark:[&:not(:has(.book-menu-container:hover))]:hover:bg-white/5"
       >
         <div
           className="relative aspect-[2/3] h-[72px] w-12 rounded bg-cover bg-center bg-no-repeat shadow-md"
@@ -60,7 +62,7 @@ export const BookCard: React.FC<BookCardProps> = ({
         <div className="hidden flex-col gap-2 sm:flex">
           <div className="flex items-center justify-between">
             <p className="text-subtle-light dark:text-subtle-dark text-xs font-medium">
-              Progress
+              {t('books.progress')}
             </p>
             <p className="text-subtle-light dark:text-subtle-dark text-xs font-medium">
               {percentage}%
@@ -79,6 +81,8 @@ export const BookCard: React.FC<BookCardProps> = ({
           onDownload={onDownload}
           onRemove={onRemove}
           onViewDetails={onViewDetails}
+          className="book-menu-container h-8 w-8 rounded-md text-gray-500 hover:bg-gray-200 dark:text-gray-400 dark:hover:bg-gray-700"
+          activeClassName="bg-gray-300 dark:bg-gray-600"
         />
       </div>
     )

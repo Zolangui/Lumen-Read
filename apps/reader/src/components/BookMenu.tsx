@@ -11,7 +11,7 @@ import {
   MdVisibility,
 } from 'react-icons/md'
 
-import { useMobile } from '../hooks'
+import { useMobile, useTranslation } from '../hooks'
 
 interface BookMenuProps {
   isFavorite?: boolean
@@ -20,6 +20,7 @@ interface BookMenuProps {
   onRemove: () => void
   onViewDetails: () => void
   className?: string
+  activeClassName?: string
 }
 
 export const BookMenu: React.FC<BookMenuProps> = ({
@@ -29,10 +30,12 @@ export const BookMenu: React.FC<BookMenuProps> = ({
   onRemove,
   onViewDetails,
   className,
+  activeClassName = 'bg-black/80',
 }) => {
   const [isOpen, setIsOpen] = useState(false)
   const mobile = useMobile()
   const buttonRef = useRef<HTMLButtonElement>(null)
+  const t = useTranslation()
 
   const toggle = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -48,7 +51,7 @@ export const BookMenu: React.FC<BookMenuProps> = ({
         onClick={toggle}
         className={clsx(
           'flex h-full w-full items-center justify-center rounded-md transition-colors focus:outline-none',
-          isOpen && 'bg-black/80',
+          isOpen && activeClassName,
         )}
       >
         <MdMoreHoriz className="text-2xl drop-shadow-md" />
@@ -69,7 +72,11 @@ export const BookMenu: React.FC<BookMenuProps> = ({
           >
             <MenuItem
               icon={isFavorite ? MdStar : MdStarBorder}
-              label={isFavorite ? 'Remove Favorite' : 'Add to Favorites'}
+              label={
+                isFavorite
+                  ? t('menu.remove_favorite')
+                  : t('menu.add_to_favorites')
+              }
               onClick={() => {
                 onToggleFavorite()
                 close()
@@ -79,7 +86,7 @@ export const BookMenu: React.FC<BookMenuProps> = ({
             />
             <MenuItem
               icon={MdVisibility}
-              label="View Details"
+              label={t('menu.view_details')}
               onClick={() => {
                 onViewDetails()
                 close()
@@ -87,7 +94,7 @@ export const BookMenu: React.FC<BookMenuProps> = ({
             />
             <MenuItem
               icon={MdDownload}
-              label="Download"
+              label={t('menu.download')}
               onClick={() => {
                 onDownload()
                 close()
@@ -96,7 +103,7 @@ export const BookMenu: React.FC<BookMenuProps> = ({
             <div className="border-border-light dark:border-border-dark my-1 border-t" />
             <MenuItem
               icon={MdDelete}
-              label="Remove from Library"
+              label={t('menu.remove_from_library')}
               onClick={() => {
                 onRemove()
                 close()

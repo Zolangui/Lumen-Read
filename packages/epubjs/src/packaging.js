@@ -95,6 +95,9 @@ class Packaging {
     metadata.language = this.getElementText(xml, 'language')
     metadata.rights = this.getElementText(xml, 'rights')
 
+    // Get all subjects
+    metadata.subject = this.getElementsText(xml, 'subject')
+
     metadata.modified_date = this.getPropertyText(xml, 'dcterms:modified')
 
     metadata.layout = this.getPropertyText(xml, 'rendition:layout')
@@ -301,6 +304,14 @@ class Packaging {
     )
     var el
 
+    if (!found || found.length === 0) {
+      // Fallback to non-namespaced search if NS fails
+      found = xml.getElementsByTagName('dc:' + tag)
+      if (!found || found.length === 0) {
+        found = xml.getElementsByTagName(tag)
+      }
+    }
+
     if (!found || found.length === 0) return ''
 
     el = found[0]
@@ -310,6 +321,71 @@ class Packaging {
     }
 
     return ''
+  }
+
+  /**
+   * Get text of multiple namespaced elements
+   * @private
+   * @param  {node} xml
+   * @param  {string} tag
+   * @return {string[]} text array
+   */
+  getElementsText(xml, tag) {
+    var found = xml.getElementsByTagNameNS(
+      'http://purl.org/dc/elements/1.1/',
+      tag,
+    )
+
+    if (!found || found.length === 0) {
+      // Fallback to non-namespaced search
+      found = xml.getElementsByTagName('dc:' + tag)
+      if (!found || found.length === 0) {
+        found = xml.getElementsByTagName(tag)
+      }
+    }
+
+    var results = []
+
+    // 1. Process standard elements found
+    if (found && found.length > 0) {
+      for (var i = 0; i < found.length; i++) {
+        var el = found[i]
+        if (el.childNodes.length) {
+          results.push(el.childNodes[0].nodeValue)
+        }
+      }
+    }
+
+    // 2. Aggressive Fallback: Search for <meta> tags with name or property containing "subject"
+    // This handles cases like <meta name="subject" content="..."> or <meta property="dcterms:subject">
+    if (tag === 'subject') {
+      // Search for <meta name="subject">
+      var metaName = qsp(xml, 'meta', { name: tag })
+      if (metaName) {
+        var content = metaName.getAttribute('content')
+        if (content) {
+          results.push(content)
+        }
+      }
+
+      // Search for <meta property="dcterms:subject">
+      var metaProp = qsp(xml, 'meta', { property: 'dcterms:' + tag })
+      if (metaProp) {
+        if (metaProp.childNodes.length) {
+          results.push(metaProp.childNodes[0].nodeValue)
+        }
+      }
+
+      // Search for <meta property="subject"> (rare but possible)
+      var metaPropSimple = qsp(xml, 'meta', { property: tag })
+      if (metaPropSimple) {
+        if (metaPropSimple.childNodes.length) {
+          results.push(metaPropSimple.childNodes[0].nodeValue)
+        }
+      }
+    }
+
+    return results
   }
 
   /**

@@ -37,40 +37,42 @@ export const SearchView: React.FC<PaneViewProps> = (_props) => {
   const results = focusedBookTab?.results
 
   return (
-    <div className="flex h-full flex-col bg-white dark:bg-gray-900">
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
-        <div className="flex items-center">
-          <button
-            onClick={() => setAction(undefined)}
-            className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
-          >
-            <span className="material-symbols-outlined text-xl">search</span>
-          </button>
-          <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
-            Search
-          </h2>
+    <div className="h-full w-full overflow-hidden bg-white dark:bg-gray-900">
+      <div className="flex h-full min-w-[220px] flex-col">
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 p-4 dark:border-gray-700">
+          <div className="flex items-center">
+            <button
+              onClick={() => setAction(undefined)}
+              className="rounded p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800"
+            >
+              <span className="material-symbols-outlined text-xl">search</span>
+            </button>
+            <h2 className="ml-2 font-semibold text-gray-800 dark:text-white">
+              {t('search.header')}
+            </h2>
+          </div>
         </div>
-      </div>
 
-      <div className="p-4 pb-0">
-        <label className="relative mb-4 block">
-          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
-            search
-          </span>
-          <input
-            className="focus:ring-primary focus:border-primary w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm text-gray-800 placeholder-gray-400 focus:ring-1 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500"
-            placeholder={t('search.title')}
-            value={keyword}
-            autoFocus={action === 'search'}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-        </label>
-      </div>
+        <div className="p-4 pb-0">
+          <label className="relative mb-4 block">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500">
+              search
+            </span>
+            <input
+              className="focus:ring-primary focus:border-primary w-full rounded-lg border border-gray-200 bg-gray-50 py-2 pl-10 pr-4 text-sm text-gray-800 placeholder-gray-400 focus:ring-1 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:placeholder-gray-500"
+              placeholder={t('search.title')}
+              value={keyword}
+              autoFocus={action === 'search'}
+              onChange={(e) => setKeyword(e.target.value)}
+            />
+          </label>
+        </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
-        {keyword && results && (
-          <ResultList results={results as IMatch[]} keyword={keyword} />
-        )}
+        <div className="flex-1 overflow-y-auto px-4 pb-4">
+          {keyword && results && (
+            <ResultList results={results as IMatch[]} keyword={keyword} />
+          )}
+        </div>
       </div>
     </div>
   )
@@ -112,12 +114,6 @@ const ResultList: React.FC<ResultListProps> = ({ results, keyword }) => {
       })
 
       // If expanded, add the REST of the matches (skipping the first one which is shown in preview)
-      // OR: Should we show ALL matches below when expanded?
-      // The design shows "Expand results". If we expand, we probably want to see the full list.
-      // If we keep the first match in the header, we should skip it here to avoid duplication.
-      // However, if the user clicks the header to navigate, it goes to the chapter?
-      // Usually search results go to the match.
-      // Let's skip the first match in the expanded list to avoid visual duplication.
       if (expanded) {
         const remainingMatches = subitems.slice(1)
         remainingMatches.forEach((match) => {
@@ -194,7 +190,7 @@ const ResultRow: React.FC<ResultRowProps> = ({ row, keyword }) => {
     return (
       <div>
         <h3 className="mb-1 font-bold text-gray-900 dark:text-white">
-          {item.excerpt || t('search.untitled') || 'Untitled Section'}
+          {item.excerpt || t('search.untitled')}
         </h3>
 
         {/* Preview Match (First Match) */}
@@ -220,7 +216,9 @@ const ResultRow: React.FC<ResultRowProps> = ({ row, keyword }) => {
             onClick={handleToggle}
             className="text-primary hover:bg-primary/10 mt-1 flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium transition-colors"
           >
-            {expanded ? 'Recolher resultados' : 'Expandir resultados'}
+            {expanded
+              ? t('search.collapse_results')
+              : t('search.expand_results')}
             <span
               className={clsx(
                 'material-symbols-outlined text-base transition-transform',

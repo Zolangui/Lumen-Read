@@ -19,8 +19,6 @@ export default {
   'search.files.result': '{n} 个结果在 {m} 个文件中',
 
   'annotation.title': '标注',
-  'annotation.definitions': '定义',
-  'annotation.annotations': '标注',
   'annotation.copy_as_markdown': '复制为 Markdown',
 
   'image.title': '图片',
@@ -39,6 +37,8 @@ export default {
   'typography.line_height': '行高',
   'typography.content_width': '内容宽度 (%)',
   'typography.zoom': '缩放',
+  'typography.reset_to_global': '重置为全局设置',
+  'typography.default': '默认',
 
   'theme.title': '颜色主题',
   'audio.title': '氛围',
@@ -47,14 +47,21 @@ export default {
 
   'settings.title': '设置',
   'settings.language': '语言',
+  'settings.language_desc': '选择应用程序界面语言。',
   'settings.color_scheme': '颜色模式',
+  'settings.color_scheme_desc': '选择您喜欢的浅色或深色主题。',
   'settings.color_scheme.system': '系统',
   'settings.color_scheme.light': '浅色',
   'settings.color_scheme.dark': '深色',
   'settings.synchronization.title': '同步',
+  'settings.synchronization_desc': '连接到云服务以同步您的图书馆。',
   'settings.synchronization.authorize': '授权',
   'settings.synchronization.unauthorize': '取消授权',
+  'settings.synchronization.service': '服务',
   'settings.cache': '缓存',
+
+  'reader.back_to_library': '返回图书馆',
+  'settings.cache_desc': '清除本地存储的数据以释放空间。这不会删除您的文档。',
   'settings.cache.clear': '清除',
 
   'menu.copy': '复制',
@@ -65,6 +72,11 @@ export default {
   'menu.create': '创建',
   'menu.delete': '删除',
   'menu.update': '更新',
+  'menu.add_to_favorites': '添加到收藏',
+  'menu.remove_favorite': '取消收藏',
+  'menu.view_details': '查看详情',
+  'menu.download': '下载',
+  'menu.remove_from_library': '从图书馆移除',
 
   'action.expand_all': '展开全部',
   'action.collapse_all': '折叠全部',
@@ -72,6 +84,103 @@ export default {
   'action.clear': '清除',
   'action.step_down': '减少',
   'action.step_up': '增加',
+
+  // Book Details
+  'details.file_info': '文件信息',
+  'details.size': '大小',
+  'details.format': '格式',
+  'details.language': '语言',
+  'details.details': '详情',
+  'details.publisher': '出版社',
+  'details.pub_date': '出版日期',
+  'details.genre': '分类',
+  'details.isbn_id': 'ISBN/ID',
+  'details.progress_info': '进度与信息',
+  'details.complete': '完成',
+  'details.pages': '页数',
+  'details.last_read': '上次阅读',
+  'details.never': '从未',
+  'details.synopsis': '简介',
+  'details.close': '关闭',
+  'details.read_book': '阅读',
+  'details.unknown_author': '未知作者',
+
+  // Library Side View
+  'books.title': '书籍',
+  'books.subtitle': '在新标签页打开书籍',
+  'books.search_placeholder': '搜索书籍...',
+  'books.unknown_author': '未知作者',
+  'books.progress': '进度',
+
+  // Sidebar
+  'sidebar.toc': '目录',
+  'sidebar.books': '书籍',
+  'sidebar.search': '搜索',
+  'sidebar.annotation': '标注',
+  'sidebar.image': '图片',
+  'sidebar.timeline': '时间轴',
+  'sidebar.typography': '排版',
+  'sidebar.theme': '主题',
+  'sidebar.settings': '设置',
+
+  // Library
+  'library.title': '我的图书馆',
+  'library.add_book': '添加新书',
+  'library.search_placeholder': '按标题或作者搜索...',
+  'library.sort_by': '排序方式:',
+  'library.sort.recent': '最近',
+  'library.sort.title': '标题',
+  'library.sort.author': '作者',
+  'library.sort.custom': '自定义',
+  'library.filter.all': '全部',
+  'library.filter.favorites': '收藏',
+  'library.filter.unread': '未读',
+  'library.filter.in_progress': '阅读中',
+  'library.filter.finished': '已读完',
+
+  // Annotation View
+  'annotation.definitions': '定义',
+  'annotation.annotations': '标注',
+  'annotation.notes': '笔记',
+  'annotation.definition_label': '定义',
+  'annotation.remove_definition': '删除定义',
+  'annotation.note_label': '笔记',
+  'annotation.highlight_label': '高亮',
+  'annotation.remove_annotation': '删除标注',
+  'annotation.empty_definitions': '选择文本并点击书本图标以添加定义。',
+  'annotation.empty_annotations': '高亮文本以添加标注或笔记。',
+
+  // TOC View
+  'toc.header': '目录',
+
+  // Image View
+  'image.header': '图片',
+  'image.untitled_section': '无标题章节',
+
+  // Search View
+  'search.header': '搜索',
+  'search.untitled': '无标题章节',
+  'search.expand_results': '展开结果',
+  'search.collapse_results': '折叠结果',
+
+  // Timeline View
+  'timeline.header': '阅读统计',
+  'timeline.today_time': '今日阅读时间',
+  'timeline.streak': '连续阅读',
+  'timeline.day': '天',
+  'timeline.days': '天',
+  'timeline.current_book_progress': '当前书籍进度',
+  'timeline.pages_read': '已读页数',
+  'timeline.avg_speed': '平均速度',
+  'timeline.est_finish': '预计完成',
+  'timeline.reading_calendar': '阅读日历',
+  'timeline.less': '少',
+  'timeline.more': '多',
+
+  // Theme View
+  'theme.header': '主题',
+  'theme.source_color_label': '源色',
+  'theme.background_color_label': '背景色',
 
   untitled: '未标题',
 } as const

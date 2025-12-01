@@ -19,8 +19,6 @@ export default {
   'search.files.result': '{m}件中 {n}件該当',
 
   'annotation.title': '注釈',
-  'annotation.definitions': '定義',
-  'annotation.annotations': '注釈',
   'annotation.copy_as_markdown': 'Markdownとしてコピー',
 
   'image.title': '画像',
@@ -39,6 +37,8 @@ export default {
   'typography.line_height': '行の高さ',
   'typography.content_width': '内容の幅 (%)',
   'typography.zoom': 'ズーム',
+  'typography.reset_to_global': 'グローバル設定に戻す',
+  'typography.default': 'デフォルト',
 
   'theme.title': 'テーマ',
   'audio.title': 'アンビエンス',
@@ -47,14 +47,24 @@ export default {
 
   'settings.title': '設定',
   'settings.language': '言語',
+  'settings.language_desc':
+    'アプリケーションのインターフェース言語を選択します。',
   'settings.color_scheme': '配色',
+  'settings.color_scheme_desc': '好みのライトまたはダークテーマを選択します。',
   'settings.color_scheme.system': 'システム',
   'settings.color_scheme.light': 'ライト',
   'settings.color_scheme.dark': 'ダーク',
   'settings.synchronization.title': '同期',
+  'settings.synchronization_desc':
+    'クラウドサービスに接続してライブラリを同期します。',
   'settings.synchronization.authorize': '認証',
   'settings.synchronization.unauthorize': '認証解除',
+  'settings.synchronization.service': 'サービス',
   'settings.cache': 'キャッシュ',
+
+  'reader.back_to_library': 'ライブラリに戻る',
+  'settings.cache_desc':
+    'ローカルに保存されたデータを消去してスペースを解放します。ドキュメントは削除されません。',
   'settings.cache.clear': 'クリア',
 
   'menu.copy': 'コピー',
@@ -65,6 +75,11 @@ export default {
   'menu.create': '作成',
   'menu.delete': '削除',
   'menu.update': '更新',
+  'menu.add_to_favorites': 'お気に入りに追加',
+  'menu.remove_favorite': 'お気に入りから削除',
+  'menu.view_details': '詳細を表示',
+  'menu.download': 'ダウンロード',
+  'menu.remove_from_library': 'ライブラリから削除',
 
   'action.expand_all': 'すべて展開',
   'action.collapse_all': 'すべて折りたたむ',
@@ -72,6 +87,105 @@ export default {
   'action.clear': 'クリア',
   'action.step_down': 'ステップダウン',
   'action.step_up': 'ステップアップ',
+
+  // Book Details
+  'details.file_info': 'ファイル情報',
+  'details.size': 'サイズ',
+  'details.format': 'フォーマット',
+  'details.language': '言語',
+  'details.details': '詳細',
+  'details.publisher': '出版社',
+  'details.pub_date': '出版日',
+  'details.genre': 'ジャンル',
+  'details.isbn_id': 'ISBN/ID',
+  'details.progress_info': '進捗・情報',
+  'details.complete': '完了',
+  'details.pages': 'ページ数',
+  'details.last_read': '最終読書',
+  'details.never': 'なし',
+  'details.synopsis': 'あらすじ',
+  'details.close': '閉じる',
+  'details.read_book': '本を読む',
+  'details.unknown_author': '不明な著者',
+
+  // Library Side View
+  'books.title': '本',
+  'books.subtitle': '新しいタブで本を開く',
+  'books.search_placeholder': '本を検索...',
+  'books.unknown_author': '不明な著者',
+  'books.progress': '進捗',
+
+  // Sidebar
+  'sidebar.toc': '目次',
+  'sidebar.books': '本',
+  'sidebar.search': '検索',
+  'sidebar.annotation': '注釈',
+  'sidebar.image': '画像',
+  'sidebar.timeline': 'タイムライン',
+  'sidebar.typography': 'タイポグラフィ',
+  'sidebar.theme': 'テーマ',
+  'sidebar.settings': '設定',
+
+  // Library
+  'library.title': 'マイライブラリ',
+  'library.add_book': '本を追加',
+  'library.search_placeholder': 'タイトルまたは著者で検索...',
+  'library.sort_by': '並び替え:',
+  'library.sort.recent': '最近',
+  'library.sort.title': 'タイトル',
+  'library.sort.author': '著者',
+  'library.sort.custom': 'カスタム',
+  'library.filter.all': 'すべて',
+  'library.filter.favorites': 'お気に入り',
+  'library.filter.unread': '未読',
+  'library.filter.in_progress': '読書中',
+  'library.filter.finished': '読了',
+
+  // Annotation View
+  'annotation.definitions': '定義',
+  'annotation.annotations': '注釈',
+  'annotation.notes': 'メモ',
+  'annotation.definition_label': '定義',
+  'annotation.remove_definition': '定義を削除',
+  'annotation.note_label': 'メモ',
+  'annotation.highlight_label': 'ハイライト',
+  'annotation.remove_annotation': '注釈を削除',
+  'annotation.empty_definitions':
+    'テキストを選択して本のアイコンをクリックし、定義を追加します。',
+  'annotation.empty_annotations':
+    'テキストをハイライトして注釈やメモを追加します。',
+
+  // TOC View
+  'toc.header': '目次',
+
+  // Image View
+  'image.header': '画像',
+  'image.untitled_section': '無題のセクション',
+
+  // Search View
+  'search.header': '検索',
+  'search.untitled': '無題のセクション',
+  'search.expand_results': '結果を展開',
+  'search.collapse_results': '結果を折りたたむ',
+
+  // Timeline View
+  'timeline.header': '読書統計',
+  'timeline.today_time': '今日の読書時間',
+  'timeline.streak': '連続日数',
+  'timeline.day': '日',
+  'timeline.days': '日',
+  'timeline.current_book_progress': '現在の本の進捗',
+  'timeline.pages_read': '読んだページ数',
+  'timeline.avg_speed': '平均速度',
+  'timeline.est_finish': '完了予定',
+  'timeline.reading_calendar': '読書カレンダー',
+  'timeline.less': '少',
+  'timeline.more': '多',
+
+  // Theme View
+  'theme.header': 'テーマ',
+  'theme.source_color_label': 'ソースカラー',
+  'theme.background_color_label': '背景色',
 
   untitled: '無題',
 } as const
