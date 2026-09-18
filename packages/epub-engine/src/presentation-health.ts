@@ -78,6 +78,9 @@ export type PresentationObservedStyle = {
   color: string
   backgroundColor: string
   backgroundImage: string
+  backgroundSize: string
+  backgroundPosition: string
+  backgroundRepeat: string
   mixBlendMode: string
   backgroundBlendMode: string
   filter: string
@@ -378,6 +381,11 @@ function lumenNodeTraversal(
 
 function captureStyle(style: CSSStyleDeclaration): PresentationObservedStyle {
   const overflow = normalized(style.overflow, 'visible')
+  const backgroundImage = normalized(style.backgroundImage, 'none')
+  // backgroundSize/Position/Repeat are only meaningful when an image exists.
+  // Reading them unconditionally costs three computed-style lookups per
+  // element on every health map; skip them for the common no-image case.
+  const hasBackgroundImage = backgroundImage !== 'none'
   return {
     display: normalized(style.display, 'inline'),
     float: normalized(style.cssFloat, 'none'),
@@ -386,7 +394,16 @@ function captureStyle(style: CSSStyleDeclaration): PresentationObservedStyle {
     opacity: numericOpacity(style.opacity),
     color: style.color,
     backgroundColor: style.backgroundColor,
-    backgroundImage: normalized(style.backgroundImage, 'none'),
+    backgroundImage,
+    backgroundSize: hasBackgroundImage
+      ? normalized(style.backgroundSize, 'auto')
+      : 'auto',
+    backgroundPosition: hasBackgroundImage
+      ? normalized(style.backgroundPosition, '0% 0%')
+      : '0% 0%',
+    backgroundRepeat: hasBackgroundImage
+      ? normalized(style.backgroundRepeat, 'repeat')
+      : 'repeat',
     mixBlendMode: normalized(style.mixBlendMode, 'normal'),
     backgroundBlendMode: normalized(style.backgroundBlendMode, 'normal'),
     filter: normalized(style.filter, 'none'),
@@ -446,6 +463,39 @@ function safeTextPaint(style: PresentationObservedStyle): boolean {
     style.webkitMaskImage === 'none' &&
     style.opacity !== undefined &&
     style.opacity >= 0.999
+  )
+}
+
+/**
+ * A background-image that is a thin decorative line (e.g. a 1px bottom
+ * border drawn with linear-gradient) does not cover the text area and must
+ * not abort the paint walk. Detects the pattern by checking that the image
+ * is anchored to an edge, does not repeat, and has a thickness of at most
+ * 2px in one dimension.
+ */
+function isDecorativeHairline(style: PresentationObservedStyle): boolean {
+  if (style.backgroundRepeat !== 'no-repeat') return false
+  const sizeMatch = style.backgroundSize.match(
+    /^(\d+(?:\.\d+)?)(px|%)\s+(\d+(?:\.\d+)?)(px|%)$/,
+  )
+  if (!sizeMatch) return false
+  const [, widthValue, widthUnit, heightValue, heightUnit] = sizeMatch
+  // One dimension must be a thin pixel strip; the other can be anything.
+  const thinPx = (value: string, unit: string) =>
+    unit === 'px' && Number.parseFloat(value) <= 2
+  const isThin =
+    thinPx(widthValue!, widthUnit!) || thinPx(heightValue!, heightUnit!)
+  if (!isThin) return false
+  // Must be anchored to an edge (top, bottom, left, right, or a percentage
+  // that is effectively 0% or 100%).
+  const position = style.backgroundPosition.toLowerCase()
+  return (
+    position.includes('bottom') ||
+    position.includes('top') ||
+    position.includes('left') ||
+    position.includes('right') ||
+    /(?:^|\s)0%/.test(position) ||
+    /100%/.test(position)
   )
 }
 
@@ -540,7 +590,12 @@ function paintRelationship(
       return unknownPaint('clipped-paint', foreground)
     }
     if (currentStyle.backgroundImage !== 'none') {
-      return unknownPaint('background-image', foreground)
+      // A decorative hairline gradient (e.g. a 1px bottom border drawn with
+      // linear-gradient) does not cover the text area. Only abort to
+      // unknownPaint when the image can actually reach the glyphs.
+      if (!isDecorativeHairline(currentStyle)) {
+        return unknownPaint('background-image', foreground)
+      }
     }
 
     const background = resolveComputedSrgbColor(

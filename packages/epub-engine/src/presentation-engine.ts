@@ -65,6 +65,7 @@ import {
   PRESENTATION_HEALTH_MODEL_VERSION,
   PRESENTATION_LEGIBILITY_MODEL_VERSION,
   summarizePresentationLegibility,
+  type PresentationHealthMap,
   type PresentationLegibilitySummary,
 } from './presentation-health'
 import {
@@ -212,6 +213,7 @@ export type LumenPresentationCandidate = {
     patches: PresentationPatch[]
   }
   foregroundRuntimeEvidence?: InheritedForegroundRuntimeEvidence
+  prePaginationHealthMap?: PresentationHealthMap
   plan?: PresentationPlan
   authorThemeLayer?: AppliedAuthorThemeLayer
   foregroundLayer?: AppliedInheritedForegroundLayer
@@ -664,15 +666,31 @@ export class LumenPresentationEngine {
   private legibility(
     context: PaginationLifecycleContext,
     policy: LumenPresentationPolicy,
+    healthMap?: PresentationHealthMap,
   ): PresentationLegibilitySummary {
     try {
+      // Reuse a caller-provided health map only when it provably matches the
+      // terminal DOM: same document, same spine, same canvas. A stale map
+      // would report the legibility of a DOM that no longer exists.
+      const targetCanvas = parseSrgbColor(policy.canvasColor)
+      const reusable =
+        healthMap?.modelVersion === PRESENTATION_HEALTH_MODEL_VERSION &&
+        healthMap.renderedDocument === context.contents.document &&
+        healthMap.spineIndex === context.section.index &&
+        healthMap.canvas !== undefined &&
+        targetCanvas !== undefined &&
+        srgbToHex(healthMap.canvas) === srgbToHex(targetCanvas)
+          ? healthMap
+          : undefined
       return summarizePresentationLegibility({
-        healthMap: createPresentationHealthMap({
-          renderedDocument: context.contents.document,
-          spineIndex: context.section.index ?? -1,
-          canvasColor: policy.canvasColor,
-          maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
-        }),
+        healthMap:
+          reusable ??
+          createPresentationHealthMap({
+            renderedDocument: context.contents.document,
+            spineIndex: context.section.index ?? -1,
+            canvasColor: policy.canvasColor,
+            maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
+          }),
         minimumTextContrast: policy.minimumTextContrast,
       })
     } catch {
@@ -1020,6 +1038,7 @@ export class LumenPresentationEngine {
           renderedDocument: context.contents.document,
           fallbackAnalysis,
           foregroundRuntimeEvidence,
+          prePaginationHealthMap: healthMap,
           releaseAbort: () => undefined,
         }
         this.rememberCandidate(context, candidate)
@@ -1131,6 +1150,7 @@ export class LumenPresentationEngine {
               context.contents.document,
               run.identity.spineIndex,
               run.signal,
+              healthMap,
             ),
           )
         : undefined
@@ -1159,6 +1179,7 @@ export class LumenPresentationEngine {
         renderedDocument: context.contents.document,
         fallbackAnalysis,
         foregroundRuntimeEvidence,
+        prePaginationHealthMap: healthMap,
         plan,
         authorThemeLayer,
         foregroundLayer,
@@ -1437,6 +1458,11 @@ export class LumenPresentationEngine {
                 context.contents.document,
                 candidate.run.identity.spineIndex,
                 candidate.run.signal,
+                // Safe to reuse: the DOM was restored to Published before
+                // this fallback, so the pre-pagination map matches the
+                // terminal state. The apply only reads paint/color/surface
+                // evidence, not geometry.
+                candidate.prePaginationHealthMap,
               ),
             )
           : undefined
@@ -1496,7 +1522,13 @@ export class LumenPresentationEngine {
         candidate.coordinator.finish(candidate.run, 'fallback')
         this.runs.delete(candidate.run)
         this.candidates.delete(candidate)
-        const legibility = this.legibility(context, candidate.policy)
+        // No layer was applied, so the pre-pagination health map still
+        // describes the terminal DOM faithfully.
+        const legibility = this.legibility(
+          context,
+          candidate.policy,
+          candidate.prePaginationHealthMap,
+        )
         this.report(
           context,
           legibility.complete ? 'published-readable' : 'published-unproven',
@@ -1507,6 +1539,19 @@ export class LumenPresentationEngine {
       }
 
       candidate.run.transition('validating')
+      // Build one post-application health map and share it across the
+      // validators that re-measure the mutated DOM (explicit text and
+      // stroke). Other validators keep their own maps for now.
+      const postApplicationHealthMap =
+        candidate.explicitForegroundLayer || candidate.strokeLayer
+          ? createPresentationHealthMap({
+              renderedDocument: context.contents.document,
+              spineIndex: candidate.run.identity.spineIndex,
+              canvasColor: candidate.policy.canvasColor,
+              signal: candidate.run.signal,
+              maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
+            })
+          : undefined
       const validationInputs: ValidationRecordInput[] = []
       if (candidate.authorThemeLayer) {
         const authorThemeGeometryStable = await candidate.run.wait(
@@ -1535,7 +1580,10 @@ export class LumenPresentationEngine {
       }
       if (candidate.explicitForegroundLayer) {
         validationInputs.push(
-          validateRestoredExplicitText(candidate.explicitForegroundLayer).input,
+          validateRestoredExplicitText(
+            candidate.explicitForegroundLayer,
+            postApplicationHealthMap,
+          ).input,
         )
       }
       if (candidate.listMarkerLayer) {
@@ -1545,7 +1593,10 @@ export class LumenPresentationEngine {
       }
       if (candidate.strokeLayer) {
         validationInputs.push(
-          validateRestoredVisibleStrokes(candidate.strokeLayer).input,
+          validateRestoredVisibleStrokes(
+            candidate.strokeLayer,
+            postApplicationHealthMap,
+          ).input,
         )
       }
       if (candidate.geometryLayer) {
@@ -1623,7 +1674,11 @@ export class LumenPresentationEngine {
         plan: candidate.plan,
         validation,
         accepted: admission.value,
-        legibility: this.legibility(context, candidate.policy),
+        legibility: this.legibility(
+          context,
+          candidate.policy,
+          postApplicationHealthMap,
+        ),
       })
       return validation
     } catch (error) {
@@ -1875,6 +1930,7 @@ export class LumenPresentationEngine {
               context.contents.document,
               run.identity.spineIndex,
               run.signal,
+              candidate.prePaginationHealthMap,
             ),
           )
         : undefined
@@ -1915,6 +1971,16 @@ export class LumenPresentationEngine {
       }
       coordinator.assertCurrent(run)
       run.transition('validating', 'fallback-candidate-validation')
+      const fallbackHealthMap =
+        candidate.explicitForegroundLayer || candidate.strokeLayer
+          ? createPresentationHealthMap({
+              renderedDocument: context.contents.document,
+              spineIndex: run.identity.spineIndex,
+              canvasColor: candidate.policy.canvasColor,
+              signal: run.signal,
+              maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
+            })
+          : undefined
       const inputs: ValidationRecordInput[] = []
       if (candidate.foregroundLayer) {
         inputs.push(
@@ -1923,7 +1989,10 @@ export class LumenPresentationEngine {
       }
       if (candidate.explicitForegroundLayer) {
         inputs.push(
-          validateRestoredExplicitText(candidate.explicitForegroundLayer).input,
+          validateRestoredExplicitText(
+            candidate.explicitForegroundLayer,
+            fallbackHealthMap,
+          ).input,
         )
       }
       if (candidate.paletteLayer) {
@@ -1935,7 +2004,12 @@ export class LumenPresentationEngine {
         )
       }
       if (candidate.strokeLayer) {
-        inputs.push(validateRestoredVisibleStrokes(candidate.strokeLayer).input)
+        inputs.push(
+          validateRestoredVisibleStrokes(
+            candidate.strokeLayer,
+            fallbackHealthMap,
+          ).input,
+        )
       }
       if (candidate.geometryLayer) {
         inputs.push(

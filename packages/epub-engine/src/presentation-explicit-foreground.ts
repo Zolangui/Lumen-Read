@@ -41,9 +41,9 @@ import {
   resolveSourceTreeAddress,
 } from './source-tree'
 
-export const EXPLICIT_FOREGROUND_ANALYZER_VERSION = 10 as const
-export const RESTORE_EXPLICIT_TEXT_OPERATION_VERSION = 3 as const
-export const EXPLICIT_FOREGROUND_VALIDATOR_VERSION = 6 as const
+export const EXPLICIT_FOREGROUND_ANALYZER_VERSION = 11 as const
+export const RESTORE_EXPLICIT_TEXT_OPERATION_VERSION = 4 as const
+export const EXPLICIT_FOREGROUND_VALIDATOR_VERSION = 7 as const
 
 const LAYER_ATTRIBUTE = 'data-lumen-presentation-layer'
 const TARGET_ATTRIBUTE = 'data-lumen-explicit-text-target'
@@ -51,12 +51,27 @@ const HEX_COLOR = /^#[0-9a-f]{6}$/
 const NEUTRAL_CHROMA_LIMIT = 0.035
 const MINIMUM_MEANINGFUL_NEUTRAL_LIGHTNESS_GAP = 0.025
 const NEUTRAL_HIERARCHY_RETENTION = 0.65
+// Cap the target lightness for neutral text: values above ~0.82 on dark
+// surfaces are perceptually "white", and values below ~0.18 on light
+// surfaces are perceptually "black". Both create jarring inconsistency
+// between chapters. The body text should stay at the comfortable 7:1 level.
+const MAX_NEUTRAL_TARGET_LIGHTNESS_DARK = 0.82
+const MIN_NEUTRAL_TARGET_LIGHTNESS_LIGHT = 0.18
+// Photometric polarity cuts. The WCAG contrast symmetry point between black
+// and white sits at Y ≈ 0.179. Any surface at Y >= 0.40 still allows black
+// text at 9:1, so light-class surfaces keep full 7:1 hierarchy headroom;
+// only the narrow 0.22 < Y < 0.40 band lacks the gamut for it.
+const DARK_SURFACE_LUMINANCE_LIMIT = 0.22
+const LIGHT_SURFACE_LUMINANCE_MIN = 0.4
+
+export type SurfacePolarity = 'dark' | 'light' | 'mid'
 
 export type RestoreExplicitTextParameters = {
-  schemaVersion: 2
+  schemaVersion: 3
   sourceText: string
   targetText: string
   canvas: string
+  surfacePolarity: SurfacePolarity
   surfaces: string[]
   minimumTextContrast: number
   observedTextCodePoints: number
@@ -105,6 +120,7 @@ type AppliedTarget = {
 type CandidateGroup = {
   root: PresentationHealthObservation
   sourceText: SrgbColor
+  polarity: SurfacePolarity
   samples: PresentationHealthObservation[]
 }
 
@@ -113,6 +129,7 @@ type PreparedCandidateGroup = {
   backgrounds: SrgbColor[]
   targetContrast: number
   targetText: SrgbColor
+  observedTextCodePoints: number
 }
 
 export type AppliedExplicitForegroundLayer = {
@@ -157,6 +174,7 @@ export function isRestoreExplicitTextParameters(
       'sourceText',
       'targetText',
       'canvas',
+      'surfacePolarity',
       'surfaces',
       'minimumTextContrast',
       'observedTextCodePoints',
@@ -165,13 +183,16 @@ export function isRestoreExplicitTextParameters(
     return false
   }
   return (
-    value.schemaVersion === 2 &&
+    value.schemaVersion === 3 &&
     typeof value.sourceText === 'string' &&
     HEX_COLOR.test(value.sourceText) &&
     typeof value.targetText === 'string' &&
     HEX_COLOR.test(value.targetText) &&
     typeof value.canvas === 'string' &&
     HEX_COLOR.test(value.canvas) &&
+    (value.surfacePolarity === 'dark' ||
+      value.surfacePolarity === 'light' ||
+      value.surfacePolarity === 'mid') &&
     Array.isArray(value.surfaces) &&
     value.surfaces.length > 0 &&
     value.surfaces.every(
@@ -221,16 +242,34 @@ function readableForeground(
       c: sourceLch.c,
       h: sourceLch.h,
     })
+    // Prove the quantized 8-bit color, not the float candidate: the applied
+    // and validated color is the rounded hex, and rounding can shave a
+    // boundary-line contrast below the target.
+    const quantized = parseSrgbColor(srgbToHex(candidate))
+    if (!quantized) continue
     if (
       backgrounds.every(
         (background) =>
-          contrastRatio(candidate, background) >= preferredContrast,
+          contrastRatio(quantized, background) >= preferredContrast,
       )
     ) {
-      return candidate
+      return quantized
     }
   }
   return undefined
+}
+
+/**
+ * Classify a proven surface by relative luminance. Dark surfaces push text
+ * toward white, light surfaces toward black; only the narrow mid band lacks
+ * the physical gamut for a 7:1 hierarchy and degrades to the mandatory
+ * contrast floor without hierarchy expansion.
+ */
+function classifySurfacePolarity(background: SrgbColor): SurfacePolarity {
+  const luminance = relativeLuminance(background)
+  if (luminance <= DARK_SURFACE_LUMINANCE_LIMIT) return 'dark'
+  if (luminance >= LIGHT_SURFACE_LUMINANCE_MIN) return 'light'
+  return 'mid'
 }
 
 /**
@@ -239,6 +278,8 @@ function readableForeground(
  * reader canvas collapses all of them onto the same minimum-contrast gray.
  * Reflect meaningful source-lightness differences across the canvas while
  * retaining only as much separation as the target gamut safely permits.
+ * Candidates arrive pre-partitioned by surface polarity, so each family is
+ * guaranteed to share one contrast direction.
  */
 function preserveNeutralHierarchy(candidates: PreparedCandidateGroup[]): void {
   const families = new Map<string, PreparedCandidateGroup[]>()
@@ -246,12 +287,14 @@ function preserveNeutralHierarchy(candidates: PreparedCandidateGroup[]): void {
     if (srgbToOklch(candidate.group.sourceText).c > NEUTRAL_CHROMA_LIMIT) {
       continue
     }
-    const luminances = candidate.backgrounds.map(relativeLuminance)
-    const darkSurface = luminances.every((luminance) => luminance <= 0.22)
-    const lightSurface = luminances.every((luminance) => luminance >= 0.78)
-    if (!darkSurface && !lightSurface) continue
-    const surfaces = candidate.backgrounds.map(srgbToHex).sort()
-    const key = `${darkSurface ? 'dark' : 'light'}:${
+    // Mid-band surfaces lack the gamut for hierarchy separation; they are
+    // repaired at the mandatory floor and reported as declared debt instead.
+    if (candidate.group.polarity === 'mid') continue
+    // Deduplicate: backgrounds holds one entry per sample, so without a Set
+    // two groups over the same surface but with different sample counts
+    // would produce different family keys and silently skip preservation.
+    const surfaces = [...new Set(candidate.backgrounds.map(srgbToHex))].sort()
+    const key = `${candidate.group.polarity}:${
       candidate.targetContrast
     }:${surfaces.join(',')}`
     const family = families.get(key) ?? []
@@ -270,9 +313,11 @@ function preserveNeutralHierarchy(candidates: PreparedCandidateGroup[]): void {
     if (span < MINIMUM_MEANINGFUL_NEUTRAL_LIGHTNESS_GAP) continue
 
     const darkSurface = key.startsWith('dark:')
-    const weakestIndex = darkSurface
-      ? sourceLightness.indexOf(maximum)
-      : sourceLightness.indexOf(minimum)
+    // Anchor on the weakest source (maximum L, lightest on paper). It gets
+    // the baseline target; stronger sources move away from it. The cap on
+    // target lightness prevents the body text from jumping to near-white
+    // when a single light element (e.g. a page number) joins the family.
+    const weakestIndex = sourceLightness.indexOf(maximum)
     const baseline = srgbToOklch(family[weakestIndex]!.targetText).l
     const available = darkSurface ? 1 - baseline : baseline
     const retention = Math.min(
@@ -283,24 +328,40 @@ function preserveNeutralHierarchy(candidates: PreparedCandidateGroup[]): void {
 
     family.forEach((candidate, index) => {
       const source = srgbToOklch(candidate.group.sourceText)
-      const distanceFromWeakest = darkSurface
-        ? maximum - sourceLightness[index]!
-        : sourceLightness[index]! - minimum
-      const targetLightness = darkSurface
+      const distanceFromWeakest = maximum - sourceLightness[index]!
+      let targetLightness = darkSurface
         ? baseline + distanceFromWeakest * retention
         : baseline - distanceFromWeakest * retention
+      // Cap extreme lightness on both surfaces: the body text must stay at
+      // the comfortable 7:1 level, not jump to near-white or near-black.
+      if (darkSurface) {
+        targetLightness = Math.min(
+          targetLightness,
+          MAX_NEUTRAL_TARGET_LIGHTNESS_DARK,
+        )
+      } else {
+        targetLightness = Math.max(
+          targetLightness,
+          MIN_NEUTRAL_TARGET_LIGHTNESS_LIGHT,
+        )
+      }
       const target = oklchToSrgbGamut({
         l: Math.min(1, Math.max(0, targetLightness)),
         c: source.c,
         h: source.h,
       })
+      // Quantize before the contrast guard for the same reason as
+      // readableForeground: the applied color is the rounded hex.
+      const quantizedTarget = parseSrgbColor(srgbToHex(target))
+      if (!quantizedTarget) return
       if (
         candidate.backgrounds.every(
           (background) =>
-            contrastRatio(target, background) >= candidate.targetContrast,
+            contrastRatio(quantizedTarget, background) >=
+            candidate.targetContrast,
         )
       ) {
-        candidate.targetText = target
+        candidate.targetText = quantizedTarget
       }
     })
   }
@@ -446,8 +507,22 @@ export async function analyzeExplicitForegroundContrast(
       observation.element,
     )
     if (!root || !sourceText) continue
-    const key = `${root.address.sourcePath.join('.')}:${srgbToHex(sourceText)}`
-    const group = localGroups.get(key) ?? { root, sourceText, samples: [] }
+    // Partition by surface polarity first: the same authored gray over the
+    // dark canvas and over a light callout needs two independent targets,
+    // because no single color can reach 7:1 against both.
+    const polarity =
+      observation.paint.kind === 'known'
+        ? classifySurfacePolarity(observation.paint.background)
+        : 'mid'
+    const key = `${root.address.sourcePath.join('.')}:${srgbToHex(
+      sourceText,
+    )}:${polarity}`
+    const group = localGroups.get(key) ?? {
+      root,
+      sourceText,
+      polarity,
+      samples: [],
+    }
     group.samples.push(observation)
     localGroups.set(key, group)
   }
@@ -474,7 +549,9 @@ export async function analyzeExplicitForegroundContrast(
         ),
       ),
     ].sort()
-    const key = `${srgbToHex(local.sourceText)}:${surfaces.join(',')}`
+    const key = `${srgbToHex(local.sourceText)}:${
+      local.polarity
+    }:${surfaces.join(',')}`
     const existing = groups.get(key)
     if (!existing) {
       groups.set(key, local)
@@ -495,9 +572,11 @@ export async function analyzeExplicitForegroundContrast(
     )
     // Neutral prose benefits from the preferred 7:1 target. Highly chromatic
     // author accents move only as far as the mandatory threshold so the
-    // repair preserves more of the publication's original palette.
+    // repair preserves more of the publication's original palette. Mid-band
+    // surfaces lack the gamut for 7:1 in either direction, so they also
+    // target the mandatory floor and forgo hierarchy expansion.
     const targetContrast =
-      srgbToOklch(group.sourceText).c >= 0.08
+      srgbToOklch(group.sourceText).c >= 0.08 || group.polarity === 'mid'
         ? minimumTextContrast
         : preferredTextContrast
     const targetText = readableForeground(
@@ -511,9 +590,53 @@ export async function analyzeExplicitForegroundContrast(
         backgrounds,
         targetContrast,
         targetText,
+        observedTextCodePoints: group.samples.reduce(
+          (total, sample) => total + sample.directTextCodePoints,
+          0,
+        ),
       })
     }
   }
+  // The candidate budget is finite: when truncation is unavoidable, the
+  // largest mass of unreadable text must win the slots. Ties break
+  // deterministically so planHash stays reproducible across runs.
+  preparedGroups.sort((left, right) => {
+    if (left.observedTextCodePoints !== right.observedTextCodePoints) {
+      return right.observedTextCodePoints - left.observedTextCodePoints
+    }
+    // Numeric path comparison: lexicographic ordering of joined paths would
+    // scramble document order ("11" < "3") and make truncation pick
+    // arbitrary groups.
+    const leftPath = left.group.root.address.sourcePath
+    const rightPath = right.group.root.address.sourcePath
+    const sharedLength = Math.min(leftPath.length, rightPath.length)
+    for (let index = 0; index < sharedLength; index += 1) {
+      if (leftPath[index] !== rightPath[index]) {
+        return leftPath[index]! - rightPath[index]!
+      }
+    }
+    if (leftPath.length !== rightPath.length) {
+      return leftPath.length - rightPath.length
+    }
+    const leftHex = srgbToHex(left.group.sourceText)
+    const rightHex = srgbToHex(right.group.sourceText)
+    if (leftHex !== rightHex) return leftHex < rightHex ? -1 : 1
+    if (left.group.polarity !== right.group.polarity) {
+      return left.group.polarity < right.group.polarity ? -1 : 1
+    }
+    // Final tie-break on the proven surface set keeps the ordering total
+    // even for same-root, same-color, same-polarity partitions.
+    const leftSurfaces = [...new Set(left.backgrounds.map(srgbToHex))]
+      .sort()
+      .join(',')
+    const rightSurfaces = [...new Set(right.backgrounds.map(srgbToHex))]
+      .sort()
+      .join(',')
+    if (leftSurfaces !== rightSurfaces) {
+      return leftSurfaces < rightSurfaces ? -1 : 1
+    }
+    return 0
+  })
   preserveNeutralHierarchy(preparedGroups)
 
   const findings: PresentationFinding[] = []
@@ -523,11 +646,7 @@ export async function analyzeExplicitForegroundContrast(
     throwIfAborted(options.signal)
     if (patches.length >= maxCandidates) break
     inspectedGroups += 1
-    const { group, backgrounds, targetText } = prepared
-    const observedTextCodePoints = group.samples.reduce(
-      (total, sample) => total + sample.directTextCodePoints,
-      0,
-    )
+    const { group, backgrounds, targetText, observedTextCodePoints } = prepared
     // Complete paint evidence, a stable source address and post-application
     // validation are the safety boundaries. Text length is not: a short title
     // or publisher label can be the only unreadable text on a page.
@@ -550,17 +669,18 @@ export async function analyzeExplicitForegroundContrast(
     const sourceColorSuffix = srgbToHex(group.sourceText).slice(1)
     const suffix = `${
       group.root.address.sourcePath.join('.') || 'root'
-    }:${sourceColorSuffix}`
+    }:${sourceColorSuffix}:${group.polarity}`
     const findingId = `explicit-foreground:${options.spineIndex}:${suffix}`
     const target = { source: group.root.address, sourceSignature }
     const surfaces = [
       ...new Set(backgrounds.map((background) => srgbToHex(background))),
     ].sort()
     const parameters: RestoreExplicitTextParameters = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       sourceText: srgbToHex(group.sourceText),
       targetText: srgbToHex(targetText),
       canvas: srgbToHex(canvas),
+      surfacePolarity: group.polarity,
       surfaces,
       minimumTextContrast,
       observedTextCodePoints,
@@ -575,6 +695,16 @@ export async function analyzeExplicitForegroundContrast(
       evidence: {
         sourceText: parameters.sourceText,
         surfaces,
+        surfacePolarity: group.polarity,
+        // Mid-band surfaces cannot physically reach the preferred contrast
+        // in either direction; the hierarchy sacrifice is declared debt,
+        // not silently dropped fidelity.
+        ...(group.polarity === 'mid'
+          ? {
+              hierarchyStatus: 'constrained-narrow-gamut',
+              hierarchyDebtCodePoints: observedTextCodePoints,
+            }
+          : {}),
         sourceContrast: Math.min(
           ...group.samples.flatMap((sample) =>
             sample.paint.kind === 'known' ? [sample.paint.contrast] : [],
@@ -672,6 +802,7 @@ export async function applyRestoreExplicitTextPlan(
   renderedDocument: Document,
   expectedSpineIndex: number,
   signal?: AbortSignal,
+  healthMap?: PresentationHealthMap,
 ): Promise<AppliedExplicitForegroundLayer | undefined> {
   restoreExplicitForegroundLayer(renderedDocument)
   const patches = plan.patches.filter(
@@ -757,13 +888,26 @@ export async function applyRestoreExplicitTextPlan(
       TARGET_ATTRIBUTE,
     )
 
-    const health = createPresentationHealthMap({
-      renderedDocument,
-      spineIndex: expectedSpineIndex,
-      canvasColor: canvas,
-      signal,
-      maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
-    })
+    // Reuse the pre-pagination health map when the caller provides one:
+    // the DOM has not changed between analysis and application, so the
+    // observations are still valid. This avoids a full re-scan per spine.
+    const health =
+      healthMap?.modelVersion === PRESENTATION_HEALTH_MODEL_VERSION &&
+      healthMap.spineIndex === expectedSpineIndex &&
+      healthMap.renderedDocument === renderedDocument &&
+      healthMap.canvas !== undefined &&
+      srgbToHex(healthMap.canvas) === canvas &&
+      healthMap.observations.every(
+        (observation) => observation.element.ownerDocument === renderedDocument,
+      )
+        ? healthMap
+        : createPresentationHealthMap({
+            renderedDocument,
+            spineIndex: expectedSpineIndex,
+            canvasColor: canvas,
+            signal,
+            maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
+          })
     if (health.truncated) {
       throw new Error('Explicit-text validation sample is truncated')
     }
@@ -775,7 +919,13 @@ export async function applyRestoreExplicitTextPlan(
           observation.paint.kind !== 'known' ||
           observation.paint.contrast >= target.parameters.minimumTextContrast ||
           colorHex(observation.style.color, observation.element) !==
-            target.parameters.sourceText
+            target.parameters.sourceText ||
+          // Polarity partitions may share one root and one source color;
+          // the proven surface set is what keeps each patch on its own
+          // samples so two partitions never overwrite each other.
+          !target.parameters.surfaces.includes(
+            srgbToHex(observation.paint.background),
+          )
         ) {
           return false
         }
@@ -850,31 +1000,33 @@ function neutralHierarchyMetrics(targets: readonly AppliedTarget[]): {
   comparedPairs: number
   collisions: number
   orderingViolations: number
+  constrainedMidGroups: number
+  constrainedMidCodePoints: number
 } {
   const families = new Map<string, RestoreExplicitTextParameters[]>()
+  let constrainedMidGroups = 0
+  let constrainedMidCodePoints = 0
   for (const target of targets) {
+    // Mid-band partitions are repaired at the mandatory floor without
+    // hierarchy expansion by design; count them as declared debt instead of
+    // auditing them for a separation the analysis never attempted.
+    if (target.parameters.surfacePolarity === 'mid') {
+      constrainedMidGroups += 1
+      constrainedMidCodePoints += target.parameters.observedTextCodePoints
+      continue
+    }
     const source = parseSrgbColor(target.parameters.sourceText)
     if (!source || srgbToOklch(source).c > NEUTRAL_CHROMA_LIMIT) continue
-    // Mirror the analysis eligibility: hierarchy preservation only runs on
-    // families whose surfaces are uniformly dark or uniformly light. Mixed
-    // surfaces legitimately collapse to independent per-surface repairs, so
-    // judging them here would flag collisions the analysis never attempted
-    // to separate.
-    const surfaces = [...target.parameters.surfaces].sort()
-    const luminances = surfaces
-      .map((surface) => parseSrgbColor(surface))
-      .map((color) => (color ? relativeLuminance(color) : undefined))
-    if (luminances.some((luminance) => luminance === undefined)) continue
-    const darkSurface = luminances.every((luminance) => luminance! <= 0.22)
-    const lightSurface = luminances.every((luminance) => luminance! >= 0.78)
-    if (!darkSurface && !lightSurface) continue
-    // The analysis keeps normal and chromatic foregrounds in separate
-    // contrast tiers. Those tiers may legitimately choose different target
-    // lightnesses for the same source palette, so fidelity comparisons must
-    // never treat them as one hierarchy family.
-    const key = `${darkSurface ? 'dark' : 'light'}:${
+    // The analysis partitions candidates by surface polarity and keeps
+    // normal and chromatic foregrounds in separate contrast tiers. Those
+    // partitions may legitimately choose different target lightnesses for
+    // the same source palette, so fidelity comparisons must never treat
+    // them as one hierarchy family.
+    const key = `${target.parameters.surfacePolarity}:${
       target.parameters.canvas
-    }:${target.parameters.minimumTextContrast}:${surfaces.join(',')}`
+    }:${target.parameters.minimumTextContrast}:${[...target.parameters.surfaces]
+      .sort()
+      .join(',')}`
     const family = families.get(key) ?? []
     family.push(target.parameters)
     families.set(key, family)
@@ -891,6 +1043,10 @@ function neutralHierarchyMetrics(targets: readonly AppliedTarget[]): {
         target: srgbToOklch(parseSrgbColor(parameters.targetText)!),
       }))
       .sort((left, right) => left.source.l - right.source.l)
+    // Prominence runs opposite directions per polarity: on dark surfaces the
+    // stronger (darker) source maps to the lighter target; on light surfaces
+    // it maps to the darker target.
+    const lightFamily = family[0]?.surfacePolarity === 'light'
     for (let index = 1; index < ordered.length; index += 1) {
       const stronger = ordered[index - 1]!
       const weaker = ordered[index]!
@@ -901,16 +1057,26 @@ function neutralHierarchyMetrics(targets: readonly AppliedTarget[]): {
         collisions += 1
       }
       const requiredTargetGap = Math.min(0.01, sourceGap * 0.25)
-      if (stronger.target.l - weaker.target.l < requiredTargetGap) {
+      const observedGap = lightFamily
+        ? weaker.target.l - stronger.target.l
+        : stronger.target.l - weaker.target.l
+      if (observedGap < requiredTargetGap) {
         orderingViolations += 1
       }
     }
   }
-  return { comparedPairs, collisions, orderingViolations }
+  return {
+    comparedPairs,
+    collisions,
+    orderingViolations,
+    constrainedMidGroups,
+    constrainedMidCodePoints,
+  }
 }
 
 export function validateRestoredExplicitText(
   layer: AppliedExplicitForegroundLayer,
+  healthMap?: PresentationHealthMap,
 ): { input: ValidationRecordInput } {
   if (!layer.style.isConnected) {
     throw new Error('Explicit-text layer marker is unavailable')
@@ -931,12 +1097,25 @@ export function validateRestoredExplicitText(
     resume()
   }
   const restoredGeometry = geometrySnapshot(layer.document, layer.targets)
-  const health = createPresentationHealthMap({
-    renderedDocument: layer.document,
-    spineIndex: layer.spineIndex,
-    canvasColor: layer.canvas,
-    maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
-  })
+  // Reuse a caller-provided post-application health map when it matches this
+  // layer's document, spine and canvas. The DOM has been mutated by the
+  // application, so the map must have been built after that mutation.
+  const health =
+    healthMap?.modelVersion === PRESENTATION_HEALTH_MODEL_VERSION &&
+    healthMap.spineIndex === layer.spineIndex &&
+    healthMap.renderedDocument === layer.document &&
+    healthMap.canvas !== undefined &&
+    srgbToHex(healthMap.canvas) === layer.canvas &&
+    healthMap.observations.every(
+      (observation) => observation.element.ownerDocument === layer.document,
+    )
+      ? healthMap
+      : createPresentationHealthMap({
+          renderedDocument: layer.document,
+          spineIndex: layer.spineIndex,
+          canvasColor: layer.canvas,
+          maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
+        })
   const byElement = new WeakMap(
     health.observations.map((observation) => [
       observation.element,
@@ -1022,6 +1201,8 @@ export function validateRestoredExplicitText(
         comparedPairs: hierarchy.comparedPairs,
         collisions: hierarchy.collisions,
         orderingViolations: hierarchy.orderingViolations,
+        constrainedMidGroups: hierarchy.constrainedMidGroups,
+        constrainedMidCodePoints: hierarchy.constrainedMidCodePoints,
         fidelityProven,
       },
     },

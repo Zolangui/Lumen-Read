@@ -784,6 +784,7 @@ export function restoreStrokeContrastLayer(document: Document): void {
 
 export function validateRestoredVisibleStrokes(
   layer: AppliedStrokeContrastLayer,
+  healthMap?: PresentationHealthMap,
 ): { input: ValidationRecordInput } {
   const enabledGeometry = geometrySnapshot(layer.document, layer.targets)
   const overrides = layer.targets.flatMap((target) =>
@@ -796,12 +797,24 @@ export function validateRestoredVisibleStrokes(
   const geometryStable =
     sameGeometry(enabledGeometry, publishedGeometry) &&
     sameGeometry(enabledGeometry, restoredGeometry)
-  const health = createPresentationHealthMap({
-    renderedDocument: layer.document,
-    spineIndex: layer.spineIndex,
-    canvasColor: layer.canvas,
-    maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
-  })
+  // Reuse a caller-provided post-application health map when it matches this
+  // layer's document, spine and canvas.
+  const health =
+    healthMap?.modelVersion === PRESENTATION_HEALTH_MODEL_VERSION &&
+    healthMap.spineIndex === layer.spineIndex &&
+    healthMap.renderedDocument === layer.document &&
+    healthMap.canvas !== undefined &&
+    srgbToHex(healthMap.canvas) === layer.canvas &&
+    healthMap.observations.every(
+      (observation) => observation.element.ownerDocument === layer.document,
+    )
+      ? healthMap
+      : createPresentationHealthMap({
+          renderedDocument: layer.document,
+          spineIndex: layer.spineIndex,
+          canvasColor: layer.canvas,
+          maxInspectedElements: MAX_PRESENTATION_HEALTH_ELEMENTS,
+        })
   const byElement = new WeakMap(
     health.observations.map((observation) => [
       observation.element,

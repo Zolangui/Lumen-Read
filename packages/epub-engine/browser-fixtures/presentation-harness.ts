@@ -2241,6 +2241,9 @@ async function runAdversarialEvidenceCase(
       {
         id: 'residual-debt',
         label: 'Grupos não reparados permaneceram dívida honesta',
+        // All groups carry identical text mass, so the budget tie-break is
+        // the numeric source path: the first sixteen win and the last four
+        // must remain declared debt.
         passed:
           adaptiveContrast >= 4.5 &&
           lastContrast < 4.5 &&
@@ -2521,6 +2524,7 @@ async function runPrivateContrastAudit(
 ): Promise<void> {
   const failures: string[] = []
   const adaptations: string[] = []
+  const unknownPaintBySpine: string[] = []
   const total = adaptive.book.spine.spineItems.length
   let inspectedTextCodePoints = 0
 
@@ -2552,6 +2556,30 @@ async function runPrivateContrastAudit(
         observation.paint.kind === 'known' &&
         observation.paint.contrast < 4.5,
     )
+    // Text with unproven paint is invisible to the contrast check above, so
+    // it must be surfaced separately: an "all-readable" report that ignores
+    // unknown paint is a false negative factory.
+    const unknownText = health.observations.filter(
+      (observation) =>
+        observation.textPaintEligible &&
+        observation.directMeaningfulText &&
+        observation.paint.kind === 'unknown',
+    )
+    if (unknownText.length > 0) {
+      const byReason = new Map<string, number>()
+      for (const observation of unknownText) {
+        const reason =
+          observation.paint.kind === 'unknown'
+            ? observation.paint.reason
+            : 'unknown'
+        byReason.set(reason, (byReason.get(reason) ?? 0) + 1)
+      }
+      unknownPaintBySpine.push(
+        `${spineIndex}:${[...byReason]
+          .map(([reason, count]) => `${reason}×${count}`)
+          .join(',')}`,
+      )
+    }
     inspectedTextCodePoints += health.observations.reduce(
       (sum, observation) => sum + observation.directTextCodePoints,
       0,
@@ -2621,6 +2649,17 @@ async function runPrivateContrastAudit(
       detail: failures.length
         ? failures.slice(0, 20).join(' | ')
         : 'sem falhas',
+    },
+    {
+      id: 'unknown-paint-visible',
+      label: 'Texto com pintura não provada aparece como dívida explícita',
+      // Unknown paint is not automatically a failure — gradients, images and
+      // pseudo-elements legitimately produce it — but it must be visible in
+      // the report so "all-readable" never silently excludes unproven text.
+      passed: true,
+      detail: unknownPaintBySpine.length
+        ? unknownPaintBySpine.slice(0, 20).join(' | ')
+        : 'nenhum texto com pintura desconhecida',
     },
     {
       id: 'adaptation-summary',

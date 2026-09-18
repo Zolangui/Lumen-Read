@@ -200,7 +200,9 @@ describe('explicit foreground repair', () => {
 
     expect(mappings).toHaveLength(4)
     expect(targetColors.size).toBe(4)
-    expect(targetLightness).toEqual([...targetLightness].sort((a, b) => b - a))
+    // On a light canvas, prominence grows toward darker targets: the
+    // strongest (darkest) source must keep the darkest target.
+    expect(targetLightness).toEqual([...targetLightness].sort((a, b) => a - b))
 
     const plan = await createPresentationPlan(
       {
@@ -755,6 +757,278 @@ describe('explicit foreground repair', () => {
       applyRestoreExplicitTextPlan(corrupt, source, rendered, 7),
     ).rejects.toThrow(/Unsupported explicit-text operation/)
     expect(rendered.querySelector('[data-lumen-presentation-layer]')).toBeNull()
+    iframe.remove()
+  })
+
+  it('partitions the same source gray by surface polarity and preserves hierarchy in both', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .primary { color: #727272; }
+      .secondary { color: #7e7e7e; }
+      .callout { background-color: #f3f4f6; }
+    </style></head><body>
+      <p class="primary">${prose}</p>
+      <p class="secondary">${prose}</p>
+      <div class="callout">
+        <p class="primary">${prose}</p>
+        <p class="secondary">${prose}</p>
+      </div>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 20,
+      canvasColor: '#111827',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    // Two source grays x two surface polarities = four independent repairs.
+    expect(mappings).toHaveLength(4)
+    const dark = mappings.filter((m) => m.surfacePolarity === 'dark')
+    const light = mappings.filter((m) => m.surfacePolarity === 'light')
+    expect(dark).toHaveLength(2)
+    expect(light).toHaveLength(2)
+    // Each partition carries only its own surfaces.
+    for (const mapping of dark) {
+      expect(mapping.surfaces).toEqual(['#111827'])
+    }
+    for (const mapping of light) {
+      expect(mapping.surfaces).toEqual(['#f3f4f6'])
+    }
+    // Dark partition moves toward white; light partition toward black.
+    for (const mapping of dark) {
+      expect(
+        srgbToOklch(parseSrgbColor(mapping.targetText)!).l,
+      ).toBeGreaterThan(0.6)
+    }
+    for (const mapping of light) {
+      expect(srgbToOklch(parseSrgbColor(mapping.targetText)!).l).toBeLessThan(
+        0.55,
+      )
+    }
+    // Hierarchy preserved inside each polarity: the stronger source gray
+    // keeps the stronger target in both directions.
+    const darkOrdered = [...dark].sort(
+      (a, b) =>
+        srgbToOklch(parseSrgbColor(a.sourceText)!).l -
+        srgbToOklch(parseSrgbColor(b.sourceText)!).l,
+    )
+    expect(
+      srgbToOklch(parseSrgbColor(darkOrdered[0]!.targetText)!).l,
+    ).toBeGreaterThan(
+      srgbToOklch(parseSrgbColor(darkOrdered[1]!.targetText)!).l,
+    )
+    const lightOrdered = [...light].sort(
+      (a, b) =>
+        srgbToOklch(parseSrgbColor(a.sourceText)!).l -
+        srgbToOklch(parseSrgbColor(b.sourceText)!).l,
+    )
+    // Light surfaces preserve prominence toward darker targets: the
+    // stronger (darker) source keeps the darker target.
+    expect(
+      srgbToOklch(parseSrgbColor(lightOrdered[0]!.targetText)!).l,
+    ).toBeLessThan(srgbToOklch(parseSrgbColor(lightOrdered[1]!.targetText)!).l)
+
+    const plan = await createPresentationPlan(
+      {
+        schemaVersion: PRESENTATION_PLAN_SCHEMA_VERSION,
+        engineVersion: 'polarity-test',
+        mode: 'adaptive',
+        publicationRevision: 'polarity-fixture',
+        analysisFingerprint: 'explicit-polarity-v1',
+        renderingContextFingerprint: 'dark',
+        findings: analysis.findings,
+        patches: analysis.patches,
+      },
+      RESTORE_EXPLICIT_TEXT_OPERATION_VALIDATORS,
+    )
+    const layer = await applyRestoreExplicitTextPlan(
+      plan!,
+      source,
+      rendered,
+      20,
+    )
+    expect(layer).toBeDefined()
+    const validation = validateRestoredExplicitText(layer!).input
+    expect(validation.passed).toBe(true)
+    const hierarchyProbe = validation.probes.find(
+      (probe) => probe.id === 'explicit-text-neutral-hierarchy',
+    )
+    expect(hierarchyProbe?.metrics.collisions).toBe(0)
+    expect(hierarchyProbe?.metrics.orderingViolations).toBe(0)
+    layer!.restore()
+    iframe.remove()
+  })
+
+  it('repairs mid-band surfaces at the mandatory floor and declares the hierarchy debt', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .midbox { background-color: #8a8a8a; }
+      .primary { color: #404040; }
+      .secondary { color: #555555; }
+    </style></head><body>
+      <div class="midbox">
+        <p class="primary">${prose}</p>
+        <p class="secondary">${prose}</p>
+      </div>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 21,
+      canvasColor: '#111827',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    expect(mappings.length).toBeGreaterThan(0)
+    for (const mapping of mappings) {
+      expect(mapping.surfacePolarity).toBe('mid')
+    }
+    // The mid-band findings declare the hierarchy debt explicitly.
+    for (const finding of analysis.findings) {
+      const evidence = finding.evidence as Record<string, unknown>
+      expect(evidence.surfacePolarity).toBe('mid')
+      expect(evidence.hierarchyStatus).toBe('constrained-narrow-gamut')
+      expect(typeof evidence.hierarchyDebtCodePoints).toBe('number')
+    }
+
+    const plan = await createPresentationPlan(
+      {
+        schemaVersion: PRESENTATION_PLAN_SCHEMA_VERSION,
+        engineVersion: 'mid-band-test',
+        mode: 'adaptive',
+        publicationRevision: 'mid-band-fixture',
+        analysisFingerprint: 'explicit-mid-v1',
+        renderingContextFingerprint: 'dark',
+        findings: analysis.findings,
+        patches: analysis.patches,
+      },
+      RESTORE_EXPLICIT_TEXT_OPERATION_VALIDATORS,
+    )
+    const layer = await applyRestoreExplicitTextPlan(
+      plan!,
+      source,
+      rendered,
+      21,
+    )
+    expect(layer).toBeDefined()
+    const validation = validateRestoredExplicitText(layer!).input
+    expect(validation.passed).toBe(true)
+    const hierarchyProbe = validation.probes.find(
+      (probe) => probe.id === 'explicit-text-neutral-hierarchy',
+    )
+    expect(hierarchyProbe?.metrics.constrainedMidGroups).toBe(mappings.length)
+    expect(
+      hierarchyProbe?.metrics.constrainedMidCodePoints as number,
+    ).toBeGreaterThan(0)
+    layer!.restore()
+    iframe.remove()
+  })
+
+  it('prioritizes larger text masses when the candidate budget truncates', async () => {
+    const longProse =
+      'Main chapter prose deliberately long enough to dominate the candidate budget ordering by a wide margin of code points.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .main { color: #111111; }
+      .note { color: #222222; }
+      .label { color: #333333; }
+    </style></head><body>
+      <p class="main">${longProse}</p>
+      <p class="note">A secondary note with enough text to matter here.</p>
+      <p class="label">Tiny label.</p>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 22,
+      canvasColor: '#111827',
+      maxCandidates: 2,
+    })
+    expect(analysis.patches).toHaveLength(2)
+    expect(analysis.diagnostics).toContain('explicit-groups-truncated')
+    const sources = analysis.patches
+      .map((patch) =>
+        isRestoreExplicitTextParameters(patch.parameters)
+          ? patch.parameters.sourceText
+          : undefined,
+      )
+      .sort()
+    // The tiny label loses the budget race; the two larger masses win.
+    expect(sources).toEqual(['#111111', '#222222'])
+    iframe.remove()
+  })
+
+  it('preserves hierarchy when sibling colors have different sample counts', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .primary { color: #111111; }
+      .secondary { color: #404040; }
+    </style></head><body>
+      <p class="primary">${prose}</p>
+      <p class="primary">${prose}</p>
+      <p class="primary">${prose}</p>
+      <p class="secondary">${prose}</p>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 23,
+      canvasColor: '#111827',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    expect(mappings).toHaveLength(2)
+    // Different sample counts must not split the hierarchy family: the
+    // stronger source still earns the stronger target.
+    const primary = mappings.find((m) => m.sourceText === '#111111')!
+    const secondary = mappings.find((m) => m.sourceText === '#404040')!
+    expect(srgbToOklch(parseSrgbColor(primary.targetText)!).l).toBeGreaterThan(
+      srgbToOklch(parseSrgbColor(secondary.targetText)!).l,
+    )
     iframe.remove()
   })
 })
