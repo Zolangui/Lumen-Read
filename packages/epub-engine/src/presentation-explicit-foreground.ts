@@ -41,7 +41,7 @@ import {
   resolveSourceTreeAddress,
 } from './source-tree'
 
-export const EXPLICIT_FOREGROUND_ANALYZER_VERSION = 11 as const
+export const EXPLICIT_FOREGROUND_ANALYZER_VERSION = 12 as const
 export const RESTORE_EXPLICIT_TEXT_OPERATION_VERSION = 4 as const
 export const EXPLICIT_FOREGROUND_VALIDATOR_VERSION = 7 as const
 
@@ -319,7 +319,13 @@ function preserveNeutralHierarchy(candidates: PreparedCandidateGroup[]): void {
     // when a single light element (e.g. a page number) joins the family.
     const weakestIndex = sourceLightness.indexOf(maximum)
     const baseline = srgbToOklch(family[weakestIndex]!.targetText).l
-    const available = darkSurface ? 1 - baseline : baseline
+    // The available headroom must respect the lightness caps, not the
+    // theoretical 0..1 range. Otherwise the retention factor expands
+    // candidates into the clamp zone and they all collapse to the same
+    // quantized value.
+    const available = darkSurface
+      ? Math.max(0, MAX_NEUTRAL_TARGET_LIGHTNESS_DARK - baseline)
+      : Math.max(0, baseline - MIN_NEUTRAL_TARGET_LIGHTNESS_LIGHT)
     const retention = Math.min(
       NEUTRAL_HIERARCHY_RETENTION,
       Math.max(0, (available * 0.98) / span),
