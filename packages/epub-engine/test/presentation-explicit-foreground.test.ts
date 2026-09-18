@@ -1031,4 +1031,115 @@ describe('explicit foreground repair', () => {
     )
     iframe.remove()
   })
+
+  it('distributes multi-tier dark neutral candidates without clamp collisions', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .t0 { color: #000000; }
+      .t1 { color: #222222; }
+      .t2 { color: #444444; }
+      .t3 { color: #666666; }
+    </style></head><body>
+      <p class="t0">${prose}</p>
+      <p class="t1">${prose}</p>
+      <p class="t2">${prose}</p>
+      <p class="t3">${prose}</p>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 24,
+      canvasColor: '#24292e',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    expect(mappings).toHaveLength(4)
+    // Every tier must receive a distinct target (no clamp collision at 0.82)
+    const distinctTargets = new Set(mappings.map((m) => m.targetText))
+    expect(distinctTargets.size).toBe(4)
+
+    // Strictly monotonic: darker source gets lighter target on dark canvas
+    const sorted = [...mappings].sort(
+      (a, b) =>
+        srgbToOklch(parseSrgbColor(a.sourceText)!).l -
+        srgbToOklch(parseSrgbColor(b.sourceText)!).l,
+    )
+    for (let i = 1; i < sorted.length; i++) {
+      const stronger = sorted[i - 1]!
+      const weaker = sorted[i]!
+      expect(
+        srgbToOklch(parseSrgbColor(stronger.targetText)!).l,
+      ).toBeGreaterThan(srgbToOklch(parseSrgbColor(weaker.targetText)!).l)
+    }
+    iframe.remove()
+  })
+
+  it('preserves neutral hierarchy symmetrically on light surfaces without floor collisions', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .light-t0 { color: #ffffff; }
+      .light-t1 { color: #eeeeee; }
+      .light-t2 { color: #cccccc; }
+    </style></head><body>
+      <p class="light-t0">${prose}</p>
+      <p class="light-t1">${prose}</p>
+      <p class="light-t2">${prose}</p>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 25,
+      canvasColor: '#ffffff',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    expect(mappings).toHaveLength(3)
+    const distinctTargets = new Set(mappings.map((m) => m.targetText))
+    expect(distinctTargets.size).toBe(3)
+
+    // On light canvas, target lightness must stay at or above MIN_NEUTRAL_TARGET_LIGHTNESS_LIGHT (0.18)
+    for (const m of mappings) {
+      const targetL = srgbToOklch(parseSrgbColor(m.targetText)!).l
+      expect(targetL).toBeGreaterThanOrEqual(0.18)
+    }
+
+    // Strictly monotonic: darker source gets darker target, lighter source gets lighter target
+    const sorted = [...mappings].sort(
+      (a, b) =>
+        srgbToOklch(parseSrgbColor(a.sourceText)!).l -
+        srgbToOklch(parseSrgbColor(b.sourceText)!).l,
+    )
+    for (let i = 1; i < sorted.length; i++) {
+      const darkerSource = sorted[i - 1]!
+      const lighterSource = sorted[i]!
+      expect(
+        srgbToOklch(parseSrgbColor(darkerSource.targetText)!).l,
+      ).toBeLessThan(srgbToOklch(parseSrgbColor(lighterSource.targetText)!).l)
+    }
+    iframe.remove()
+  })
 })
