@@ -282,6 +282,42 @@ Normal, production, and package scripts explicitly compile this flag as false.
 pnpm build:ext:firefox:presentation-test
 ```
 
+## Known limitations and design decisions
+
+### Neutral hierarchy compression
+
+When several neutral foregrounds share one dark canvas, all valid ≥7:1 targets
+live in a narrow lightness band (≈0.05 L). The engine keeps every tier distinct
+and ordered but the steps may be imperceptible in running text. Same-source
+elements (e.g. headings and body sharing #000000) intentionally share one
+target — their hierarchy lives in size/weight, which the engine preserves
+untouched.
+
+**Why not widen the band?** Widening requires the bipolar policy (AA for
+secondaries), which trades accessibility guarantees for visual hierarchy. This
+is a product decision, not a bug fix. Tracked separately.
+
+### Translucent surfaces
+
+Translucent backgrounds (alpha < 1) are classified as `unknownPaint` and
+preserved unchanged. The engine does not attempt to composite translucent
+colors over the canvas because:
+
+1. `srgbToHex` erases alpha, making the composed color unreliable for
+   downstream guards.
+2. Six validators require exact equality and `surface.address === self`.
+3. The gain is limited to rare pill/badge cases.
+
+**Fail-closed by design.** Reopen only with telemetry showing translucent
+surfaces as a significant source of reading debt.
+
+### Duplicate patch IDs
+
+Stroke, list-marker, and explicit-foreground analyzers now include proven
+surfaces in patch IDs to prevent collisions when the same color appears on
+different surfaces. This was a real bug that caused entire spines to fall back
+to Published when duplicate IDs triggered plan rejection.
+
 ## Next admission gate
 
 Before enabling Adaptive for users:
