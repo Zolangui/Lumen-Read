@@ -8,6 +8,7 @@ node_modules
 # testing
 coverage
 artifacts/presentation-fixtures/
+artifacts/*.epub
 packages/epub-engine/test-corpus/private/
 packages/epub-engine/test/fixtures/*.epub
 

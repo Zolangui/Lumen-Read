@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Mid-band Gamut Boundary Surfaces</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: transparent;
+        color: #000000;
+        font: 16px/1.5 system-ui, sans-serif;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #000000;
+      }
+      p.intro {
+        color: #000000;
+        margin-bottom: 16px;
+      }
+
+      /* Mid-band Surface 1: Y ≈ 0.28 (0.22 < Y < 0.40) */
+      .midband-card-1 {
+        background-color: #909090;
+        border: 1px solid #707070;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+      .midband-card-1 h3 {
+        color: #111111; /* Low contrast dark text on mid surface */
+        margin: 0 0 8px 0;
+        font-size: 16px;
+      }
+      .midband-card-1 p {
+        color: #222222; /* Low contrast dark text */
+        margin: 0;
+      }
+
+      /* Mid-band Surface 2: Y ≈ 0.33 */
+      .midband-card-2 {
+        background-color: #9c9c9c;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+      .midband-card-2 h3 {
+        color: #f0f0f0; /* Low contrast light text on mid surface */
+        margin: 0 0 8px 0;
+        font-size: 16px;
+      }
+      .midband-card-2 p {
+        color: #e0e0e0; /* Low contrast light text */
+        margin: 0;
+      }
+
+      /* Mid-band Chromatic Surface (e.g. muted steel blue Y ≈ 0.30) */
+      .midband-steel {
+        background-color: #6a8596;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+      .midband-steel p {
+        color: #25333d;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Mid-Band Gamut Boundary Surfaces</h1>
+
+    <p class="intro">
+      Superfícies no intervalo 0.22 &lt; Y &lt; 0.40 possuem gamut restrito onde nem preto nem branco
+      alcançam contraste 7:1. A LPE deve degradar com segurança para o piso de 4.5:1 e registrar dívida.
+    </p>
+
+    <div class="midband-card-1" id="midband-card-dark-text">
+      <h3>Cartão Cinza Médio (#909090) com Texto Escuro</h3>
+      <p>Texto original #222222 sobre fundo #909090 possui contraste insuficiente e deve atingir piso 4.5:1.</p>
+    </div>
+
+    <div class="midband-card-2" id="midband-card-light-text">
+      <h3>Cartão Cinza Médio (#9c9c9c) com Texto Claro</h3>
+      <p>Texto original #e0e0e0 sobre fundo #9c9c9c possui contraste insuficiente e deve atingir piso 4.5:1.</p>
+    </div>
+
+    <div class="midband-steel" id="midband-steel-box">
+      <p>Superfície steel-blue (#6a8596) testando a classificação de polaridade intermediária cromática.</p>
+    </div>
+  </body>
+</html>

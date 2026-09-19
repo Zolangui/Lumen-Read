@@ -26,6 +26,10 @@
     <item id="occluded-callout" href="occluded-callout.xhtml" media-type="application/xhtml+xml" />
     <item id="lazy-image-section" href="lazy-image-section.xhtml" media-type="application/xhtml+xml" />
     <item id="stroke-contrast" href="stroke-contrast.xhtml" media-type="application/xhtml+xml" />
+    <item id="adversarial-colors" href="adversarial-colors.xhtml" media-type="application/xhtml+xml" />
+    <item id="multi-level-neutrals" href="multi-level-neutrals.xhtml" media-type="application/xhtml+xml" />
+    <item id="mixed-callouts" href="mixed-callouts.xhtml" media-type="application/xhtml+xml" />
+    <item id="midband-surfaces" href="midband-surfaces.xhtml" media-type="application/xhtml+xml" />
     <item id="delayed-tall-image" href="delayed-tall.svg" media-type="image/svg+xml" />
   </manifest>
   <spine>
@@ -43,5 +47,9 @@
     <itemref idref="occluded-callout" />
     <itemref idref="lazy-image-section" />
     <itemref idref="stroke-contrast" />
+    <itemref idref="adversarial-colors" />
+    <itemref idref="multi-level-neutrals" />
+    <itemref idref="mixed-callouts" />
+    <itemref idref="midband-surfaces" />
   </spine>
 </package>

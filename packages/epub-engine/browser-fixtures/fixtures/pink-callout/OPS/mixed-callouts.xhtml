@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Mixed Callouts and Inverted Polarity</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 24px;
+        background: transparent;
+        color: #000000;
+        font: 16px/1.5 system-ui, sans-serif;
+      }
+      h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #000000;
+      }
+      p.body-prose {
+        color: #000000;
+        margin-bottom: 16px;
+      }
+
+      /* Callout 1: Light box inside dark canvas */
+      .callout-light {
+        background-color: #f5f5f5;
+        border: 1px solid #d0d0d0;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+      .callout-light p {
+        color: #1a1a1a;
+        margin: 0 0 8px 0;
+      }
+      .callout-light .note-secondary {
+        color: #555555;
+        font-size: 13px;
+        margin: 0;
+      }
+
+      /* Callout 2: Warning amber box (light chromatic surface) */
+      .callout-warning {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 12px 16px;
+        margin: 20px 0;
+      }
+      .callout-warning strong {
+        color: #664d03;
+      }
+      .callout-warning p {
+        color: #664d03;
+        margin: 4px 0 0 0;
+      }
+
+      /* Callout 3: Explicit dark box */
+      .callout-dark-box {
+        background-color: #1e2227;
+        border: 1px solid #30363d;
+        border-radius: 6px;
+        padding: 16px;
+        margin: 20px 0;
+      }
+      .callout-dark-box h3 {
+        color: #222222; /* Author low-contrast bug in dark box: must be repaired to light */
+        margin: 0 0 8px 0;
+        font-size: 16px;
+      }
+      .callout-dark-box p {
+        color: #333333; /* Author low-contrast bug: must be repaired */
+        margin: 0;
+      }
+
+      /* Callout 4: Code block */
+      pre.code-block {
+        background-color: #282c34;
+        border-radius: 6px;
+        padding: 12px 16px;
+        margin: 20px 0;
+        font-family: ui-monospace, monospace;
+        font-size: 14px;
+        line-height: 1.4;
+      }
+      pre.code-block code {
+        color: #abb2bf;
+      }
+      pre.code-block .keyword {
+        color: #c678dd;
+      }
+      pre.code-block .string {
+        color: #98c379;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Capítulo com Callouts Mistos</h1>
+
+    <p class="body-prose">
+      Este parágrafo é o corpo de texto principal herdando cor escura sobre o canvas geral do documento.
+      Quando renderizado em tema escuro, este texto precisa ser clareado para garantir legibilidade.
+    </p>
+
+    <div class="callout-light" id="callout-light-box">
+      <p><strong>Destaque em Fundo Claro:</strong> Esta caixa possui fundo explícito claro (#f5f5f5) com texto escuro (#1a1a1a).</p>
+      <p class="note-secondary">Texto secundário de nota em cinza (#555555) com contraste adequado contra o fundo claro.</p>
+    </div>
+
+    <p class="body-prose">
+      Texto de transição entre blocos que volta a herdar a superfície geral do documento.
+    </p>
+
+    <div class="callout-warning" id="callout-warning-box">
+      <strong>Atenção:</strong>
+      <p>Esta caixa possui fundo amarelo suave (#fff3cd) com texto âmbar escuro (#664d03). O contraste é alto e a cor deve ser preservada.</p>
+    </div>
+
+    <div class="callout-dark-box" id="callout-dark-box">
+      <h3>Caixa Escura Explícita com Texto Ilegível</h3>
+      <p>Este parágrafo usa cinza escuro (#333333) dentro de uma caixa escura (#1e2227). Deve ser reparado pela LPE.</p>
+    </div>
+
+    <pre class="code-block" id="callout-code-block"><code><span class="keyword">const</span> message = <span class="string">"Hello, LPE mixed callouts!"</span>;</code></pre>
+  </body>
+</html>

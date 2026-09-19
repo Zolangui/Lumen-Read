@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Adversarial color cases</title>
+    <style>
+      body { background: transparent; color: #000000; }
+      
+      /* Case 1: Same color, different surfaces */
+      .on-dark { background-color: #1a1a2e; color: #ffffff; }
+      .on-light { background-color: #f0f0f0; color: #000000; }
+      .on-mid { background-color: #808080; color: #000000; }
+      
+      /* Case 2: Gradient backgrounds */
+      .gradient-subtle { 
+        background: linear-gradient(to bottom, #f0f0f0, #e0e0e0); 
+        color: #000000; 
+      }
+      .gradient-extreme { 
+        background: linear-gradient(to right, #000000, #ffffff); 
+        color: #808080; 
+      }
+      
+      /* Case 3: Nested color inheritance */
+      .outer { color: #000000; }
+      .outer .middle { color: #333333; }
+      .outer .middle .inner { color: #666666; }
+      
+      /* Case 4: Chromatic accents */
+      .accent-blue { color: #0066cc; }
+      .accent-red { color: #cc0000; }
+      .accent-green { color: #006600; }
+      
+      /* Case 5: Low contrast pairs */
+      .low-contrast-1 { color: #777777; background-color: #888888; }
+      .low-contrast-2 { color: #999999; background-color: #aaaaaa; }
+      
+      /* Case 6: Transparent backgrounds */
+      .transparent-bg { background-color: transparent; color: #000000; }
+      .semi-transparent { background-color: rgba(255,255,255,0.5); color: #000000; }
+      
+      /* Case 7: Important overrides */
+      .important-override { color: #000000 !important; }
+      
+      /* Case 8: CSS variables */
+      :root { --text-color: #000000; --bg-color: #ffffff; }
+      .css-vars { color: var(--text-color); background-color: var(--bg-color); }
+      
+      /* Case 9: Pseudo-elements */
+      .pseudo-before::before { content: "Before: "; color: #666666; }
+      .pseudo-after::after { content: " :After"; color: #666666; }
+      
+      /* Case 10: Mixed content */
+      .mixed { color: #000000; }
+      .mixed em { color: #333333; }
+      .mixed strong { color: #000000; font-weight: bold; }
+      .mixed code { color: #101010; font-family: monospace; }
+    </style>
+  </head>
+  <body>
+    <h1>Adversarial Color Cases</h1>
+    
+    <section id="same-color-different-surfaces">
+      <h2>Same color, different surfaces</h2>
+      <p class="on-dark">White text on dark blue background.</p>
+      <p class="on-light">Black text on light gray background.</p>
+      <p class="on-mid">Black text on mid gray background.</p>
+    </section>
+    
+    <section id="gradients">
+      <h2>Gradient backgrounds</h2>
+      <p class="gradient-subtle">Text on subtle gradient background.</p>
+      <p class="gradient-extreme">Text on extreme gradient background.</p>
+    </section>
+    
+    <section id="nested-inheritance">
+      <h2>Nested color inheritance</h2>
+      <div class="outer">
+        <p>Outer text (black).</p>
+        <div class="middle">
+          <p>Middle text (dark gray).</p>
+          <div class="inner">
+            <p>Inner text (medium gray).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <section id="chromatic-accents">
+      <h2>Chromatic accents</h2>
+      <p>Normal text with <span class="accent-blue">blue accent</span> and <span class="accent-red">red accent</span> and <span class="accent-green">green accent</span>.</p>
+    </section>
+    
+    <section id="low-contrast">
+      <h2>Low contrast pairs</h2>
+      <p class="low-contrast-1">Low contrast text 1 (gray on gray).</p>
+      <p class="low-contrast-2">Low contrast text 2 (lighter gray on gray).</p>
+    </section>
+    
+    <section id="transparent-backgrounds">
+      <h2>Transparent backgrounds</h2>
+      <p class="transparent-bg">Text on transparent background.</p>
+      <p class="semi-transparent">Text on semi-transparent background.</p>
+    </section>
+    
+    <section id="important-overrides">
+      <h2>Important overrides</h2>
+      <p class="important-override">Text with !important color override.</p>
+    </section>
+    
+    <section id="css-variables">
+      <h2>CSS variables</h2>
+      <p class="css-vars">Text using CSS custom properties.</p>
+    </section>
+    
+    <section id="pseudo-elements">
+      <h2>Pseudo-elements</h2>
+      <p class="pseudo-before">Text with ::before pseudo-element.</p>
+      <p class="pseudo-after">Text with ::after pseudo-element.</p>
+    </section>
+    
+    <section id="mixed-content">
+      <h2>Mixed content</h2>
+      <p class="mixed">
+        Normal text with <em>emphasized text</em> and <strong>strong text</strong> 
+        and <code>inline code</code> all in one paragraph.
+      </p>
+    </section>
+  </body>
+</html>

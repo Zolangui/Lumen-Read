@@ -46,6 +46,10 @@ const allFixtureCases = [
   'occluded-callout',
   'lazy-image-section',
   'stroke-contrast',
+  'adversarial-colors',
+  'multi-level-neutrals',
+  'mixed-callouts',
+  'midband-surfaces',
 ]
 const privateFixtureCases = [
   'private-large-index',
