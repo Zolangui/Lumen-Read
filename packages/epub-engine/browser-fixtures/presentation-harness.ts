@@ -2398,12 +2398,16 @@ async function runAdversarialEvidenceCase(
           opaqueBg,
         )
       : 0
-    const ghostKeptAuthorColor = ghostPill
+    // The translucent pill background composites over the dark canvas into
+    // a proven surface, so its dark text must now be repaired (fail-closed
+    // was the pre-compositing behavior).
+    const ghostRepairedContrast = ghostPill
       ? contrastRatio(
           parseSrgbColor(textColor(ghostPill as HTMLElement))!,
           canvas,
-        ) < 4.5
-      : false
+        )
+      : 0
+    const ghostRepaired = ghostRepairedContrast >= 4.5
     checks.push(
       {
         id: 'adversarial-opaque-pill-repaired',
@@ -2412,12 +2416,10 @@ async function runAdversarialEvidenceCase(
         detail: `${opaqueContrast.toFixed(1)}:1 contra #2b3038`,
       },
       {
-        id: 'adversarial-translucent-pill-debt',
-        label: 'Pill translúcida mantém cor autoral (dívida declarada)',
-        passed: ghostKeptAuthorColor,
-        detail: ghostKeptAuthorColor
-          ? 'cor autoral preservada, sem adivinhação'
-          : 'texto foi alterado sobre superfície não-provada',
+        id: 'adversarial-translucent-pill-repaired',
+        label: 'Pill translúcida tem texto reparado (contraste >= 4.5:1)',
+        passed: ghostRepaired,
+        detail: `${ghostRepairedContrast.toFixed(1)}:1 contra o canvas`,
       },
     )
   } else if (TEST_CASE === 'multi-level-neutrals') {

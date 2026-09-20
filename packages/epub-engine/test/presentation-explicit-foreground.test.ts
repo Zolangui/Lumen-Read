@@ -1443,4 +1443,67 @@ describe('explicit foreground repair', () => {
     }
     iframe.remove()
   })
+
+  it('repairs dark text on a simple translucent pill instead of dropping it', async () => {
+    // Regression: translucent pills used to be unknown paint, so enabling
+    // the engine made inline code darker than the legacy repair (which
+    // painted it light). The composited surface is now proven and repaired.
+    const prose =
+      'Technical prose long enough to provide stable direct text evidence, with inline code '
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; color: #000000; }
+      code.pill { background-color: rgba(175, 184, 193, 0.2); color: #101010; padding: 2px 6px; }
+    </style></head><body><p>${prose}<code class="pill">git checkout</code> trailing words here.</p></body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 32,
+      canvasColor: '#24292e',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    const pill = mappings.find((m) => m.sourceText === '#101010')
+    expect(pill).toBeDefined()
+    const pillLightness = srgbToOklch(parseSrgbColor(pill!.targetText)!).l
+    const canvasLightness = srgbToOklch(parseSrgbColor('#24292e')!).l
+    expect(pillLightness).toBeGreaterThan(canvasLightness + 0.3)
+
+    const plan = await createPresentationPlan(
+      {
+        schemaVersion: PRESENTATION_PLAN_SCHEMA_VERSION,
+        engineVersion: 'translucent-pill-test',
+        mode: 'adaptive',
+        publicationRevision: 'translucent-pill-fixture',
+        analysisFingerprint: 'explicit-translucent-pill-v1',
+        renderingContextFingerprint: 'dark',
+        findings: analysis.findings,
+        patches: analysis.patches,
+      },
+      RESTORE_EXPLICIT_TEXT_OPERATION_VALIDATORS,
+    )
+    const layer = await applyRestoreExplicitTextPlan(
+      plan!,
+      source,
+      rendered,
+      32,
+    )
+    expect(validateRestoredExplicitText(layer!).input.passed).toBe(true)
+    expect(
+      rendered.defaultView!.getComputedStyle(
+        rendered.querySelector('code.pill')!,
+      ).color,
+    ).not.toBe('rgb(16, 16, 16)')
+    layer!.restore()
+    iframe.remove()
+  })
 })

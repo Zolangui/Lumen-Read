@@ -303,7 +303,7 @@ table.stress-table tr:nth-child(odd) td {
 <h1>Capítulo 4: Blocos de Código</h1>
 <p>Livros técnicos frequentemente misturam blocos de código com fontes monoespaçadas e código inline no meio do parágrafo, como o comando <code class="inline-code">git checkout -b feature</code> ou <code class="inline-code">npm install</code>.</p>
 
-<p>Pill opaca (superfície provada): o comando <code class="opaque-code">git status</code> deve ser reparado no canvas escuro. Pill translúcida (superfície não-provada): o comando <code class="inline-code">git log</code> mantém a cor autoral por dívida declarada.</p>
+<p>Pill opaca (superfície provada): o comando <code class="opaque-code">git status</code> deve ser reparado no canvas escuro. Pill translúcida (superfície composta): o comando <code class="inline-code">git log</code> é reparado contra o fundo resultante da composição.</p>
 
 <pre class="code-block"><code><span class="cm">// Simulação de highlight de sintaxe</span>
 <span class="kw">function</span> <span class="fn">adaptColor</span>(sourceColor, surface) {

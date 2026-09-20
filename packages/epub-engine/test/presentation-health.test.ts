@@ -548,4 +548,90 @@ describe('presentation health map', () => {
     expect(summary.knownLowContrastCodePoints).toBe(1)
     iframe.remove()
   })
+
+  it('composites a simple translucent backdrop over a proven canvas', () => {
+    const { document: rendered, iframe } = renderedDocument(`
+      <head><style>
+        body { color: #101010; background: transparent; }
+        .pill { background-color: rgba(175, 184, 193, 0.2); color: #101010; }
+      </style></head>
+      <body><p id="pill" class="pill">Pill text on a translucent surface.</p></body>
+    `)
+
+    const health = createPresentationHealthMap({
+      renderedDocument: rendered,
+      spineIndex: 0,
+      canvasColor: '#24292e',
+    })
+    const pill = health.observations.find(
+      (observation) => observation.element.id === 'pill',
+    )!
+    expect(pill.paint.kind).toBe('known')
+    if (pill.paint.kind === 'known') {
+      // The pill tint alone is light; composited over the dark canvas the
+      // effective surface is dark, so the dark text is proven low-contrast
+      // instead of unknown.
+      expect(pill.paint.contrast).toBeLessThan(4.5)
+      expect(pill.paint.surface).toMatchObject({ kind: 'element' })
+    }
+    iframe.remove()
+  })
+
+  it('stacks nested translucent backdrops before the opaque surface', () => {
+    const { document: rendered, iframe } = renderedDocument(`
+      <head><style>
+        body { color: #101010; background: #ffffff; }
+        .outer { background-color: rgba(0, 0, 0, 0.5); }
+        .inner { background-color: rgba(0, 0, 0, 0.5); color: #101010; }
+      </style></head>
+      <body><div class="outer"><p id="nested" class="inner">Nested translucent text.</p></div></body>
+    `)
+
+    const health = createPresentationHealthMap({
+      renderedDocument: rendered,
+      spineIndex: 0,
+      canvasColor: '#24292e',
+    })
+    const nested = health.observations.find(
+      (observation) => observation.element.id === 'nested',
+    )!
+    // 0.5 over 0.5 over white folds to one effective surface instead of
+    // aborting to unknown; the dark-on-dark pair stays proven low-contrast.
+    expect(nested.paint.kind).toBe('known')
+    iframe.remove()
+  })
+
+  it('keeps blend, opacity and image backdrops unknown', () => {
+    const { document: rendered, iframe } = renderedDocument(`
+      <head><style>
+        body { color: #101010; background: #24292e; }
+        .blended { background-color: rgba(175, 184, 193, 0.2); mix-blend-mode: multiply; color: #101010; }
+        .faded { background-color: rgba(175, 184, 193, 0.2); opacity: 0.5; color: #101010; }
+        .pictured { background-color: rgba(175, 184, 193, 0.2); background-image: linear-gradient(#fff, #ddd); color: #101010; }
+      </style></head>
+      <body>
+        <p id="blended" class="blended">Blended pill text.</p>
+        <p id="faded" class="faded">Faded pill text.</p>
+        <p id="pictured" class="pictured">Pictured pill text.</p>
+      </body>
+    `)
+
+    const health = createPresentationHealthMap({
+      renderedDocument: rendered,
+      spineIndex: 0,
+      canvasColor: '#24292e',
+    })
+    const reason = (id: string): string | undefined => {
+      const paint = health.observations.find(
+        (observation) => observation.element.id === id,
+      )!.paint
+      return paint.kind === 'unknown' ? paint.reason : undefined
+    }
+    // Compositing is intentionally narrow: anything beyond a simple
+    // translucent solid over a proven backdrop stays fail-closed.
+    expect(reason('blended')).toBe('composited-paint')
+    expect(reason('faded')).toBe('composited-paint')
+    expect(reason('pictured')).toBe('background-image')
+    iframe.remove()
+  })
 })

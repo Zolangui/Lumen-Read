@@ -22,7 +22,7 @@ import {
   type SourceTreeAddress,
 } from './source-tree'
 
-export const PRESENTATION_HEALTH_MODEL_VERSION = 12 as const
+export const PRESENTATION_HEALTH_MODEL_VERSION = 13 as const
 /**
  * Hard ceiling for a complete presentation evidence map.
  *
@@ -508,6 +508,27 @@ function unknownPaint(
     : { kind: 'unknown', confidence: 'low', reason }
 }
 
+/**
+ * sRGB source-over compositing. Browsers composite unmanaged content in
+ * sRGB, so this matches the rendered pixel modulo 8-bit rounding — and every
+ * downstream contrast guard re-proves the quantized hex before repairing.
+ */
+function compositeOver(
+  foreground: SrgbColor,
+  background: SrgbColor,
+): SrgbColor {
+  const alpha = foreground.a + background.a * (1 - foreground.a)
+  if (alpha <= 0) return { r: 0, g: 0, b: 0, a: 0 }
+  const blend = (f: number, b: number): number =>
+    (f * foreground.a + b * background.a * (1 - foreground.a)) / alpha
+  return {
+    r: blend(foreground.r, background.r),
+    g: blend(foreground.g, background.g),
+    b: blend(foreground.b, background.b),
+    a: alpha,
+  }
+}
+
 function freezeColor(color: SrgbColor): SrgbColor {
   return Object.freeze({ ...color })
 }
@@ -567,6 +588,22 @@ function paintRelationship(
 
   let currentIndex: number | undefined = index
   let transparentAncestorCount = 0
+  // Nearest-first stack of translucent backdrops. Every level above already
+  // passed the blend/filter/mask/opacity/image guards, so when the walk
+  // reaches an opaque backdrop the stack folds over it (source-over) into
+  // one proven surface instead of aborting to unknown. Fully transparent
+  // levels keep climbing as before.
+  const translucentStack: Array<{
+    background: SrgbColor
+    observationIndex: number
+  }> = []
+  const foldStack = (backdrop: SrgbColor): SrgbColor => {
+    let effective = backdrop
+    for (let i = translucentStack.length - 1; i >= 0; i -= 1) {
+      effective = compositeOver(translucentStack[i]!.background, effective)
+    }
+    return effective
+  }
   while (currentIndex !== undefined) {
     const current: PendingObservation = pending[currentIndex]!
     const currentStyle = current.style!
@@ -603,22 +640,33 @@ function paintRelationship(
       current.element,
     )
     if (background?.a && background.a >= 0.999) {
+      const effective = foldStack(background)
+      const surface: PresentationKnownPaintRelationship['surface'] =
+        translucentStack.length > 0
+          ? {
+              kind: 'element',
+              observationIndex: translucentStack[0]!.observationIndex,
+              address: pending[translucentStack[0]!.observationIndex]!.address,
+            }
+          : {
+              kind: 'element',
+              observationIndex: currentIndex,
+              address: current.address,
+            }
       return {
         kind: 'known',
         confidence: 'high',
         foreground,
-        background,
-        contrast: contrastRatio(foreground, background),
+        background: effective,
+        contrast: contrastRatio(foreground, effective),
         transparentAncestorCount,
-        surface: {
-          kind: 'element',
-          observationIndex: currentIndex,
-          address: current.address,
-        },
+        surface,
       }
     }
     if (background && background.a > 0.001) {
-      return unknownPaint('translucent-background', foreground)
+      translucentStack.push({ background, observationIndex: currentIndex })
+      currentIndex = current.parentObservationIndex
+      continue
     }
     transparentAncestorCount += 1
     currentIndex = current.parentObservationIndex
@@ -645,14 +693,23 @@ function paintRelationship(
       documentElement,
     )
     if (rootBackground?.a && rootBackground.a >= 0.999) {
+      const effective = foldStack(rootBackground)
+      const surface: PresentationKnownPaintRelationship['surface'] =
+        translucentStack.length > 0
+          ? {
+              kind: 'element',
+              observationIndex: translucentStack[0]!.observationIndex,
+              address: pending[translucentStack[0]!.observationIndex]!.address,
+            }
+          : { kind: 'document' }
       return {
         kind: 'known',
         confidence: 'high',
         foreground,
-        background: rootBackground,
-        contrast: contrastRatio(foreground, rootBackground),
+        background: effective,
+        contrast: contrastRatio(foreground, effective),
         transparentAncestorCount,
-        surface: { kind: 'document' },
+        surface,
       }
     }
     if (rootBackground && rootBackground.a > 0.001) {
@@ -666,14 +723,23 @@ function paintRelationship(
       foreground,
     )
   }
+  const effective = foldStack(canvas)
+  const surface: PresentationKnownPaintRelationship['surface'] =
+    translucentStack.length > 0
+      ? {
+          kind: 'element',
+          observationIndex: translucentStack[0]!.observationIndex,
+          address: pending[translucentStack[0]!.observationIndex]!.address,
+        }
+      : { kind: 'canvas' }
   return {
     kind: 'known',
     confidence: 'high',
     foreground,
-    background: canvas,
-    contrast: contrastRatio(foreground, canvas),
+    background: effective,
+    contrast: contrastRatio(foreground, effective),
     transparentAncestorCount,
-    surface: { kind: 'canvas' },
+    surface,
   }
 }
 
