@@ -222,6 +222,13 @@ export default {
   'theme.background_dark_tinted': 'Preto',
   'theme.background_dark_deep': 'Azul escuro',
   'theme.background_color_help': 'Usado quando o leitor está no modo claro.',
+  'theme.adaptive_title': 'Apresentação adaptativa (Beta)',
+  'theme.adaptive_description':
+    'Repara textos de baixo contraste e problemas de layout preservando o design do livro.',
+  'theme.adaptive_pill_title': 'Texto com baixo contraste nesta página?',
+  'theme.adaptive_pill_action': 'Ativar adaptação',
+  'theme.adaptive_pill_dismiss': 'Dispensar',
+  'theme.adaptive_copy_diagnostics': 'Copiar diagnóstico de apresentação',
 
   untitled: 'Sem título',
 

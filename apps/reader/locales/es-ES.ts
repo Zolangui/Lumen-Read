@@ -190,6 +190,13 @@ export default {
   'theme.background_tinted': 'Teñido',
   'theme.background_deep': 'Tono intenso',
   'theme.background_color_help': 'Se utiliza con el lector en modo claro.',
+  'theme.adaptive_title': 'Presentación adaptable (Beta)',
+  'theme.adaptive_description':
+    'Repara textos de bajo contraste y problemas de maquetación preservando el diseño del libro.',
+  'theme.adaptive_pill_title': '¿Texto de bajo contraste en esta página?',
+  'theme.adaptive_pill_action': 'Activar adaptación',
+  'theme.adaptive_pill_dismiss': 'Descartar',
+  'theme.adaptive_copy_diagnostics': 'Copiar diagnóstico de presentación',
   untitled: 'Sin título',
   'ai.title': 'Asistente de IA',
   'ai.tabs.general': 'Generales',

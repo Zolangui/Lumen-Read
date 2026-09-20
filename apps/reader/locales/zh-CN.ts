@@ -217,6 +217,13 @@ export default {
   'theme.background_dark_tinted': '黑色',
   'theme.background_dark_deep': '深蓝色',
   'theme.background_color_help': '在阅读器使用浅色模式时应用。',
+  'theme.adaptive_title': '自适应呈现（测试版）',
+  'theme.adaptive_description':
+    '在保留图书原有设计的同时，修复低对比度文本和布局问题。',
+  'theme.adaptive_pill_title': '此页有低对比度文本？',
+  'theme.adaptive_pill_action': '启用适配',
+  'theme.adaptive_pill_dismiss': '关闭',
+  'theme.adaptive_copy_diagnostics': '复制呈现诊断',
 
   untitled: '未标题',
 

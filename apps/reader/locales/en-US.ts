@@ -219,6 +219,13 @@ export default {
   'theme.background_dark_tinted': 'Black',
   'theme.background_dark_deep': 'Blue dark',
   'theme.background_color_help': 'Used when the reader is in light mode.',
+  'theme.adaptive_title': 'Adaptive presentation (Beta)',
+  'theme.adaptive_description':
+    'Repairs low-contrast text and layout issues while preserving the book design.',
+  'theme.adaptive_pill_title': 'Low-contrast text on this page?',
+  'theme.adaptive_pill_action': 'Enable adaptation',
+  'theme.adaptive_pill_dismiss': 'Dismiss',
+  'theme.adaptive_copy_diagnostics': 'Copy presentation diagnostics',
 
   untitled: 'Untitled',
 

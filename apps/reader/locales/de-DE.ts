@@ -191,6 +191,13 @@ export default {
   'theme.background_tinted': 'Getönt',
   'theme.background_deep': 'Kräftiger Ton',
   'theme.background_color_help': 'Wird im hellen Lesemodus verwendet.',
+  'theme.adaptive_title': 'Adaptive Darstellung (Beta)',
+  'theme.adaptive_description':
+    'Repariert kontrastarme Texte und Layoutprobleme und erhält das Buchdesign.',
+  'theme.adaptive_pill_title': 'Kontrastarmer Text auf dieser Seite?',
+  'theme.adaptive_pill_action': 'Anpassung aktivieren',
+  'theme.adaptive_pill_dismiss': 'Verwerfen',
+  'theme.adaptive_copy_diagnostics': 'Präsentationsdiagnose kopieren',
   untitled: 'Unbenannt',
   'ai.title': 'KI-Assistent',
   'ai.tabs.general': 'Allgemein',

@@ -223,6 +223,14 @@ export default {
   'theme.background_dark_tinted': 'ブラック',
   'theme.background_dark_deep': 'ブルーダーク',
   'theme.background_color_help': 'リーダーがライトモードのときに使用されます。',
+  'theme.adaptive_title': 'アダプティブ表示（ベータ）',
+  'theme.adaptive_description':
+    '本のデザインを保ちながら、低コントラストのテキストやレイアウトの問題を修復します。',
+  'theme.adaptive_pill_title':
+    'このページにコントラストの低いテキストがありますか？',
+  'theme.adaptive_pill_action': '適応を有効にする',
+  'theme.adaptive_pill_dismiss': '閉じる',
+  'theme.adaptive_copy_diagnostics': '表示診断をコピー',
 
   untitled: '無題',
 

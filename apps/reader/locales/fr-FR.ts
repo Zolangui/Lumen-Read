@@ -193,6 +193,13 @@ export default {
   'theme.background_deep': 'Teinte intense',
   'theme.background_color_help':
     'Utilisé lorsque le lecteur est en mode clair.',
+  'theme.adaptive_title': 'Présentation adaptative (Beta)',
+  'theme.adaptive_description':
+    'Répare les textes à faible contraste et les problèmes de mise en page tout en préservant la présentation du livre.',
+  'theme.adaptive_pill_title': 'Texte à faible contraste sur cette page ?',
+  'theme.adaptive_pill_action': 'Activer l’adaptation',
+  'theme.adaptive_pill_dismiss': 'Ignorer',
+  'theme.adaptive_copy_diagnostics': 'Copier le diagnostic de présentation',
   untitled: 'Sans titre',
   'ai.title': 'Assistant IA',
   'ai.tabs.general': 'Généralités',
