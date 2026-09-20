@@ -318,6 +318,25 @@ surfaces in patch IDs to prevent collisions when the same color appears on
 different surfaces. This was a real bug that caused entire spines to fall back
 to Published when duplicate IDs triggered plan rejection.
 
+### Light neutral surfaces in dark mode ("flashbang" tables)
+
+Tables and cards with white/light-gray backgrounds (`#ffffff`, `#f0f0f0`) and
+black text are perfectly readable (21:1 contrast) but create a jarring
+"flashbang" effect in dark mode. The LPE currently preserves them because:
+
+1. The text is perfectly readable (WCAG AAA).
+2. The palette analyzer only remaps chromatic surfaces (c >= 0.025).
+3. Remapping neutral surfaces would require a new analyzer with careful
+   size/prominence heuristics to avoid over-remapping small badges/pills.
+
+**Trade-off:** The legacy dark repair was more aggressive (remapped any light
+surface to `#374151`), but that approach destroyed author intent for small
+elements. The LPE chooses fidelity over comfort here.
+
+**Future:** A dedicated "large neutral surface" analyzer could remap only
+surfaces above a certain size threshold (e.g. tables, cards) while preserving
+small badges. This is a product decision, not a bug fix.
+
 ## Next admission gate
 
 Before enabling Adaptive for users:
