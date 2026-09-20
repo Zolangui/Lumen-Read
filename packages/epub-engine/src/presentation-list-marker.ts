@@ -34,7 +34,7 @@ import {
   resolveSourceTreeAddress,
 } from './source-tree'
 
-export const LIST_MARKER_ANALYZER_VERSION = 1 as const
+export const LIST_MARKER_ANALYZER_VERSION = 2 as const
 export const RESTORE_LIST_MARKER_OPERATION_VERSION = 1 as const
 export const LIST_MARKER_VALIDATOR_VERSION = 1 as const
 
@@ -376,9 +376,14 @@ export async function analyzeListMarkerContrast(
     const surfaces = [
       ...new Set(backgrounds.map((background) => srgbToHex(background))),
     ].sort()
+    // Group roots merge toward their common observed ancestor: markers
+    // sharing a color over different backgrounds can converge on the same
+    // root, so the proven surface set keeps their identities unique.
     const suffix = `${
       group.root.address.sourcePath.join('.') || 'root'
-    }:${srgbToHex(group.sourceText).slice(1)}`
+    }:${srgbToHex(group.sourceText).slice(1)}:${surfaces
+      .map((surface) => surface.slice(1))
+      .join(',')}`
     const findingId = `list-marker:${options.spineIndex}:${suffix}`
     const target = {
       source: group.root.address,

@@ -1032,6 +1032,59 @@ describe('explicit foreground repair', () => {
     iframe.remove()
   })
 
+  it('keeps unique identities for one text color over zebra-table surfaces', async () => {
+    // One gray over two cell backgrounds splits into two groups whose roots
+    // both merge to the table. Identities without the surface set collide
+    // and the whole spine plan is rejected, discarding healthy layers.
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; color: #ffffff; }
+      table { border-collapse: collapse; }
+      td { color: #999999; padding: 8px; }
+      tr:nth-child(even) td { background-color: #e8e8e8; }
+      tr:nth-child(odd) td { background-color: #ffffff; }
+    </style></head><body><table><tbody>
+      <tr><td>${prose}</td></tr>
+      <tr><td>${prose}</td></tr>
+      <tr><td>${prose}</td></tr>
+      <tr><td>${prose}</td></tr>
+    </tbody></table></body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 28,
+      canvasColor: '#24292e',
+    })
+    expect(analysis.patches.length).toBeGreaterThan(1)
+    const findingIds = analysis.findings.map((finding) => finding.id)
+    const patchIds = analysis.patches.map((patch) => patch.id)
+    expect(new Set(findingIds).size).toBe(findingIds.length)
+    expect(new Set(patchIds).size).toBe(patchIds.length)
+    const plan = await createPresentationPlan(
+      {
+        schemaVersion: PRESENTATION_PLAN_SCHEMA_VERSION,
+        engineVersion: 'explicit-identity-test',
+        mode: 'adaptive',
+        publicationRevision: 'explicit-identity-fixture',
+        analysisFingerprint: 'explicit-identity-v1',
+        renderingContextFingerprint: 'dark',
+        findings: analysis.findings,
+        patches: analysis.patches,
+      },
+      RESTORE_EXPLICIT_TEXT_OPERATION_VALIDATORS,
+    )
+    expect(plan).toBeDefined()
+    iframe.remove()
+  })
+
   it('distributes multi-tier dark neutral candidates without clamp collisions', async () => {
     const prose =
       'Publication prose long enough to provide stable direct text evidence for the analyzer.'
@@ -1140,6 +1193,88 @@ describe('explicit foreground repair', () => {
         srgbToOklch(parseSrgbColor(darkerSource.targetText)!).l,
       ).toBeLessThan(srgbToOklch(parseSrgbColor(lighterSource.targetText)!).l)
     }
+    iframe.remove()
+  })
+
+  it('preserves author polarity on mid-band surfaces instead of flipping sides', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; color: #ffffff; }
+      .midbox { background-color: #9299a1; }
+      .dark-text { color: #111111; }
+      .light-text { color: #eeeeee; }
+    </style></head><body>
+      <div class="midbox">
+        <p class="dark-text">${prose}</p>
+        <p class="light-text">${prose}</p>
+      </div>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 26,
+      canvasColor: '#24292e',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    // The light text cannot reach the floor on its own (brighter) side, and
+    // must not be flipped to a dark target: no patch for its source color.
+    expect(mappings.some((mapping) => mapping.sourceText === '#eeeeee')).toBe(
+      false,
+    )
+    // The deliberately preserved polarity is declared debt, not silence.
+    expect(analysis.diagnostics).toContain('explicit-mid-polarity-preserved')
+    iframe.remove()
+  })
+
+  it('repairs mid-band text on its own side when the floor is reachable', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; color: #ffffff; }
+      .midbox { background-color: #9299a1; }
+      .deep-text { color: #3a3a3a; }
+    </style></head><body>
+      <div class="midbox">
+        <p class="deep-text">${prose}</p>
+      </div>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 27,
+      canvasColor: '#24292e',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    const repaired = mappings.find((m) => m.sourceText === '#3a3a3a')
+    expect(repaired).toBeDefined()
+    // The repair stays on the author's (darker) side of the mid surface.
+    const backgroundL = srgbToOklch(parseSrgbColor('#9299a1')!).l
+    expect(srgbToOklch(parseSrgbColor(repaired!.targetText)!).l).toBeLessThan(
+      backgroundL,
+    )
     iframe.remove()
   })
 })

@@ -54,6 +54,10 @@
       .mixed em { color: #333333; }
       .mixed strong { color: #000000; font-weight: bold; }
       .mixed code { color: #101010; font-family: monospace; }
+      
+      /* Case 11: Code pills (opaque must repair, translucent is debt) */
+      .opaque-pill { background-color: #2b3038; color: #101010; padding: 2px 6px; border-radius: 4px; }
+      .ghost-pill { background-color: rgba(175, 184, 193, 0.2); color: #101010; padding: 2px 6px; border-radius: 4px; }
     </style>
   </head>
   <body>
@@ -124,6 +128,12 @@
         Normal text with <em>emphasized text</em> and <strong>strong text</strong> 
         and <code>inline code</code> all in one paragraph.
       </p>
+    </section>
+    
+    <section id="code-pills">
+      <h2>Code pills</h2>
+      <p>Opaque pill (proven surface): <code id="opaque-pill-code" class="opaque-pill">git status</code> must be repaired on dark canvas.</p>
+      <p>Translucent pill (unproven surface): <code id="ghost-pill-code" class="ghost-pill">git log</code> keeps its authored color as declared debt.</p>
     </section>
   </body>
 </html>

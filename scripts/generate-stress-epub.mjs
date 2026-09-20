@@ -176,6 +176,18 @@ code.inline-code {
   font-family: ui-monospace, monospace;
   font-size: 85%;
 }
+/* Opaque pill: proven dark surface, the LPE must repair the dark text. */
+code.opaque-code {
+  background-color: #2b3038;
+  color: #101010;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, monospace;
+  font-size: 85%;
+}
+/* NOTE: code.inline-code above stays translucent (alpha < 1, unproven
+   surface): the LPE deliberately keeps its authored color and declares
+   narrow-gamut debt instead of guessing. */
 
 /* Tables */
 table.stress-table {
@@ -290,6 +302,8 @@ table.stress-table tr:nth-child(odd) td {
       content: `
 <h1>Capítulo 4: Blocos de Código</h1>
 <p>Livros técnicos frequentemente misturam blocos de código com fontes monoespaçadas e código inline no meio do parágrafo, como o comando <code class="inline-code">git checkout -b feature</code> ou <code class="inline-code">npm install</code>.</p>
+
+<p>Pill opaca (superfície provada): o comando <code class="opaque-code">git status</code> deve ser reparado no canvas escuro. Pill translúcida (superfície não-provada): o comando <code class="inline-code">git log</code> mantém a cor autoral por dívida declarada.</p>
 
 <pre class="code-block"><code><span class="cm">// Simulação de highlight de sintaxe</span>
 <span class="kw">function</span> <span class="fn">adaptColor</span>(sourceColor, surface) {

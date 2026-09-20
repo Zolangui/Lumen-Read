@@ -1,11 +1,20 @@
-import {substitute} from "./utils/replacements";
-import {createBase64Url, createBlobUrl, revokeBlobUrl, blob2base64} from "./utils/core";
-import Url from "./utils/url";
-import mime from "./utils/mime";
-import Path from "./utils/path";
-import path from "./utils/path-utils";
-import type { PackagingManifestObject, PackagingManifestItem, RequestFunction } from "./types";
-import type Archive from "./archive";
+import type Archive from './archive'
+import type {
+  PackagingManifestObject,
+  PackagingManifestItem,
+  RequestFunction,
+} from './types'
+import {
+  createBase64Url,
+  createBlobUrl,
+  revokeBlobUrl,
+  blob2base64,
+} from './utils/core'
+import mime from './utils/mime'
+import Path from './utils/path'
+import path from './utils/path-utils'
+import { substitute } from './utils/replacements'
+import Url from './utils/url'
 
 /**
  * Handle Package Resources
@@ -17,363 +26,441 @@ import type Archive from "./archive";
  * @param {method} [options.resolver]
  */
 class Resources {
-	private _destroyed = false;
-	settings!: {
-		replacements: string;
-		archive: Archive;
-		resolver: (href: string, absolute?: boolean) => string;
-		request: RequestFunction;
-	};
-	manifest!: PackagingManifestObject;
-	resources!: PackagingManifestItem[];
-	replacementUrls!: string[];
-	html!: PackagingManifestItem[];
-	assets!: PackagingManifestItem[];
-	css!: PackagingManifestItem[];
-	urls!: string[];
-	cssUrls!: string[];
+  private _destroyed = false
+  settings!: {
+    replacements: string
+    archive: Archive
+    resolver: (href: string, absolute?: boolean) => string
+    request: RequestFunction
+  }
+  manifest!: PackagingManifestObject
+  resources!: PackagingManifestItem[]
+  replacementUrls!: string[]
+  html!: PackagingManifestItem[]
+  assets!: PackagingManifestItem[]
+  css!: PackagingManifestItem[]
+  urls!: string[]
+  cssUrls!: string[]
+  /**
+   * Original (pre-substitution) CSS text per stylesheet href, kept so a
+   * second pass can re-resolve css-to-css references (e.g. @import) once
+   * every processed stylesheet has a final replacement URL.
+   */
+  originalCssText!: Map<string, string>
+  processedCssText!: Map<string, string>
 
-	constructor(manifest: PackagingManifestObject, options?: { replacements?: string; archive?: Archive; resolver?: (href: string, absolute?: boolean) => string; request?: RequestFunction }) {
-		this.settings = {
-			replacements: (options && options.replacements) || "base64",
-			archive: (options && options.archive)!,
-			resolver: (options && options.resolver)!,
-			request: (options && options.request)!
-		};
+  constructor(
+    manifest: PackagingManifestObject,
+    options?: {
+      replacements?: string
+      archive?: Archive
+      resolver?: (href: string, absolute?: boolean) => string
+      request?: RequestFunction
+    },
+  ) {
+    this.settings = {
+      replacements: (options && options.replacements) || 'base64',
+      archive: (options && options.archive)!,
+      resolver: (options && options.resolver)!,
+      request: (options && options.request)!,
+    }
 
-		this.process(manifest);
-	}
+    this.process(manifest)
+  }
 
-	/**
-	 * Process resources
-	 * @param {Manifest} manifest
-	 */
-	process(manifest: PackagingManifestObject): void {
-		this.manifest = manifest;
-		this.resources = Object.keys(manifest).
-			map(function (key){
-				return manifest[key]!;
-			});
+  /**
+   * Process resources
+   * @param {Manifest} manifest
+   */
+  process(manifest: PackagingManifestObject): void {
+    this.manifest = manifest
+    this.resources = Object.keys(manifest).map(function (key) {
+      return manifest[key]!
+    })
 
-		this.replacementUrls = [];
+    this.replacementUrls = []
 
-		this.html = [];
-		this.assets = [];
-		this.css = [];
+    this.html = []
+    this.assets = []
+    this.css = []
 
-		this.urls = [];
-		this.cssUrls = [];
+    this.urls = []
+    this.cssUrls = []
+    this.originalCssText = new Map<string, string>()
+    this.processedCssText = new Map<string, string>()
 
-		this.split();
-		this.splitUrls();
-	}
+    this.split()
+    this.splitUrls()
+  }
 
-	/**
-	 * Split resources by type
-	 * @private
-	 */
-	split(): void {
+  /**
+   * Split resources by type
+   * @private
+   */
+  split(): void {
+    // HTML
+    this.html = this.resources.filter(function (item) {
+      if (item.type === 'application/xhtml+xml' || item.type === 'text/html') {
+        return true
+      }
+      return false
+    })
 
-		// HTML
-		this.html = this.resources.
-			filter(function (item){
-				if (item.type === "application/xhtml+xml" ||
-						item.type === "text/html") {
-					return true;
-				}
-				return false;
-			});
+    // Exclude HTML
+    this.assets = this.resources.filter(function (item) {
+      if (item.type !== 'application/xhtml+xml' && item.type !== 'text/html') {
+        return true
+      }
+      return false
+    })
 
-		// Exclude HTML
-		this.assets = this.resources.
-			filter(function (item){
-				if (item.type !== "application/xhtml+xml" &&
-						item.type !== "text/html") {
-					return true;
-				}
-				return false;
-			});
+    // Only CSS
+    this.css = this.resources.filter(function (item) {
+      if (item.type === 'text/css') {
+        return true
+      }
+      return false
+    })
+  }
 
-		// Only CSS
-		this.css = this.resources.
-			filter(function (item){
-				if (item.type === "text/css") {
-					return true;
-				}
-				return false;
-			});
-	}
+  /**
+   * Convert split resources into Urls
+   * @private
+   */
+  splitUrls(): void {
+    // All Assets Urls
+    this.urls = this.assets.map((item: PackagingManifestItem): string => {
+      return item.href
+    })
 
-	/**
-	 * Convert split resources into Urls
-	 * @private
-	 */
-	splitUrls(): void {
+    // Css Urls
+    this.cssUrls = this.css.map(function (item) {
+      return item.href
+    })
+  }
 
-		// All Assets Urls
-		this.urls = this.assets.
-			map((item: PackagingManifestItem): string => {
-				return item.href;
-			});
+  /**
+   * Create a url to a resource
+   * @param {string} url
+   * @return {Promise<string>} Promise resolves with url string
+   */
+  createUrl(url: string): Promise<string> {
+    const parsedUrl = new Url(url)
+    const mimeType = mime.lookup(parsedUrl.filename)
 
-		// Css Urls
-		this.cssUrls = this.css.map(function(item) {
-			return item.href;
-		});
+    if (this.settings.archive) {
+      return this.settings.archive.createUrl(url, {
+        base64: this.settings.replacements === 'base64',
+      })
+    } else {
+      if (this.settings.replacements === 'base64') {
+        return this.settings
+          .request(url, 'blob')
+          .then((blob) => {
+            return blob2base64(blob as Blob)
+          })
+          .then((base64: string | ArrayBuffer) => {
+            return createBase64Url(base64 as string, mimeType)!
+          })
+      } else {
+        return this.settings.request(url, 'blob').then((blob) => {
+          return createBlobUrl(blob as Blob, mimeType)
+        })
+      }
+    }
+  }
 
-	}
+  /**
+   * Create blob urls for all the assets
+   * @return {Promise}         returns replacement urls
+   */
+  replacements(): Promise<string[]> {
+    if (this._destroyed) return Promise.resolve([])
+    if (this.settings.replacements === 'none') {
+      return new Promise((resolve: (value: string[]) => void) => {
+        resolve(this.urls)
+      })
+    }
 
-	/**
-	 * Create a url to a resource
-	 * @param {string} url
-	 * @return {Promise<string>} Promise resolves with url string
-	 */
-	createUrl (url: string): Promise<string> {
-		const parsedUrl = new Url(url);
-		const mimeType = mime.lookup(parsedUrl.filename);
+    const urls = [...this.urls]
+    const replacements = urls.map((url) => {
+      const absolute = this.settings.resolver(url)
 
-		if (this.settings.archive) {
-			return this.settings.archive.createUrl(url, {"base64": (this.settings.replacements === "base64")});
-		} else {
-			if (this.settings.replacements === "base64") {
-				return this.settings.request(url, "blob")
-					.then((blob) => {
-						return blob2base64(blob as Blob);
-					})
-					.then((base64: string | ArrayBuffer) => {
-						return createBase64Url(base64 as string, mimeType)!;
-					});
-			} else {
-				return this.settings.request(url, "blob").then((blob) => {
-					return createBlobUrl(blob as Blob, mimeType);
-				})
-			}
-		}
-	}
+      return this.createUrl(absolute).catch((_err: Error): string | null => {
+        // eslint-disable-next-line no-console
+        console.error(_err)
+        return null
+      })
+    })
 
-	/**
-	 * Create blob urls for all the assets
-	 * @return {Promise}         returns replacement urls
-	 */
-	replacements(): Promise<string[]> {
-		if (this._destroyed) return Promise.resolve([]);
-		if (this.settings.replacements === "none") {
-			return new Promise((resolve: (value: string[]) => void) => {
-				resolve(this.urls);
-			});
-		}
+    return Promise.all(replacements).then((replacementUrls) => {
+      if (this._destroyed) {
+        replacementUrls.forEach((url) => {
+          if (typeof url === 'string' && url.startsWith('blob:')) {
+            revokeBlobUrl(url)
+          }
+        })
+        return []
+      }
+      // Preserve the manifest/asset index even when one resource is
+      // missing. Filtering nulls shifted every later replacement and could
+      // make an image gallery display the wrong font, stylesheet or image.
+      this.replacementUrls = replacementUrls.map((url, index) =>
+        typeof url === 'string' ? url : urls[index]!,
+      )
+      return this.replacementUrls
+    })
+  }
 
-		const urls = [...this.urls];
-		const replacements = urls.map( (url) => {
-				const absolute = this.settings.resolver(url);
+  /**
+   * Replace URLs in CSS resources
+   * @private
+   * @param  {Archive} [archive]
+   * @param  {method} [resolver]
+   * @return {Promise}
+   */
+  replaceCss(
+    _archive?: Archive,
+    _resolver?: (href: string, absolute?: boolean) => string,
+  ): Promise<(string | void)[]> {
+    if (this._destroyed) return Promise.resolve([])
+    if (this.settings.replacements === 'none') {
+      return Promise.resolve([])
+    }
 
-				return this.createUrl(absolute).
-					catch((_err: Error): string | null => {
-						// eslint-disable-next-line no-console
-						console.error(_err);
-						return null;
-					});
-			});
+    const run = async (): Promise<(string | void)[]> => {
+      const replaced = await Promise.all(
+        this.cssUrls.map((href: string) =>
+          this.createCssFile(href).then((replacementUrl) => {
+            if (this._destroyed) {
+              if (
+                typeof replacementUrl === 'string' &&
+                replacementUrl.startsWith('blob:')
+              ) {
+                revokeBlobUrl(replacementUrl)
+              }
+              return
+            }
+            // switch the url in the replacementUrls
+            const indexInUrls = this.urls.indexOf(href)
+            if (replacementUrl && indexInUrls > -1) {
+              this.replacementUrls[indexInUrls] = replacementUrl
+            }
+            return replacementUrl
+          }),
+        ),
+      )
+      if (this._destroyed) return replaced
+      // Phase 2: every file snapshotted the replacement table before any
+      // processed stylesheet existed, so css-to-css references (notably
+      // @import of @font-face sheets) still point at raw blobs whose
+      // relative asset URLs cannot resolve. Re-resolve them against the
+      // now-final table so nested stylesheets load processed.
+      await Promise.all(
+        this.cssUrls.map((href: string) => this.refreshCssReferences(href)),
+      )
+      return replaced
+    }
+    // Preserve the previous fire-and-forget shape: per-file teardown still
+    // happens inside createCssFile; a mid-flight destroy only skips phase 2.
+    return run().then((replaced) => {
+      if (this._destroyed) return []
+      return replaced
+    })
+  }
 
-		return Promise.all(replacements)
-			.then( (replacementUrls) => {
-				if (this._destroyed) {
-					replacementUrls.forEach((url) => {
-						if (typeof url === "string" && url.startsWith("blob:")) {
-							revokeBlobUrl(url);
-						}
-					});
-					return [];
-				}
-				// Preserve the manifest/asset index even when one resource is
-				// missing. Filtering nulls shifted every later replacement and could
-				// make an image gallery display the wrong font, stylesheet or image.
-				this.replacementUrls = replacementUrls.map((url, index) =>
-						typeof url === "string" ? url : urls[index]!
-				);
-				return this.replacementUrls;
-			});
-	}
+  /**
+   * Re-resolve css-to-css references inside one already-processed
+   * stylesheet against the final replacement table. Only entries whose
+   * text actually changes get a new blob URL.
+   * @private
+   */
+  private refreshCssReferences(href: string): void {
+    if (this._destroyed) return
+    const absolute = this.settings.resolver(href)
+    const indexInUrls = this.urls.indexOf(href)
+    const original = this.originalCssText.get(href)
+    if (indexInUrls < 0 || original === undefined) return
+    const urls = [...this.urls]
+    const replacementUrls = [...this.replacementUrls]
+    const relUrls = urls.map((assetHref) => {
+      const resolved = this.settings.resolver(assetHref)
+      const relative = new Path(absolute).relative(resolved)
 
-	/**
-	 * Replace URLs in CSS resources
-	 * @private
-	 * @param  {Archive} [archive]
-	 * @param  {method} [resolver]
-	 * @return {Promise}
-	 */
-	replaceCss(_archive?: Archive, _resolver?: (href: string, absolute?: boolean) => string): Promise<(string | void)[]> {
-		if (this._destroyed) return Promise.resolve([]);
-		if (this.settings.replacements === "none") {
-			return Promise.resolve([]);
-		}
+      return relative
+    })
+    const text = substitute(original, relUrls, replacementUrls)
+    if (text === this.processedCssText.get(href)) return
+    let newUrl: string | undefined
+    if (this.settings.replacements === 'base64') {
+      newUrl = createBase64Url(text, 'text/css')
+    } else {
+      newUrl = createBlobUrl(text, 'text/css')
+    }
+    if (!newUrl) return
+    // The phase-1 blob is intentionally orphaned here (bounded: one per
+    // stylesheet per book open). Revoking it could break a view that
+    // rendered mid-replacement with the intermediate URL.
+    this.replacementUrls[indexInUrls] = newUrl
+    this.processedCssText.set(href, text)
+  }
 
-		const replaced: Promise<string | void>[] = [];
-		this.cssUrls.forEach((href: string) => {
-			const replacement = this.createCssFile(href)
-				.then((replacementUrl) => {
-					if (this._destroyed) {
-						if (typeof replacementUrl === "string" && replacementUrl.startsWith("blob:")) {
-							revokeBlobUrl(replacementUrl);
-						}
-						return;
-					}
-					// switch the url in the replacementUrls
-					const indexInUrls = this.urls.indexOf(href);
-					if (replacementUrl && indexInUrls > -1) {
-						this.replacementUrls[indexInUrls] = replacementUrl;
-					}
-				})
+  /**
+   * Create a new CSS file with the replaced URLs
+   * @private
+   * @param  {string} href the original css file
+   * @return {Promise}  returns a BlobUrl to the new CSS file or a data url
+   */
+  createCssFile(href: string): Promise<string | void> {
+    if (this._destroyed) return Promise.resolve()
+    let newUrl
 
+    if (path.isAbsolute(href)) {
+      return new Promise<void>(function (resolve) {
+        resolve()
+      })
+    }
 
-			replaced.push(replacement);
-		});
-		return Promise.all(replaced);
-	}
+    const { archive, request, replacements, resolver } = this.settings
+    const absolute = resolver(href)
 
-	/**
-	 * Create a new CSS file with the replaced URLs
-	 * @private
-	 * @param  {string} href the original css file
-	 * @return {Promise}  returns a BlobUrl to the new CSS file or a data url
-	 */
-	createCssFile(href: string): Promise<string | void> {
-		if (this._destroyed) return Promise.resolve();
-		let newUrl;
+    // Get the text of the css file from the archive
+    let textResponse
 
-		if (path.isAbsolute(href)) {
-			return new Promise<void>(function(resolve){
-				resolve();
-			});
-		}
+    if (archive) {
+      textResponse = archive.getText(absolute)
+    } else {
+      textResponse = request(absolute, 'text')
+    }
 
-		const { archive, request, replacements, resolver } = this.settings;
-		const absolute = resolver(href);
+    // Get asset links relative to css file
+    const urls = [...this.urls]
+    const replacementUrls = [...this.replacementUrls]
+    const relUrls = urls.map((assetHref) => {
+      const resolved = resolver(assetHref)
+      const relative = new Path(absolute).relative(resolved)
 
-		// Get the text of the css file from the archive
-		let textResponse;
+      return relative
+    })
 
-		if (archive) {
-			textResponse = archive.getText(absolute);
-		} else {
-			textResponse = request(absolute, "text");
-		}
+    if (!textResponse) {
+      // file not found, don't replace
+      return new Promise<void>(function (resolve) {
+        resolve()
+      })
+    }
 
-		// Get asset links relative to css file
-		const urls = [...this.urls];
-		const replacementUrls = [...this.replacementUrls];
-		const relUrls = urls.map( (assetHref) => {
-			const resolved = resolver(assetHref);
-			const relative = new Path(absolute).relative(resolved);
+    return textResponse.then(
+      (rawText) => {
+        if (this._destroyed) return
+        // Replacements in the css text
+        const text = substitute(rawText as string, relUrls, replacementUrls)
+        this.originalCssText.set(href, rawText as string)
+        this.processedCssText.set(href, text)
 
-			return relative;
-		});
+        // Get the new url
+        if (replacements === 'base64') {
+          newUrl = createBase64Url(text, 'text/css')
+        } else {
+          newUrl = createBlobUrl(text, 'text/css')
+        }
 
-		if (!textResponse) {
-			// file not found, don't replace
-			return new Promise<void>(function(resolve){
-				resolve();
-			});
-		}
+        return newUrl
+      },
+      (_err: Error) => {
+        // handle response errors
+        return new Promise<void>(function (resolve) {
+          resolve()
+        })
+      },
+    )
+  }
 
-		return textResponse.then( (rawText) => {
-			if (this._destroyed) return;
-			// Replacements in the css text
-			const text = substitute(rawText as string, relUrls, replacementUrls);
+  /**
+   * Resolve all resources URLs relative to an absolute URL
+   * @param  {string} absolute to be resolved to
+   * @param  {resolver} [resolver]
+   * @return {string[]} array with relative Urls
+   */
+  relativeTo(
+    absolute: string,
+    resolver?: (href: string, absolute?: boolean) => string,
+  ): string[] {
+    resolver = resolver || this.settings.resolver
 
-			// Get the new url
-			if (replacements === "base64") {
-				newUrl = createBase64Url(text, "text/css");
-			} else {
-				newUrl = createBlobUrl(text, "text/css");
-			}
+    // Get Urls relative to current sections
+    return this.urls.map((href: string): string => {
+      const resolved = resolver(href)
+      const relative = new Path(absolute).relative(resolved)
+      return relative
+    })
+  }
 
-			return newUrl;
-		}, (_err: Error) => {
-			// handle response errors
-			return new Promise<void>(function(resolve){
-				resolve();
-			});
-		});
+  /**
+   * Get a URL for a resource
+   * @param  {string} path
+   * @return {string} url
+   */
+  get(path: string): Promise<string> | undefined {
+    if (this._destroyed) return
+    const indexInUrls = this.urls.indexOf(path)
+    if (indexInUrls === -1) {
+      return
+    }
+    if (this.replacementUrls.length) {
+      return new Promise(
+        (
+          resolve: (value: string) => void,
+          _reject: (reason?: unknown) => void,
+        ) => {
+          resolve(this.replacementUrls[indexInUrls]!)
+        },
+      )
+    } else {
+      return this.createUrl(path)
+    }
+  }
 
-	}
+  /**
+   * Substitute urls in content, with replacements,
+   * relative to a url if provided
+   * @param  {string} content
+   * @param  {string} [url]   url to resolve to
+   * @return {string}         content with urls substituted
+   */
+  substitute(content: string, url?: string): string {
+    if (this._destroyed) return content
+    let relUrls
+    if (url) {
+      relUrls = this.relativeTo(url)
+    } else {
+      relUrls = this.urls
+    }
+    return substitute(content, relUrls, this.replacementUrls)
+  }
 
-	/**
-	 * Resolve all resources URLs relative to an absolute URL
-	 * @param  {string} absolute to be resolved to
-	 * @param  {resolver} [resolver]
-	 * @return {string[]} array with relative Urls
-	 */
-	relativeTo(absolute: string, resolver?: (href: string, absolute?: boolean) => string): string[] {
-		resolver = resolver || this.settings.resolver;
+  destroy(): void {
+    if (this._destroyed) return
+    this._destroyed = true
+    if (this.replacementUrls) {
+      this.replacementUrls.forEach((url) => {
+        if (url?.startsWith('blob:')) revokeBlobUrl(url)
+      })
+    }
 
-		// Get Urls relative to current sections
-		return this.urls.
-			map((href: string): string => {
-				const resolved = resolver(href);
-				const relative = new Path(absolute).relative(resolved);
-				return relative;
-			});
-	}
+    this.settings = undefined!
+    this.manifest = undefined!
+    this.resources = undefined!
+    this.replacementUrls = undefined!
+    this.html = undefined!
+    this.assets = undefined!
+    this.css = undefined!
 
-	/**
-	 * Get a URL for a resource
-	 * @param  {string} path
-	 * @return {string} url
-	 */
-	get(path: string): Promise<string> | undefined {
-		if (this._destroyed) return;
-		const indexInUrls = this.urls.indexOf(path);
-		if (indexInUrls === -1) {
-			return;
-		}
-		if (this.replacementUrls.length) {
-			return new Promise((resolve: (value: string) => void, _reject: (reason?: unknown) => void) => {
-				resolve(this.replacementUrls[indexInUrls]!);
-			});
-		} else {
-			return this.createUrl(path);
-		}
-	}
-
-	/**
-	 * Substitute urls in content, with replacements,
-	 * relative to a url if provided
-	 * @param  {string} content
-	 * @param  {string} [url]   url to resolve to
-	 * @return {string}         content with urls substituted
-	 */
-	substitute(content: string, url?: string): string {
-		if (this._destroyed) return content;
-		let relUrls;
-		if (url) {
-			relUrls = this.relativeTo(url);
-		} else {
-			relUrls = this.urls;
-		}
-		return substitute(content, relUrls, this.replacementUrls);
-	}
-
-	destroy(): void {
-		if (this._destroyed) return;
-		this._destroyed = true;
-		if (this.replacementUrls) {
-			this.replacementUrls.forEach((url) => {
-				if (url?.startsWith("blob:")) revokeBlobUrl(url);
-			});
-		}
-
-		this.settings = undefined!;
-		this.manifest = undefined!;
-		this.resources = undefined!;
-		this.replacementUrls = undefined!;
-		this.html = undefined!;
-		this.assets = undefined!;
-		this.css = undefined!;
-
-		this.urls = undefined!;
-		this.cssUrls = undefined!;
-	}
+    this.urls = undefined!
+    this.cssUrls = undefined!
+    this.originalCssText = undefined!
+    this.processedCssText = undefined!
+  }
 }
 
-export default Resources;
+export default Resources

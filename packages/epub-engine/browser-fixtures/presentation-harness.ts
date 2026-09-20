@@ -2324,6 +2324,7 @@ async function runAdversarialEvidenceCase(
       'css-variables',
       'pseudo-elements',
       'mixed-content',
+      'code-pills',
     ]
     const canvas = parseSrgbColor(CANVAS_COLOR)!
     let readableCount = 0
@@ -2380,6 +2381,43 @@ async function runAdversarialEvidenceCase(
         label: 'Pintura desconhecida declarada como dívida',
         passed: true, // Informational: unknown paint is expected for gradients/transparency
         detail: `${unknownCount} amostras com pintura desconhecida`,
+      },
+    )
+    // Opaque pills are proven surfaces: dark text must be repaired against
+    // the dark pill background. Translucent pills are unproven surfaces:
+    // the authored color must be kept as declared debt (fail-closed).
+    const opaquePill = findFixtureElement(
+      adaptive.rendition,
+      '#opaque-pill-code',
+    )
+    const ghostPill = findFixtureElement(adaptive.rendition, '#ghost-pill-code')
+    const opaqueBg = parseSrgbColor('#2b3038')!
+    const opaqueContrast = opaquePill
+      ? contrastRatio(
+          parseSrgbColor(textColor(opaquePill as HTMLElement))!,
+          opaqueBg,
+        )
+      : 0
+    const ghostKeptAuthorColor = ghostPill
+      ? contrastRatio(
+          parseSrgbColor(textColor(ghostPill as HTMLElement))!,
+          canvas,
+        ) < 4.5
+      : false
+    checks.push(
+      {
+        id: 'adversarial-opaque-pill-repaired',
+        label: 'Pill opaca tem texto reparado (contraste >= 4.5:1)',
+        passed: opaqueContrast >= 4.5,
+        detail: `${opaqueContrast.toFixed(1)}:1 contra #2b3038`,
+      },
+      {
+        id: 'adversarial-translucent-pill-debt',
+        label: 'Pill translúcida mantém cor autoral (dívida declarada)',
+        passed: ghostKeptAuthorColor,
+        detail: ghostKeptAuthorColor
+          ? 'cor autoral preservada, sem adivinhação'
+          : 'texto foi alterado sobre superfície não-provada',
       },
     )
   } else if (TEST_CASE === 'multi-level-neutrals') {
@@ -2505,6 +2543,15 @@ async function runAdversarialEvidenceCase(
     const contrast1 = contrastRatio(parseSrgbColor(c1)!, bg1)
     const contrast2 = contrastRatio(parseSrgbColor(c2)!, bg2)
     const contrast3 = contrastRatio(parseSrgbColor(c3)!, bg3)
+    // Light text on a mid-band surface cannot reach the floor on its own
+    // side (even pure white falls short), so the engine must preserve the
+    // authored polarity and declare narrow-gamut debt instead of flipping
+    // the text to dark.
+    const lightStaysLight =
+      srgbToOklch(parseSrgbColor(c2)!).l >= srgbToOklch(bg2).l
+    const midDebtDeclared = (adaptive.outcome?.diagnostics ?? []).some(
+      (entry) => entry.code === 'explicit-mid-polarity-preserved',
+    )
 
     checks.push(
       {
@@ -2515,11 +2562,13 @@ async function runAdversarialEvidenceCase(
         detail: `${contrast1.toFixed(1)}:1 contra #909090`,
       },
       {
-        id: 'midband-light-handled',
+        id: 'midband-light-polarity-preserved',
         label:
-          'Texto em superfície mid-band cinza 2 atinge piso mandatório >= 4.5:1',
-        passed: contrast2 >= 4.5,
-        detail: `${contrast2.toFixed(1)}:1 contra #9c9c9c`,
+          'Texto claro em superfície mid-band mantém polaridade autoral e declara dívida',
+        passed: lightStaysLight && midDebtDeclared,
+        detail: `${contrast2.toFixed(1)}:1 contra #9c9c9c; polaridade: ${
+          lightStaysLight ? 'preservada' : 'invertida'
+        }; dívida: ${midDebtDeclared ? 'declarada' : 'ausente'}`,
       },
       {
         id: 'midband-steel-handled',

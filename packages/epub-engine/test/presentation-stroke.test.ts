@@ -143,6 +143,59 @@ describe('visible stroke contrast repair', () => {
     iframe.remove()
   })
 
+  it('keeps unique identities for one stroke color over zebra-table surfaces', async () => {
+    // Zebra rows share one border color over two cell backgrounds. Both
+    // groups merge their roots to the table, so identities without the
+    // surface set collide and the whole spine plan is rejected.
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { color:#fff; background:transparent; }
+      table { border-collapse:collapse; }
+      td { border:1px solid #d0d7de; padding:8px; color:#fff; }
+      tr:nth-child(even) td { background-color:#fcfcfc; }
+      tr:nth-child(odd) td { background-color:#ffffff; }
+    </style></head><body><table><tbody>
+      <tr><td>Alpha</td><td>Bravo</td></tr>
+      <tr><td>Charlie</td><td>Delta</td></tr>
+      <tr><td>Echo</td><td>Foxtrot</td></tr>
+      <tr><td>Golf</td><td>Hotel</td></tr>
+    </tbody></table></body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const analysis = await analyzeStrokeContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 30,
+      canvasColor: '#24292e',
+    })
+    expect(analysis.patches.length).toBeGreaterThan(1)
+    const findingIds = analysis.findings.map((finding) => finding.id)
+    const patchIds = analysis.patches.map((patch) => patch.id)
+    expect(new Set(findingIds).size).toBe(findingIds.length)
+    expect(new Set(patchIds).size).toBe(patchIds.length)
+    // Duplicate identities used to make plan creation throw, discarding
+    // every healthy layer of the spine with it.
+    const plan = await createPresentationPlan(
+      {
+        schemaVersion: PRESENTATION_PLAN_SCHEMA_VERSION,
+        engineVersion: 'stroke-identity-test',
+        mode: 'adaptive',
+        publicationRevision: 'fixture',
+        analysisFingerprint: 'stroke-identity-v1',
+        renderingContextFingerprint: 'dark',
+        findings: analysis.findings,
+        patches: analysis.patches,
+      },
+      RESTORE_VISIBLE_STROKE_OPERATION_VALIDATORS,
+    )
+    expect(plan).toBeDefined()
+    iframe.remove()
+  })
+
   it('preserves transparent, absent, and three-dimensional decorative borders', async () => {
     const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
       body { color:#fff; background:transparent; }

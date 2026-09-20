@@ -360,6 +360,65 @@ describe('Resources', () => {
     })
   })
 
+  describe('replaceCss() nested @import', () => {
+    it('resolves css-to-css references against final replacement urls', async () => {
+      const nestedManifest: PackagingManifestObject = {
+        main: {
+          href: 'styles/main.css',
+          type: 'text/css',
+          overlay: '',
+          properties: [],
+          fallback: '',
+        },
+        fonts: {
+          href: 'styles/fonts.css',
+          type: 'text/css',
+          overlay: '',
+          properties: [],
+          fallback: '',
+        },
+        font: {
+          href: 'fonts/a.ttf',
+          type: 'font/ttf',
+          overlay: '',
+          properties: [],
+          fallback: '',
+        },
+      }
+      const texts: Record<string, string> = {
+        '/OPS/styles/main.css':
+          '@import url("fonts.css");\nbody { color: red; }',
+        '/OPS/styles/fonts.css':
+          '@font-face{font-family:"X";src:url(../fonts/a.ttf)}',
+      }
+      const request = vi.fn((url: string, type?: string) => {
+        if (type === 'text') return Promise.resolve(texts[url] ?? '')
+        return Promise.resolve(new Blob(['bin']))
+      }) as unknown as RequestFunction
+      const resolver = (href: string) => '/OPS/' + href
+      const res = new Resources(nestedManifest, {
+        replacements: 'blobUrl',
+        request,
+        resolver,
+      })
+      await res.replacements()
+      await res.replaceCss()
+
+      const mainIdx = res.urls!.indexOf('styles/main.css')
+      const fontsIdx = res.urls!.indexOf('styles/fonts.css')
+      const mainText = res.processedCssText.get('styles/main.css')!
+      const fontsText = res.processedCssText.get('styles/fonts.css')!
+      // The @import must point at the PROCESSED fonts stylesheet (whose
+      // font URLs are blob replacements), not at the raw-file blob whose
+      // relative font paths cannot resolve.
+      expect(mainText).toContain(res.replacementUrls[fontsIdx])
+      expect(mainText).not.toContain('../fonts/a.ttf')
+      expect(fontsText).toContain('url(blob:')
+      expect(fontsText).not.toContain('../fonts/a.ttf')
+      expect(mainIdx).toBeGreaterThanOrEqual(0)
+    })
+  })
+
   describe('destroy()', () => {
     it('should set all properties to undefined', () => {
       const res = createResources()

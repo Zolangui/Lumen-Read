@@ -41,7 +41,7 @@ import {
   resolveSourceTreeAddress,
 } from './source-tree'
 
-export const EXPLICIT_FOREGROUND_ANALYZER_VERSION = 12 as const
+export const EXPLICIT_FOREGROUND_ANALYZER_VERSION = 14 as const
 export const RESTORE_EXPLICIT_TEXT_OPERATION_VERSION = 4 as const
 export const EXPLICIT_FOREGROUND_VALIDATOR_VERSION = 7 as const
 
@@ -222,13 +222,24 @@ export const RESTORE_EXPLICIT_TEXT_OPERATION_VALIDATORS: PresentationOperationVa
  * Move only OKLCH lightness by the smallest amount that makes the authored
  * foreground readable against every proven surface. This works in both
  * directions while preserving hue and as much chroma as sRGB can represent.
+ *
+ * On mid-band surfaces the physical gamut may be unable to reach the floor
+ * on the author's own side. Flipping to the opposite pole would invert the
+ * authored design (light text painted dark), so callers pass the surface
+ * polarity to restrict the search to the author's side of every proven
+ * surface. When nothing on that side passes, there is no safe repair.
  */
 function readableForeground(
   source: SrgbColor,
   backgrounds: readonly SrgbColor[],
   preferredContrast: number,
+  surfacePolarity?: SurfacePolarity,
 ): SrgbColor | undefined {
   const sourceLch = srgbToOklch(source)
+  const sameSideOnly = surfacePolarity === 'mid'
+  const backgroundLightness = sameSideOnly
+    ? backgrounds.map((background) => srgbToOklch(background).l)
+    : []
   const lightnessCandidates = Array.from(
     { length: 101 },
     (_, index) => index / 100,
@@ -237,6 +248,24 @@ function readableForeground(
       Math.abs(left - sourceLch.l) - Math.abs(right - sourceLch.l),
   )
   for (const lightness of lightnessCandidates) {
+    if (sameSideOnly) {
+      let crossesSurface = false
+      for (const backgroundL of backgroundLightness) {
+        const sourceDelta = sourceLch.l - backgroundL
+        // Degenerate pair (source sits exactly on the surface lightness):
+        // there is no authored side to preserve for this background.
+        if (Math.abs(sourceDelta) < 1e-6) continue
+        const candidateDelta = lightness - backgroundL
+        if (
+          candidateDelta === 0 ||
+          Math.sign(candidateDelta) !== Math.sign(sourceDelta)
+        ) {
+          crossesSurface = true
+          break
+        }
+      }
+      if (crossesSurface) continue
+    }
     const candidate = oklchToSrgbGamut({
       l: lightness,
       c: sourceLch.c,
@@ -572,6 +601,7 @@ export async function analyzeExplicitForegroundContrast(
   }
 
   const preparedGroups: PreparedCandidateGroup[] = []
+  let midPolarityPreservedGroups = 0
   for (const group of groups.values()) {
     const backgrounds = group.samples.flatMap((sample) =>
       sample.paint.kind === 'known' ? [sample.paint.background] : [],
@@ -589,7 +619,19 @@ export async function analyzeExplicitForegroundContrast(
       group.sourceText,
       backgrounds,
       targetContrast,
+      group.polarity,
     )
+    if (!targetText && group.polarity === 'mid') {
+      // Distinguish "no physical solution" from "only a polarity-flipping
+      // solution exists": the latter is authored-design debt we deliberately
+      // preserve instead of painting light text dark (or vice versa).
+      const flipped = readableForeground(
+        group.sourceText,
+        backgrounds,
+        targetContrast,
+      )
+      if (flipped) midPolarityPreservedGroups += 1
+    }
     if (targetText) {
       preparedGroups.push({
         group,
@@ -673,14 +715,21 @@ export async function analyzeExplicitForegroundContrast(
     if (!sourceSignature) continue
 
     const sourceColorSuffix = srgbToHex(group.sourceText).slice(1)
-    const suffix = `${
-      group.root.address.sourcePath.join('.') || 'root'
-    }:${sourceColorSuffix}:${group.polarity}`
-    const findingId = `explicit-foreground:${options.spineIndex}:${suffix}`
-    const target = { source: group.root.address, sourceSignature }
     const surfaces = [
       ...new Set(backgrounds.map((background) => srgbToHex(background))),
     ].sort()
+    // Group roots merge toward their common observed ancestor, so groups
+    // sharing a source color and polarity over different proven surfaces can
+    // converge on the same root. The surface set keeps their identities
+    // unique; without it the plan input validator rejects the whole spine
+    // plan on duplicate IDs.
+    const suffix = `${
+      group.root.address.sourcePath.join('.') || 'root'
+    }:${sourceColorSuffix}:${group.polarity}:${surfaces
+      .map((surface) => surface.slice(1))
+      .join(',')}`
+    const findingId = `explicit-foreground:${options.spineIndex}:${suffix}`
+    const target = { source: group.root.address, sourceSignature }
     const parameters: RestoreExplicitTextParameters = {
       schemaVersion: 3,
       sourceText: srgbToHex(group.sourceText),
@@ -749,13 +798,18 @@ export async function analyzeExplicitForegroundContrast(
     })
   }
   const truncatedGroups = Math.max(0, preparedGroups.length - inspectedGroups)
+  const diagnostics: string[] = []
+  if (truncatedGroups > 0) diagnostics.push('explicit-groups-truncated')
+  if (midPolarityPreservedGroups > 0) {
+    diagnostics.push('explicit-mid-polarity-preserved')
+  }
   return {
     findings,
     patches,
     inspectedElements: health.inspectedElements,
     candidateGroups: groups.size,
     truncatedGroups,
-    diagnostics: truncatedGroups > 0 ? ['explicit-groups-truncated'] : [],
+    diagnostics,
   }
 }
 

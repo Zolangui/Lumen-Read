@@ -37,7 +37,7 @@ import {
   SOURCE_TREE_MODEL_VERSION,
 } from './source-tree'
 
-export const STROKE_CONTRAST_ANALYZER_VERSION = 2 as const
+export const STROKE_CONTRAST_ANALYZER_VERSION = 3 as const
 export const RESTORE_VISIBLE_STROKE_OPERATION_VERSION = 2 as const
 export const STROKE_CONTRAST_VALIDATOR_VERSION = 1 as const
 
@@ -462,9 +462,16 @@ export async function analyzeStrokeContrast(
     const surfaces = [
       ...new Set(backgrounds.map((background) => srgbToHex(background))),
     ].sort()
+    // Group roots merge toward their common observed ancestor, so two groups
+    // sharing a stroke color over different backgrounds can converge on the
+    // same root (e.g. zebra-table rows merging to the table). The proven
+    // surface set keeps their identities unique; without it the plan input
+    // validator rejects the whole spine plan on duplicate IDs.
     const suffix = `${
       group.root.address.sourcePath.join('.') || 'root'
-    }:${srgbToHex(group.sourceStroke).slice(1)}`
+    }:${srgbToHex(group.sourceStroke).slice(1)}:${surfaces
+      .map((surface) => surface.slice(1))
+      .join(',')}`
     const findingId = `stroke-contrast:${options.spineIndex}:${suffix}`
     const target = { source: group.root.address, sourceSignature }
     const parameters: RestoreVisibleStrokeParameters = {
