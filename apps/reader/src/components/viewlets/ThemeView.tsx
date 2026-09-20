@@ -34,7 +34,7 @@ const backgroundLabelKeys: Record<ReaderBackgroundLevel, string> = {
 }
 
 export const ThemeView: React.FC<PaneViewProps> = () => {
-  const { scheme, setScheme } = useColorScheme()
+  const { scheme, setScheme, dark } = useColorScheme()
   const { sourceColor, setSourceColor } = useSourceColor()
   const materialTheme = useTheme()
   const [, setBackground] = useBackground()
@@ -51,10 +51,10 @@ export const ThemeView: React.FC<PaneViewProps> = () => {
       READER_BACKGROUND_LEVELS.map((value) => ({
         value,
         color:
-          resolveReaderBackgroundColor(false, value, materialTheme) ??
+          resolveReaderBackgroundColor(Boolean(dark), value, materialTheme) ??
           '#ffffff',
       })),
-    [materialTheme],
+    [dark, materialTheme],
   )
 
   const schemeOptions: ColorScheme[] = ['light', 'dark', 'system']

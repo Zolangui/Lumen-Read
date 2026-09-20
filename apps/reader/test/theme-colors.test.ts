@@ -10,6 +10,7 @@ import {
   normalizeThemeSourceColor,
   readerBackgroundClass,
   resolveReaderBackgroundColor,
+  SEPIA_DARK_READER_BACKGROUND,
 } from '../src/lib/theme-colors'
 
 const monochromeTheme = {
@@ -46,8 +47,14 @@ describe('reader theme colours', () => {
     expect(resolveReaderBackgroundColor(false, -1, undefined)).toBe(
       DEFAULT_LIGHT_READER_BACKGROUND,
     )
-    expect(resolveReaderBackgroundColor(true, 5, undefined)).toBe(
+    expect(resolveReaderBackgroundColor(true, -1, undefined)).toBe(
       DEFAULT_DARK_READER_BACKGROUND,
+    )
+    expect(resolveReaderBackgroundColor(true, 1, undefined)).toBe(
+      SEPIA_DARK_READER_BACKGROUND,
+    )
+    expect(resolveReaderBackgroundColor(true, 5, undefined)).toBe(
+      SEPIA_DARK_READER_BACKGROUND,
     )
   })
 
@@ -66,7 +73,9 @@ describe('reader theme colours', () => {
   it('keeps fallback classes aligned with the selected canvas', () => {
     expect(readerBackgroundClass(false, -1)).toBe('bg-default')
     expect(readerBackgroundClass(false, 3)).toBe('bg-surface3')
-    expect(readerBackgroundClass(true, 3)).toBe('bg-default')
+    expect(readerBackgroundClass(true, -1)).toBe('bg-default')
+    expect(readerBackgroundClass(true, 1)).toBe('bg-surface1')
+    expect(readerBackgroundClass(true, 3)).toBe('bg-surface3')
   })
 
   it('keeps every Theme control translated in every bundled locale', () => {

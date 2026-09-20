@@ -1003,9 +1003,9 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
       // make rollback destructive, and invalidate the experiment.
       if (DEVELOPMENT_PRESENTATION_TEST_ENABLED) return
 
-      applyLegacyDarkRepair(contents, Boolean(dark))
+      applyLegacyDarkRepair(contents, Boolean(dark), backgroundColor)
     })
-  }, [rendition, typography, dark, tab])
+  }, [rendition, typography, dark, tab, backgroundColor])
 
   useEffect(() => {
     tab.onRender = applyCustomStyle

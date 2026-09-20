@@ -77,7 +77,10 @@ function directText(element: Element): boolean {
   )
 }
 
-function normalized(value: string | null | undefined, fallback: string): string {
+function normalized(
+  value: string | null | undefined,
+  fallback: string,
+): string {
   const result = value?.trim().toLowerCase()
   return result || fallback
 }
@@ -114,6 +117,7 @@ function effectiveSurface(
   element: Element,
   view: Window,
   repairedSurfaces: ReadonlySet<Element>,
+  fallbackCanvas: SrgbColor,
 ): SrgbColor {
   let current: Element | null = element
   while (current) {
@@ -124,7 +128,7 @@ function effectiveSurface(
     if (background) return background
     current = current.parentElement
   }
-  return FALLBACK_CANVAS
+  return fallbackCanvas
 }
 
 export function restoreLegacyDarkRepair(document: Document): void {
@@ -136,12 +140,20 @@ export function restoreLegacyDarkRepair(document: Document): void {
  * is disabled. It repairs neutral black-on-dark text and neutral light panels,
  * but preserves chromatic author colours and paint it cannot prove safe.
  */
-export function applyLegacyDarkRepair(contents: Contents, dark: boolean): void {
+export function applyLegacyDarkRepair(
+  contents: Contents,
+  dark: boolean,
+  canvasColor?: string,
+): void {
   const document = contents.document
   restoreLegacyDarkRepair(document)
   if (!dark) return
   const view = document.defaultView
   if (!view) return
+  // The fallback canvas must track the active dark background (default,
+  // sepia-dark, ...); it is only consulted for fully transparent chains.
+  const fallbackCanvas =
+    (canvasColor ? parseSrgbColor(canvasColor) : undefined) ?? FALLBACK_CANVAS
 
   const elements = Array.from(
     document.querySelectorAll(CANDIDATE_SELECTOR),
@@ -171,7 +183,12 @@ export function applyLegacyDarkRepair(contents: Contents, dark: boolean): void {
     if (!directText(element)) continue
     const foreground = opaqueColor(view.getComputedStyle(element).color)
     if (!foreground || !neutralDark(foreground)) continue
-    const background = effectiveSurface(element, view, repairedSurfaces)
+    const background = effectiveSurface(
+      element,
+      view,
+      repairedSurfaces,
+      fallbackCanvas,
+    )
     if (contrastRatio(foreground, background) >= MINIMUM_TEXT_CONTRAST) continue
     const elementDeclarations = declarations.get(element) ?? []
     elementDeclarations.push(`color: ${TARGET_TEXT} !important`)
@@ -185,9 +202,7 @@ export function applyLegacyDarkRepair(contents: Contents, dark: boolean): void {
     const marker = `l${targets.length}`
     targets.push({ element, previousMarker: element.getAttribute(TARGET) })
     element.setAttribute(TARGET, marker)
-    rules.push(
-      `[${TARGET}="${marker}"] { ${elementDeclarations.join('; ')}; }`,
-    )
+    rules.push(`[${TARGET}="${marker}"] { ${elementDeclarations.join('; ')}; }`)
   }
   const style = document.createElement('style')
   style.setAttribute(LAYER, 'v2')
