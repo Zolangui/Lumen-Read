@@ -139,17 +139,22 @@ export function restoreLegacyDarkRepair(document: Document): void {
  * Conservative compatibility layer used only while the Presentation Engine
  * is disabled. It repairs neutral black-on-dark text and neutral light panels,
  * but preserves chromatic author colours and paint it cannot prove safe.
+ *
+ * Returns the number of visible direct-text elements with proven low contrast
+ * that received no repair. The reader shell uses that count (which costs no
+ * extra scan: it reuses this pass) to offer the adaptive engine contextually
+ * instead of running a second contrast hunter per page turn.
  */
 export function applyLegacyDarkRepair(
   contents: Contents,
   dark: boolean,
   canvasColor?: string,
-): void {
+): number {
   const document = contents.document
   restoreLegacyDarkRepair(document)
-  if (!dark) return
+  if (!dark) return 0
   const view = document.defaultView
-  if (!view) return
+  if (!view) return 0
   // The fallback canvas must track the active dark background (default,
   // sepia-dark, ...); it is only consulted for fully transparent chains.
   const fallbackCanvas =
@@ -195,7 +200,28 @@ export function applyLegacyDarkRepair(
     declarations.set(element, elementDeclarations)
   }
 
-  if (declarations.size === 0) return
+  // Count proven low-contrast direct text left without a repair: chromatic
+  // foregrounds, unsafe paint contexts and anything else this layer
+  // deliberately preserves. Only opaque, measurable pairs count, so the
+  // signal never fires on guesses.
+  let unrepairedLowContrast = 0
+  for (const element of elements) {
+    if (!directText(element)) continue
+    const foreground = opaqueColor(view.getComputedStyle(element).color)
+    if (!foreground) continue
+    const background = effectiveSurface(
+      element,
+      view,
+      repairedSurfaces,
+      fallbackCanvas,
+    )
+    if (contrastRatio(foreground, background) >= MINIMUM_TEXT_CONTRAST) {
+      continue
+    }
+    if (!declarations.has(element)) unrepairedLowContrast += 1
+  }
+
+  if (declarations.size === 0) return unrepairedLowContrast
   const targets: Target[] = []
   const rules: string[] = []
   for (const [element, elementDeclarations] of declarations) {
@@ -218,4 +244,5 @@ export function applyLegacyDarkRepair(
     if (layers.get(document)?.restore === restore) layers.delete(document)
   }
   layers.set(document, { restore })
+  return unrepairedLowContrast
 }

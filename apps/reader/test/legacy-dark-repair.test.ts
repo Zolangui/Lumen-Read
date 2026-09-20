@@ -74,6 +74,21 @@ describe('legacy dark repair ownership', () => {
     }
   })
 
+  it('counts unrepaired low-contrast text for contextual discovery', () => {
+    document.documentElement.innerHTML = `
+      <head></head><body style="background: rgb(36, 41, 46)">
+        <p id="chroma" style="color: rgb(20, 30, 90)">Dark chromatic accent</p>
+        <p id="neutral" style="color: rgb(20, 20, 20)">Neutral prose</p>
+        <p id="fine" style="color: rgb(220, 220, 220)">Readable prose</p>
+      </body>`
+    const contents = { document } as Contents
+
+    // Only the chromatic accent is proven low-contrast yet unrepaired: the
+    // neutral prose gets a declaration and the readable one needs nothing.
+    expect(applyLegacyDarkRepair(contents, true)).toBe(1)
+    expect(applyLegacyDarkRepair(contents, false)).toBe(0)
+  })
+
   it('does not guess inside hidden, translucent or image-backed paint', () => {
     document.documentElement.innerHTML = `
       <head></head><body style="background: rgb(36, 41, 46)">

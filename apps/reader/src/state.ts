@@ -62,6 +62,11 @@ export interface TypographyConfiguration {
 interface ThemeConfiguration {
   source?: string
   background?: number
+  /**
+   * Adaptive presentation engine (LPE) opt-in. Absent/false keeps the
+   * legacy dark repair; true attaches the engine and suppresses it.
+   */
+  adaptivePresentation?: boolean
 }
 
 export const defaultSettings: Settings = {}

@@ -10,6 +10,7 @@ import {
   useTranslation,
   type ColorScheme,
 } from '@flow/reader/hooks'
+import { copyAdaptiveTelemetryToClipboard } from '@flow/reader/lib/adaptive-telemetry'
 import {
   READER_BACKGROUND_LEVELS,
   normalizeReaderBackgroundLevel,
@@ -46,9 +47,25 @@ export const ThemeView: React.FC<PaneViewProps> = () => {
   const materialTheme = useTheme()
   const [, setBackground] = useBackground()
   const [, setAction] = useAction()
-  const [{ theme }] = useSettings()
+  const [{ theme }, setSettings] = useSettings()
   const t = useTranslation()
   const [draftSourceColor, setDraftSourceColor] = useState(sourceColor)
+  const [diagnosticsCopied, setDiagnosticsCopied] = useState(false)
+  const adaptiveEnabled = theme?.adaptivePresentation === true
+  const setAdaptiveEnabled = (enabled: boolean): void => {
+    setSettings((prev) => ({
+      ...prev,
+      theme: { ...prev.theme, adaptivePresentation: enabled },
+    }))
+  }
+  const handleCopyDiagnostics = (): void => {
+    void copyAdaptiveTelemetryToClipboard().then((ok) => {
+      if (ok) {
+        setDiagnosticsCopied(true)
+        window.setTimeout(() => setDiagnosticsCopied(false), 2000)
+      }
+    })
+  }
 
   useEffect(() => setDraftSourceColor(sourceColor), [sourceColor])
 
@@ -200,6 +217,55 @@ export const ThemeView: React.FC<PaneViewProps> = () => {
             <p className="text-on-surface-variant mt-2 text-xs">
               {t('theme.background_color_help')}
             </p>
+          </section>
+
+          <section>
+            <h3 className="text-on-surface-variant mb-2 text-xs font-medium">
+              {t('theme.adaptive_title')}
+            </h3>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={adaptiveEnabled}
+              aria-label={t('theme.adaptive_title')}
+              onClick={() => setAdaptiveEnabled(!adaptiveEnabled)}
+              className={clsx(
+                'flex w-full items-center justify-between gap-2 rounded-md border-2 p-2 text-left text-xs transition-colors',
+                adaptiveEnabled
+                  ? 'border-primary ring-primary/20 ring-2'
+                  : 'border-outline-variant hover:bg-on-surface/5',
+              )}
+            >
+              <span className="text-on-surface">
+                {t('theme.adaptive_title')}
+              </span>
+              <span
+                aria-hidden
+                className={clsx(
+                  'relative inline-flex h-[24px] w-[44px] shrink-0 rounded-full transition-colors duration-200 ease-in-out',
+                  adaptiveEnabled ? 'bg-primary' : 'bg-surface-variant',
+                )}
+              >
+                <span
+                  className={clsx(
+                    'pointer-events-none absolute left-[2px] top-[2px] inline-block h-[20px] w-[20px] rounded-full bg-white shadow-sm transition duration-200 ease-in-out',
+                    adaptiveEnabled ? 'translate-x-[20px]' : 'translate-x-0',
+                  )}
+                />
+              </span>
+            </button>
+            <p className="text-on-surface-variant mt-2 text-xs">
+              {t('theme.adaptive_description')}
+            </p>
+            <button
+              type="button"
+              onClick={handleCopyDiagnostics}
+              className="text-on-surface-variant hover:bg-on-surface/5 border-outline-variant mt-2 rounded-md border px-3 py-1.5 text-xs"
+            >
+              {diagnosticsCopied
+                ? `✓ ${t('theme.adaptive_copy_diagnostics')}`
+                : t('theme.adaptive_copy_diagnostics')}
+            </button>
           </section>
         </div>
       </div>

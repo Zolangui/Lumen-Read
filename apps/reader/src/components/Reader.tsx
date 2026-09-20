@@ -21,7 +21,7 @@ import {
   type PaginationLifecycleContext,
   type Rendition,
 } from '@flow/epubjs'
-import { navbarState } from '@flow/reader/state'
+import { navbarState, useSettings } from '@flow/reader/state'
 
 import { db } from '../db'
 import { handleFiles } from '../file'
@@ -36,6 +36,11 @@ import {
   useTypography,
   useTranslation,
 } from '../hooks'
+import {
+  dismissAdaptivePill,
+  isAdaptivePillDismissed,
+  recordAdaptiveOutcome,
+} from '../lib/adaptive-telemetry'
 import {
   DEVELOPMENT_PRESENTATION_MINIMUM_TEXT_CONTRAST,
   DEVELOPMENT_PRESENTATION_TEST_ENABLED,
@@ -255,6 +260,16 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
   )
   const { dark } = useColorScheme()
   const [background, , backgroundColor] = useBackground()
+  const [{ theme: readerTheme }, setReaderSettings] = useSettings()
+  // Runtime gate: the compile-time test build forces the engine on; in
+  // production the user setting decides. Legacy repair runs exactly when
+  // the engine does not, so paint always has a single owner.
+  const isAdaptiveEnabled =
+    DEVELOPMENT_PRESENTATION_TEST_ENABLED ||
+    readerTheme?.adaptivePresentation === true
+  const [unrepairedDarkCount, setUnrepairedDarkCount] = useState(0)
+  const [pillRevision, setPillRevision] = useState<string | undefined>()
+  const [, setPillNonce] = useState(0)
   const developmentPresentationConfiguration =
     useMemo<DevelopmentPresentationConfiguration>(
       () => ({
@@ -321,11 +336,30 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
     }
   }, [rendition])
 
-  // A real-book integration exists only in the dedicated presentation-test
-  // build. The release scripts compile this branch out and the engine itself
-  // remains opt-in by default.
+  // Publication revision for per-book pill dismissal state. Resolved lazily:
+  // the file record may not exist yet when the tab mounts, so retry once the
+  // book has rendered instead of giving up and hiding the pill forever.
+  useEffect(() => {
+    let cancelled = false
+    setPillRevision(undefined)
+    tab
+      .resolvePublicationRevision()
+      .then((revision) => {
+        if (!cancelled) setPillRevision(revision || undefined)
+      })
+      .catch(() => {
+        if (!cancelled) setPillRevision(undefined)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [tab, rendered])
+
+  // The engine attaches in the dedicated presentation-test build or when the
+  // user opts in via settings. The release scripts compile the test branch
+  // out; the runtime setting carries production.
   useLayoutEffect(() => {
-    if (!DEVELOPMENT_PRESENTATION_TEST_ENABLED || !rendition) return
+    if (!isAdaptiveEnabled || !rendition) return
 
     let disposed = false
     const liveRendition = rendition as unknown as Rendition
@@ -349,11 +383,16 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
           analysisFingerprint: 'lumen-reader-presentation-test-v2',
           renderingContextFingerprint:
             developmentPresentationRenderingFingerprint(configuration, context),
-          minimumTextContrast: DEVELOPMENT_PRESENTATION_MINIMUM_TEXT_CONTRAST,
+          // Test builds hold AAA for experiment control; production uses
+          // the AA floor so repairs stay closer to the authored design.
+          minimumTextContrast: DEVELOPMENT_PRESENTATION_TEST_ENABLED
+            ? DEVELOPMENT_PRESENTATION_MINIMUM_TEXT_CONTRAST
+            : 4.5,
         }
       },
       onOutcome: (outcome) => {
         console.info('[LPE presentation test]', outcome)
+        recordAdaptiveOutcome(outcome)
         if (
           !disposed &&
           outcome.purpose === 'reader' &&
@@ -370,21 +409,26 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
       engine.detach()
       tab.invalidateLayoutAtlas()
     }
-  }, [rendition, tab])
+  }, [rendition, tab, isAdaptiveEnabled])
 
   // Re-run only the visible section when an explicit presentation input
   // changes. Atlas is invalidated separately and will reuse the same lifecycle.
+  // Toggling the adaptive flag also repaginates: attaching the engine alone
+  // never re-runs pagination, so without this the current spine would only
+  // adapt after an unrelated navigation or theme change.
+  const previousAdaptiveEnabledRef = useRef<boolean | undefined>()
   useEffect(() => {
-    if (!DEVELOPMENT_PRESENTATION_TEST_ENABLED || !active || !rendition) return
+    if (!active || !rendition) return
+    const previousFlag = previousAdaptiveEnabledRef.current
+    previousAdaptiveEnabledRef.current = isAdaptiveEnabled
+    const flagFlipped =
+      previousFlag !== undefined && previousFlag !== isAdaptiveEnabled
     const previous = previousDevelopmentPresentationFingerprintRef.current
     previousDevelopmentPresentationFingerprintRef.current =
       developmentPresentationFingerprint
-    if (
-      previous === undefined ||
-      previous === developmentPresentationFingerprint
-    ) {
-      return
-    }
+    const fingerprintChanged =
+      previous !== undefined && previous !== developmentPresentationFingerprint
+    if (!flagFlipped && (!isAdaptiveEnabled || !fingerprintChanged)) return
 
     setDevelopmentPresentationOutcome(undefined)
     tab.invalidateLayoutAtlas()
@@ -393,7 +437,13 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
       .catch((error) => {
         console.error('Unable to refresh Adaptive presentation test:', error)
       })
-  }, [active, developmentPresentationFingerprint, rendition, tab])
+  }, [
+    active,
+    developmentPresentationFingerprint,
+    rendition,
+    tab,
+    isAdaptiveEnabled,
+  ])
 
   // Mark only the visible tab as eligible to persist locations. This avoids
   // the zero-sized reflow from a hidden iframe changing a book's saved CFI,
@@ -981,11 +1031,13 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
 
   const setNavbar = useSetRecoilState(navbarState)
   const mobile = useMobile()
+  const t = useTranslation()
 
   const applyCustomStyle = useCallback(() => {
     // Fixed-layout spreads can expose more than one Contents instance. Apply
     // the exact same layout-affecting typography to every visible iframe so a
     // cached Atlas and the reader cannot diverge on the second page.
+    let unrepaired = 0
     rendition?.getContents().forEach((contents) => {
       const section = tab.sections?.[contents.sectionIndex]
       const sectionLayout = section
@@ -998,14 +1050,19 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
         : undefined
       updateCustomStyle(contents, typography, layout)
 
-      // The test build must observe LPE in isolation. Running the legacy
-      // inline color scanner afterwards would overwrite the authored branch,
-      // make rollback destructive, and invalidate the experiment.
-      if (DEVELOPMENT_PRESENTATION_TEST_ENABLED) return
+      // Paint has a single owner: when the adaptive engine is on, the
+      // legacy scanner stays off entirely (it would overwrite the authored
+      // branch, make rollback destructive, and invalidate measurement).
+      if (isAdaptiveEnabled) return
 
-      applyLegacyDarkRepair(contents, Boolean(dark), backgroundColor)
+      unrepaired += applyLegacyDarkRepair(
+        contents,
+        Boolean(dark),
+        backgroundColor,
+      )
     })
-  }, [rendition, typography, dark, tab, backgroundColor])
+    setUnrepairedDarkCount(unrepaired)
+  }, [rendition, typography, dark, tab, backgroundColor, isAdaptiveEnabled])
 
   useEffect(() => {
     tab.onRender = applyCustomStyle
@@ -1272,6 +1329,80 @@ function BookPane({ tab, onMouseDown, active }: BookPaneProps) {
               ` · debt ${presentationLegibilityDebt}`}
           </div>
         )}
+        {Boolean(dark) &&
+          !isAdaptiveEnabled &&
+          unrepairedDarkCount > 0 &&
+          pillRevision !== undefined &&
+          !isAdaptivePillDismissed(pillRevision) && (
+            <div
+              role="status"
+              className="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 items-center gap-2"
+              style={{
+                backgroundColor: 'rgba(10, 10, 12, 0.92)',
+                borderRadius: 9999,
+                padding: '6px 6px 6px 16px',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.45)',
+                fontFamily:
+                  'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif',
+                fontSize: 12,
+                lineHeight: 1.4,
+                color: '#ffffff',
+                maxWidth: 'calc(100% - 2rem)',
+              }}
+            >
+              <span
+                style={{
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {t('theme.adaptive_pill_title')}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  setReaderSettings((prev) => ({
+                    ...prev,
+                    theme: { ...prev.theme, adaptivePresentation: true },
+                  }))
+                }
+                style={{
+                  flexShrink: 0,
+                  backgroundColor: '#e8eaed',
+                  color: '#111111',
+                  border: 'none',
+                  borderRadius: 9999,
+                  padding: '4px 12px',
+                  fontWeight: 600,
+                  fontSize: 12,
+                  cursor: 'pointer',
+                }}
+              >
+                {t('theme.adaptive_pill_action')}
+              </button>
+              <button
+                type="button"
+                aria-label={t('theme.adaptive_pill_dismiss')}
+                title={t('theme.adaptive_pill_dismiss')}
+                onClick={() => {
+                  if (pillRevision) dismissAdaptivePill(pillRevision)
+                  setPillNonce((nonce) => nonce + 1)
+                }}
+                style={{
+                  flexShrink: 0,
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  cursor: 'pointer',
+                  padding: '4px 8px',
+                  fontSize: 12,
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          )}
         <div
           ref={wrapperRef}
           className="reader-wrapper relative mx-auto h-full"
