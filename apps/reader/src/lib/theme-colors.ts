@@ -6,6 +6,10 @@ export const DEFAULT_LIGHT_READER_BACKGROUND = '#ffffff'
 export const DEFAULT_DARK_READER_BACKGROUND = '#24292e'
 /** Warm dark canvas for non-default dark levels (luminance well below 0.22). */
 export const SEPIA_DARK_READER_BACKGROUND = '#1c1917'
+/** Pure-black canvas for AMOLED screens (level 3 in dark scheme). */
+export const OLED_DARK_READER_BACKGROUND = '#000000'
+/** Deep navy canvas (level 5 in dark scheme, luminance well below 0.22). */
+export const MIDNIGHT_DARK_READER_BACKGROUND = '#0f172a'
 export const DEFAULT_THEME_SOURCE_COLOR = '#0ea5e9'
 
 export const READER_BACKGROUND_LEVELS = [-1, 1, 3, 5] as const
@@ -58,9 +62,13 @@ export function resolveReaderBackgroundColor(
   const normalized = normalizeReaderBackgroundLevel(level)
   if (dark) {
     if (normalized === -1) return DEFAULT_DARK_READER_BACKGROUND
-    // Phase 1: every non-default dark level shares the warm dark canvas.
-    // (Phase 2 may remap level 3 to AMOLED black with per-canvas fixtures.)
-    return SEPIA_DARK_READER_BACKGROUND
+    // Every dark level resolves to its own canvas so no two options ever
+    // share a swatch: sepia, AMOLED black and midnight navy all sit
+    // comfortably inside the dark surface polarity (luminance well below
+    // 0.22).
+    if (normalized === 1) return SEPIA_DARK_READER_BACKGROUND
+    if (normalized === 3) return OLED_DARK_READER_BACKGROUND
+    return MIDNIGHT_DARK_READER_BACKGROUND
   }
 
   if (normalized === -1) return DEFAULT_LIGHT_READER_BACKGROUND

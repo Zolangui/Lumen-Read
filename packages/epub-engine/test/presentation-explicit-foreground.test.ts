@@ -1335,4 +1335,112 @@ describe('explicit foreground repair', () => {
     }
     iframe.remove()
   })
+
+  it('repairs neutral tiers on the pure-black AMOLED canvas', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .t0 { color: #000000; }
+      .t1 { color: #222222; }
+      .t2 { color: #444444; }
+      .t3 { color: #666666; }
+    </style></head><body>
+      <p class="t0">${prose}</p>
+      <p class="t1">${prose}</p>
+      <p class="t2">${prose}</p>
+      <p class="t3">${prose}</p>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const canvas = parseSrgbColor('#000000')!
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 30,
+      canvasColor: '#000000',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    expect(mappings).toHaveLength(4)
+    expect(new Set(mappings.map((m) => m.targetText)).size).toBe(4)
+    for (const mapping of mappings) {
+      expect(
+        contrastRatio(parseSrgbColor(mapping.targetText)!, canvas),
+      ).toBeGreaterThanOrEqual(4.5)
+    }
+    const sorted = [...mappings].sort(
+      (a, b) =>
+        srgbToOklch(parseSrgbColor(a.sourceText)!).l -
+        srgbToOklch(parseSrgbColor(b.sourceText)!).l,
+    )
+    for (let i = 1; i < sorted.length; i++) {
+      expect(
+        srgbToOklch(parseSrgbColor(sorted[i - 1]!.targetText)!).l,
+      ).toBeGreaterThan(srgbToOklch(parseSrgbColor(sorted[i]!.targetText)!).l)
+    }
+    iframe.remove()
+  })
+
+  it('repairs neutral tiers on the midnight-navy reader canvas', async () => {
+    const prose =
+      'Publication prose long enough to provide stable direct text evidence for the analyzer.'
+    const markup = `<!DOCTYPE html><html xmlns="http://www.w3.org/1999/xhtml"><head><style>
+      body { background: transparent; }
+      .t0 { color: #000000; }
+      .t1 { color: #222222; }
+      .t2 { color: #444444; }
+      .t3 { color: #666666; }
+    </style></head><body>
+      <p class="t0">${prose}</p>
+      <p class="t1">${prose}</p>
+      <p class="t2">${prose}</p>
+      <p class="t3">${prose}</p>
+    </body></html>`
+    const source = parseXML(markup, 'application/xhtml+xml')
+    const iframe = document.createElement('iframe')
+    document.body.appendChild(iframe)
+    const rendered = iframe.contentDocument!
+    rendered.documentElement.innerHTML = source.documentElement.innerHTML
+    installVisibleLayout(rendered)
+
+    const canvas = parseSrgbColor('#0f172a')!
+    const analysis = await analyzeExplicitForegroundContrast({
+      sourceDocument: source,
+      renderedDocument: rendered,
+      spineIndex: 31,
+      canvasColor: '#0f172a',
+    })
+    const mappings = analysis.patches.flatMap((patch) =>
+      isRestoreExplicitTextParameters(patch.parameters)
+        ? [patch.parameters]
+        : [],
+    )
+    expect(mappings).toHaveLength(4)
+    expect(new Set(mappings.map((m) => m.targetText)).size).toBe(4)
+    for (const mapping of mappings) {
+      expect(
+        contrastRatio(parseSrgbColor(mapping.targetText)!, canvas),
+      ).toBeGreaterThanOrEqual(4.5)
+    }
+    const sorted = [...mappings].sort(
+      (a, b) =>
+        srgbToOklch(parseSrgbColor(a.sourceText)!).l -
+        srgbToOklch(parseSrgbColor(b.sourceText)!).l,
+    )
+    for (let i = 1; i < sorted.length; i++) {
+      expect(
+        srgbToOklch(parseSrgbColor(sorted[i - 1]!.targetText)!).l,
+      ).toBeGreaterThan(srgbToOklch(parseSrgbColor(sorted[i]!.targetText)!).l)
+    }
+    iframe.remove()
+  })
 })

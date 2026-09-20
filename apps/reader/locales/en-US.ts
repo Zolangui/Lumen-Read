@@ -214,6 +214,10 @@ export default {
   'theme.background_soft': 'Soft',
   'theme.background_tinted': 'Tinted',
   'theme.background_deep': 'Deep tint',
+  'theme.background_dark_default': 'Charcoal',
+  'theme.background_dark_soft': 'Sepia',
+  'theme.background_dark_tinted': 'OLED black',
+  'theme.background_dark_deep': 'Midnight navy',
   'theme.background_color_help': 'Used when the reader is in light mode.',
 
   untitled: 'Untitled',

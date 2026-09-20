@@ -217,6 +217,10 @@ export default {
   'theme.background_soft': 'Suave',
   'theme.background_tinted': 'Tonalizado',
   'theme.background_deep': 'Tom intenso',
+  'theme.background_dark_default': 'Carvão',
+  'theme.background_dark_soft': 'Sépia',
+  'theme.background_dark_tinted': 'Preto OLED',
+  'theme.background_dark_deep': 'Azul-meia-noite',
   'theme.background_color_help': 'Usado quando o leitor está no modo claro.',
 
   untitled: 'Sem título',

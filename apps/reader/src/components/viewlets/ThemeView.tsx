@@ -33,6 +33,13 @@ const backgroundLabelKeys: Record<ReaderBackgroundLevel, string> = {
   5: 'theme.background_deep',
 }
 
+const darkBackgroundLabelKeys: Record<ReaderBackgroundLevel, string> = {
+  [-1]: 'theme.background_dark_default',
+  1: 'theme.background_dark_soft',
+  3: 'theme.background_dark_tinted',
+  5: 'theme.background_dark_deep',
+}
+
 export const ThemeView: React.FC<PaneViewProps> = () => {
   const { scheme, setScheme, dark } = useColorScheme()
   const { sourceColor, setSourceColor } = useSourceColor()
@@ -159,7 +166,11 @@ export const ThemeView: React.FC<PaneViewProps> = () => {
               aria-label={t('theme.background_color_label')}
             >
               {backgroundOptions.map(({ value, color }) => {
-                const label = t(backgroundLabelKeys[value])
+                const label = t(
+                  dark
+                    ? darkBackgroundLabelKeys[value]
+                    : backgroundLabelKeys[value],
+                )
                 const selected = backgroundLevel === value
                 return (
                   <button

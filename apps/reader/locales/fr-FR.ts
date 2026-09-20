@@ -185,6 +185,10 @@ export default {
   'theme.background_color_label': 'Fond de lecture',
   'theme.background_default': 'Blanc pur',
   'theme.background_soft': 'Doux',
+  'theme.background_dark_default': 'Anthracite',
+  'theme.background_dark_soft': 'Sépia',
+  'theme.background_dark_tinted': 'Noir OLED',
+  'theme.background_dark_deep': 'Bleu minuit',
   'theme.background_tinted': 'Teinté',
   'theme.background_deep': 'Teinte intense',
   'theme.background_color_help':

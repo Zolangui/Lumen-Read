@@ -218,6 +218,10 @@ export default {
   'theme.background_soft': 'ソフト',
   'theme.background_tinted': '色付き',
   'theme.background_deep': '濃い色合い',
+  'theme.background_dark_default': 'チャコール',
+  'theme.background_dark_soft': 'セピア',
+  'theme.background_dark_tinted': 'OLEDブラック',
+  'theme.background_dark_deep': 'ミッドナイトネイビー',
   'theme.background_color_help': 'リーダーがライトモードのときに使用されます。',
 
   untitled: '無題',

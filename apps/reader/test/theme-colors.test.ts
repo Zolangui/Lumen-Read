@@ -6,8 +6,10 @@ import {
   DEFAULT_DARK_READER_BACKGROUND,
   DEFAULT_LIGHT_READER_BACKGROUND,
   DEFAULT_THEME_SOURCE_COLOR,
+  MIDNIGHT_DARK_READER_BACKGROUND,
   normalizeReaderBackgroundLevel,
   normalizeThemeSourceColor,
+  OLED_DARK_READER_BACKGROUND,
   readerBackgroundClass,
   resolveReaderBackgroundColor,
   SEPIA_DARK_READER_BACKGROUND,
@@ -53,8 +55,11 @@ describe('reader theme colours', () => {
     expect(resolveReaderBackgroundColor(true, 1, undefined)).toBe(
       SEPIA_DARK_READER_BACKGROUND,
     )
+    expect(resolveReaderBackgroundColor(true, 3, undefined)).toBe(
+      OLED_DARK_READER_BACKGROUND,
+    )
     expect(resolveReaderBackgroundColor(true, 5, undefined)).toBe(
-      SEPIA_DARK_READER_BACKGROUND,
+      MIDNIGHT_DARK_READER_BACKGROUND,
     )
   })
 
@@ -68,6 +73,13 @@ describe('reader theme colours', () => {
     expect(resolveReaderBackgroundColor(false, 5, monochromeTheme)).toBe(
       '#dbdbdb',
     )
+  })
+
+  it('resolves a distinct canvas per dark level so no option is missing', () => {
+    const canvases = ([-1, 1, 3, 5] as const).map((level) =>
+      resolveReaderBackgroundColor(true, level, undefined),
+    )
+    expect(new Set(canvases).size).toBe(canvases.length)
   })
 
   it('keeps fallback classes aligned with the selected canvas', () => {
@@ -91,6 +103,10 @@ describe('reader theme colours', () => {
       'theme.background_soft',
       'theme.background_tinted',
       'theme.background_deep',
+      'theme.background_dark_default',
+      'theme.background_dark_soft',
+      'theme.background_dark_tinted',
+      'theme.background_dark_deep',
       'theme.background_color_help',
     ] as const
 
