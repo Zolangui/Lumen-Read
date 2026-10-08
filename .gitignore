@@ -8,7 +8,10 @@ node_modules
 # testing
 coverage
 artifacts/presentation-fixtures/
+artifacts/lumen-launch/
 artifacts/*.epub
+apps/reader/*.epub
+docs/*.epub
 packages/epub-engine/test-corpus/private/
 packages/epub-engine/test/fixtures/*.epub
 
@@ -49,6 +52,7 @@ reader_dev.log
 
 # Archives
 apps/*.zip
+/Lumen-*.zip
 
 # Generated ML assets (created during build / runtime)
 apps/reader/public/models/

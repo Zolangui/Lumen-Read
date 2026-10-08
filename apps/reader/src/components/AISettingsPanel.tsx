@@ -35,12 +35,15 @@ import {
 } from '../lib/ai/language'
 import {
   hasProviderHostPermission,
+  hasRemoteDataPermission,
   requestLocalModelHostPermissions,
   requestProviderHostPermission,
+  requestRemoteDataPermission,
   validateProviderBaseUrl,
 } from '../lib/ai/permissions'
 import { RAGService } from '../lib/ai/rag'
 import { getSlmStatus, getSlmWarning, preloadSlm } from '../lib/ai/rewriter'
+import { subscribeExtensionPermissionChanges } from '../lib/extension-permissions'
 import { sanitizeErrorForLogs } from '../lib/security/redact'
 import { reader } from '../models'
 import {
@@ -543,21 +546,45 @@ export const AISettingsPanel: React.FC<{
 
   React.useEffect(() => {
     let isCurrent = true
-    setConnectionPermissionStatus('checking')
-    void hasProviderHostPermission(settings.provider, settings.baseUrl).then(
-      (granted) => {
-        if (isCurrent) {
-          setConnectionPermissionStatus(granted ? 'granted' : 'idle')
+    let checkRevision = 0
+    const checkPermissions = () => {
+      const revision = ++checkRevision
+      setConnectionPermissionStatus('checking')
+      setConnectionTestStatus('idle')
+      void hasProviderHostPermission(settings.provider, settings.baseUrl).then(
+        (granted) => {
+          if (isCurrent && revision === checkRevision) {
+            setConnectionPermissionStatus(granted ? 'granted' : 'idle')
+          }
+        },
+        () => {
+          if (isCurrent && revision === checkRevision)
+            setConnectionPermissionStatus('idle')
+        },
+      )
+      void hasRemoteDataPermission().then((granted) => {
+        if (isCurrent && revision === checkRevision && !granted) {
+          setSettings((prev) =>
+            prev.provider !== settings.provider || !prev.remoteDataConsent
+              ? prev
+              : {
+                  ...prev,
+                  remoteDataConsent: false,
+                  remoteDataConsentProvider: '',
+                  includeAnnotationsInRemotePrompts: false,
+                  autoRepairCitations: false,
+                },
+          )
         }
-      },
-      () => {
-        if (isCurrent) setConnectionPermissionStatus('idle')
-      },
-    )
+      })
+    }
+    checkPermissions()
+    const unsubscribe = subscribeExtensionPermissionChanges(checkPermissions)
     return () => {
       isCurrent = false
+      unsubscribe()
     }
-  }, [settings.provider, settings.baseUrl])
+  }, [settings.provider, settings.baseUrl, setSettings])
 
   React.useEffect(() => {
     setConnectionTestStatus('idle')
@@ -600,16 +627,25 @@ export const AISettingsPanel: React.FC<{
     }))
   }
 
-  const updateRemoteDataConsent = (checked: boolean) => {
-    setSettings((prev) => ({
-      ...prev,
-      remoteDataConsent: checked,
-      remoteDataConsentProvider: checked ? prev.provider : '',
-      includeAnnotationsInRemotePrompts: checked
-        ? prev.includeAnnotationsInRemotePrompts
-        : false,
-      autoRepairCitations: checked ? prev.autoRepairCitations : false,
-    }))
+  const updateRemoteDataConsent = async (checked: boolean) => {
+    const provider = settings.provider
+    if (checked && !(await requestRemoteDataPermission())) {
+      alert(t('error.host_permission_denied'))
+      return
+    }
+    setSettings((prev) =>
+      prev.provider !== provider
+        ? prev
+        : {
+            ...prev,
+            remoteDataConsent: checked,
+            remoteDataConsentProvider: checked ? prev.provider : '',
+            includeAnnotationsInRemotePrompts: checked
+              ? prev.includeAnnotationsInRemotePrompts
+              : false,
+            autoRepairCitations: checked ? prev.autoRepairCitations : false,
+          },
+    )
   }
 
   const requestConnectionPermission = async () => {
@@ -1244,19 +1280,20 @@ export const AISettingsPanel: React.FC<{
   return (
     <div
       className={clsx(
-        'ai-settings-panel relative flex h-full flex-col bg-white dark:bg-gray-900',
+        'ai-settings-panel relative flex min-w-0 flex-col bg-white dark:bg-gray-900',
+        isSetup ? 'h-auto' : 'h-full min-h-0',
         className,
       )}
     >
       {/* Sticky Header Group */}
-      <div className="border-border-light dark:border-border-dark sticky top-0 z-[50] border-b bg-white dark:bg-gray-900">
+      <div className="border-border-light dark:border-border-dark z-[50] shrink-0 border-b bg-white dark:bg-gray-900">
         {/* Header Title */}
         <div className="flex items-center justify-between bg-white p-4 dark:bg-gray-900">
-          <div className="flex items-center gap-3">
-            <div className="bg-primary/10 text-primary flex h-10 w-10 items-center justify-center rounded-xl">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="bg-primary/10 text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-xl">
               <MdSettings className="text-2xl" />
             </div>
-            <h3 className="text-lg font-bold tracking-tight">
+            <h3 className="min-w-0 break-words text-left text-base font-bold tracking-tight">
               {t('settings.config_title')}
             </h3>
           </div>
@@ -1277,7 +1314,7 @@ export const AISettingsPanel: React.FC<{
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={clsx(
-                'flex-1 py-3 text-sm font-medium transition-colors',
+                'min-w-0 flex-1 break-words px-1 py-3 text-xs font-medium transition-colors',
                 activeTab === tab
                   ? 'text-primary border-primary border-b-2'
                   : 'text-subtle hover:text-text',
@@ -1290,7 +1327,12 @@ export const AISettingsPanel: React.FC<{
       </div>
 
       {/* Content */}
-      <div className="ai-settings-panel-content custom-scrollbar flex-1 space-y-6 overflow-y-auto bg-white p-4 dark:bg-gray-900">
+      <div
+        className={clsx(
+          'ai-settings-panel-content custom-scrollbar space-y-6 bg-white p-3 dark:bg-gray-900',
+          isSetup ? 'overflow-visible' : 'min-h-0 flex-1 overflow-y-auto',
+        )}
+      >
         {/* GENERAL TAB */}
         {activeTab === 'General' && (
           <div className="space-y-4">
@@ -1651,7 +1693,7 @@ export const AISettingsPanel: React.FC<{
                     {t('settings.local_models_download_required')}
                   </p>
                 )}
-                <div className="flex items-center justify-center gap-4">
+                <div className="flex flex-wrap items-center justify-center gap-2">
                   <StatusIndicator
                     label="SLM"
                     status={slmStatus}
@@ -1949,10 +1991,6 @@ export const AISettingsPanel: React.FC<{
             </div>
           </div>
         )}
-      </div>
-
-      {/* Footer */}
-      <div className="border-border-light dark:border-border-dark sticky bottom-0 z-[50] mt-auto space-y-4 border-t bg-white p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:bg-gray-900">
         <div className="bg-primary/5 border-primary/10 text-subtle flex items-center gap-3 rounded-xl border p-3">
           <MdLock className="text-primary flex-shrink-0 text-xl" />
           <p className="text-[10px] leading-relaxed">
@@ -1963,7 +2001,10 @@ export const AISettingsPanel: React.FC<{
             {t('settings.remote_data_consent_desc')}
           </p>
         </div>
+      </div>
 
+      {/* Keep only the action fixed; the long privacy notice scrolls with content. */}
+      <div className="border-border-light dark:border-border-dark z-[50] shrink-0 border-t bg-white p-3 shadow-[0_-4px_20px_rgba(0,0,0,0.05)] dark:bg-gray-900">
         <Button
           className="shadow-primary/20 flex w-full items-center justify-center gap-2 py-3.5 font-bold shadow-lg"
           onClick={onClose}

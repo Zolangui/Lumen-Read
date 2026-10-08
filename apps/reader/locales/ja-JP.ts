@@ -77,6 +77,17 @@ export default {
   'settings.synchronization.authorize': '認証',
   'settings.synchronization.unauthorize': '認証解除',
   'settings.synchronization.service': 'サービス',
+  'settings.synchronization.status.pending': 'Dropbox の認証を待っています…',
+  'settings.synchronization.status.authorized':
+    'Dropbox の認証が完了しました。',
+  'settings.synchronization.status.denied':
+    '権限が許可されませんでした。Dropbox は接続されていません。',
+  'settings.synchronization.status.failed':
+    'Dropbox の操作に失敗しました。もう一度お試しください。',
+  'settings.synchronization.status.disconnected':
+    'Dropbox の接続を解除しました。',
+  'settings.synchronization.status.permission_required':
+    'Dropbox へのアクセス権限が取り消されました。同期を再開するには再度許可してください。',
   'settings.cache': 'キャッシュ',
 
   'reader.back_to_library': 'ライブラリに戻る',

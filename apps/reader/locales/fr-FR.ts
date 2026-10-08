@@ -67,6 +67,17 @@ export default {
   'settings.synchronization.authorize': 'Autoriser',
   'settings.synchronization.unauthorize': 'Revoquer',
   'settings.synchronization.service': 'Fournisseur',
+  'settings.synchronization.status.pending':
+    'En attente de l’autorisation Dropbox…',
+  'settings.synchronization.status.authorized':
+    'Autorisation Dropbox terminée.',
+  'settings.synchronization.status.denied':
+    'L’autorisation n’a pas été accordée. Dropbox n’a pas été connecté.',
+  'settings.synchronization.status.failed':
+    'L’opération Dropbox a échoué. Veuillez réessayer.',
+  'settings.synchronization.status.disconnected': 'Dropbox déconnecté.',
+  'settings.synchronization.status.permission_required':
+    'L’accès à Dropbox a été révoqué. Autorisez-le à nouveau pour reprendre la synchronisation.',
   'settings.cache': 'Mémoire cache',
   'reader.back_to_library': 'Retour à la bibliothèque',
   'settings.cache_desc':

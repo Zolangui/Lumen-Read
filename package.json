@@ -20,6 +20,7 @@
     "verify:ai-mock": "cross-env TS_NODE_PROJECT=scripts/tsconfig.esno.json esno scripts/verify-ai-mock.ts",
     "verify:providers": "cross-env TS_NODE_PROJECT=scripts/tsconfig.esno.json esno scripts/verify-providers.ts",
     "verify:ai-release": "cross-env TS_NODE_PROJECT=scripts/tsconfig.esno.json esno scripts/verify-ai-release.ts",
+    "verify:ui-fonts": "node scripts/verify-ui-fonts.mjs",
     "dev:presentation:fixture": "cross-env NODE_ENV=development LUMEN_PRESENTATION_FIXTURES=true node scripts/presentation-browser-fixture.mjs --open",
     "test:presentation:browser": "pnpm --filter @flow/epub-engine exec tsc --project browser-fixtures/tsconfig.json && cross-env NODE_ENV=test LUMEN_PRESENTATION_FIXTURES=true node scripts/presentation-browser-fixture.mjs --check",
     "test:reader-core": "pnpm --filter @flow/epub-engine exec vitest run --config ../../apps/reader/vitest.config.ts",

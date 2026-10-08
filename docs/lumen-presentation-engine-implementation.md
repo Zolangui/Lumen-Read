@@ -299,17 +299,11 @@ is a product decision, not a bug fix. Tracked separately.
 
 ### Translucent surfaces
 
-Translucent backgrounds (alpha < 1) are classified as `unknownPaint` and
-preserved unchanged. The engine does not attempt to composite translucent
-colors over the canvas because:
-
-1. `srgbToHex` erases alpha, making the composed color unreliable for
-   downstream guards.
-2. Six validators require exact equality and `surface.address === self`.
-3. The gain is limited to rare pill/badge cases.
-
-**Fail-closed by design.** Reopen only with telemetry showing translucent
-surfaces as a significant source of reading debt.
+Simple translucent backgrounds are composited over a proven backing surface
+in `presentation-health.ts`, retaining the contributing surface chain as
+evidence. This behavior is not restricted to presentation-test builds.
+Unsupported or unproven paint stacks remain `unknownPaint`; compositing is
+not a license to flatten gradients, images, filters, blend modes or overlays.
 
 ### Duplicate patch IDs
 

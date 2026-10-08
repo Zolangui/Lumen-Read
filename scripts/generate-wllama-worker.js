@@ -61,12 +61,15 @@ const wasmSingleAliasOut = path.join(
   'apps/reader/public/wasm/wllama.wasm',
 )
 const onnxRuntimeRoot = resolveOnnxRuntimeRoot()
-const onnxWasmNames = [
-  'ort-wasm.wasm',
-  'ort-wasm-threaded.wasm',
-  'ort-wasm-simd.wasm',
-  'ort-wasm-simd-threaded.wasm',
-]
+// ONNX Runtime picks its wasm binary from `numThreads` + SIMD support
+// (getWasmFileName in onnxruntime-web). `configureTransformersEnv()` in
+// apps/reader/src/lib/ai/rag.worker.ts pins numThreads to 1, so the runtime
+// only ever requests `ort-wasm.wasm` (base name) and `ort-wasm-simd.wasm`
+// (SIMD override). The two `-threaded` builds (~19 MB raw) stay out of the
+// package. If that numThreads pin is ever removed, the threaded files must be
+// re-added HERE and to both manifests' web_accessible_resources, otherwise
+// transformers embeddings fail to fetch their wasm on Chrome.
+const onnxWasmNames = ['ort-wasm.wasm', 'ort-wasm-simd.wasm']
 
 if (!fs.existsSync(generatedPath)) {
   console.error('Missing wllama generated.ts at', generatedPath)
@@ -185,7 +188,7 @@ if (startIdx !== -1) {
     const afterIdx = endIdx + instantiateAsyncEnd.length
     // Ultra-defensive: always instantiate from bytes so we never depend on fetching `.wasm` from nested workers
     // (which can throw `NetworkError` on moz-extension:// in Firefox MV3).
-    const replacement = `async function instantiateAsync(binary,binaryFile,imports){binary=binary||Module[\"wasmBinary\"]||WLLAMA_WASM_BYTES;return WebAssembly.instantiate(binary,imports)}`
+    const replacement = `async function instantiateAsync(binary,binaryFile,imports){binary=binary||Module["wasmBinary"]||WLLAMA_WASM_BYTES;return WebAssembly.instantiate(binary,imports)}`
     mainModuleCode =
       mainModuleCode.slice(0, startIdx) +
       replacement +
@@ -246,6 +249,16 @@ for (const name of onnxWasmNames) {
   }
   fs.copyFileSync(source, destination)
   console.log('Copied', destination)
+}
+
+// Public assets are reused between builds. Remove only these obsolete,
+// generated binaries so next export cannot copy them from an older install.
+for (const name of ['ort-wasm-threaded.wasm', 'ort-wasm-simd-threaded.wasm']) {
+  const obsolete = path.join(root, 'apps/reader/public/wasm', name)
+  if (fs.existsSync(obsolete)) {
+    fs.unlinkSync(obsolete)
+    console.log('Removed obsolete generated ONNX asset:', name)
+  }
 }
 
 console.log('Generated', outPath)

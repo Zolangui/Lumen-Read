@@ -644,8 +644,8 @@ export const ChatbotSidebar: React.FC<{ className?: string }> = ({
           className,
         )}
       >
-        <div className="animate-in fade-in zoom-in flex flex-1 flex-col items-center justify-center space-y-6 p-8 text-center duration-500">
-          <div className="bg-primary/10 text-primary flex h-20 w-20 items-center justify-center rounded-3xl shadow-inner">
+        <div className="animate-in fade-in zoom-in custom-scrollbar flex min-h-0 flex-1 flex-col items-center gap-4 overflow-y-auto p-3 text-center duration-500">
+          <div className="bg-primary/10 text-primary flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl shadow-inner">
             <MdSmartToy size={48} />
           </div>
           <div>
@@ -657,12 +657,12 @@ export const ChatbotSidebar: React.FC<{ className?: string }> = ({
             </p>
           </div>
 
-          <div className="w-full pt-4">
+          <div className="w-full min-w-0 shrink-0">
             <AISettingsPanel
               onClose={() => setForceSetup(false)}
               onClearHistory={clearChat}
               isSetup={true}
-              className="border-border-light dark:border-border-dark max-h-[500px] overflow-hidden rounded-2xl border shadow-2xl"
+              className="border-border-light dark:border-border-dark rounded-2xl border shadow-2xl"
             />
           </div>
 
@@ -677,16 +677,16 @@ export const ChatbotSidebar: React.FC<{ className?: string }> = ({
   return (
     <div
       className={clsx(
-        'bg-surface-2 border-border-light dark:border-border-dark relative flex h-full min-w-[300px] flex-col border-l !bg-opacity-100',
+        'bg-surface-2 border-border-light dark:border-border-dark relative flex h-full min-w-0 flex-col border-l !bg-opacity-100',
         className,
       )}
     >
       {/* Header */}
-      <div className="border-border-light dark:border-border-dark bg-surface-1 sticky top-0 z-10 flex items-center justify-between border-b !bg-opacity-100 p-4 shadow-sm">
+      <div className="border-border-light dark:border-border-dark bg-surface-1 sticky top-0 z-10 flex shrink-0 flex-wrap items-center justify-between gap-2 border-b !bg-opacity-100 p-3 shadow-sm">
         <h2 className="flex items-center gap-2 font-medium">
           <MdSmartToy /> {t('title')}
         </h2>
-        <div className="ml-2 flex items-center gap-1.5">
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
           {/* Status Indicators & Download Triggers */}
           <StatusIndicator
             label="SLM"
@@ -765,7 +765,7 @@ export const ChatbotSidebar: React.FC<{ className?: string }> = ({
       {chatSessions.length > 0 && (
         <div className="border-border-light dark:border-border-dark bg-surface-1 flex items-center gap-2 border-b px-4 py-2">
           <select
-            className="border-border-light dark:border-border-dark focus:ring-primary/30 flex-1 rounded-lg border bg-white px-2 py-1.5 text-[11px] font-semibold focus:outline-none focus:ring-1 dark:bg-gray-900"
+            className="border-border-light dark:border-border-dark focus:ring-primary/30 min-w-0 flex-1 rounded-lg border bg-white px-2 py-1.5 text-[11px] font-semibold focus:outline-none focus:ring-1 dark:bg-gray-900"
             value={activeChatId}
             onChange={(e) => setActiveChat(e.target.value)}
             disabled={state.isLoading}
@@ -870,7 +870,7 @@ export const ChatbotSidebar: React.FC<{ className?: string }> = ({
                 {t('chatbot.footer')}
               </p>
               <p className="text-[10px] font-medium italic">
-                {t('chatbot.connected_to')} {settings.provider}
+                {t('provider')}: {settings.provider}
               </p>
             </div>
           </div>

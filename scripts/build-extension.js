@@ -3,6 +3,8 @@ const path = require('path')
 
 const fs = require('fs-extra')
 
+const { verifyExtensionOutput } = require('./verify-extension-output')
+
 const browser = process.argv[2]
 if (!browser || (browser !== 'chrome' && browser !== 'firefox')) {
   console.error(
@@ -290,6 +292,12 @@ async function build() {
     }
 
     await verifyManifestResources(distDir)
+    if (process.env.FAST_BUILD === 'false') {
+      verifyExtensionOutput(
+        distDir,
+        require('../apps/extension/package.json').version,
+      )
+    }
 
     const duration = ((Date.now() - startTime) / 1000).toFixed(2)
     console.log(

@@ -1,18 +1,18 @@
 import { useEventListener } from '@literal-ui/hooks'
 import Dexie from 'dexie'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
-import {
-  ColorScheme,
-  useColorScheme,
-  useTranslation,
-} from '@flow/reader/hooks'
+import { ColorScheme, useColorScheme, useTranslation } from '@flow/reader/hooks'
+import { subscribeExtensionPermissionChanges } from '@flow/reader/lib/extension-permissions'
+import { sanitizeErrorForLogs } from '@flow/reader/lib/security/redact'
 import { reader } from '@flow/reader/models'
 import { useSettings } from '@flow/reader/state'
 import {
   authorizeDropbox,
   clearDropboxRefreshToken,
+  DropboxConsentDeniedError,
   getDropboxRefreshToken,
+  hasDropboxDataPermission,
   OAUTH_SUCCESS_MESSAGE,
 } from '@flow/reader/sync'
 
@@ -139,23 +139,100 @@ export const Settings: React.FC = () => {
 
 const Synchronization: React.FC = () => {
   const [refreshToken, setRefreshToken] = useState<string | null>(null)
+  const [syncPermissionGranted, setSyncPermissionGranted] = useState(false)
+  const [authStatus, setAuthStatus] = useState<
+    'idle' | 'pending' | 'authorized' | 'denied' | 'failed' | 'disconnected'
+  >('idle')
+  const requestPending = useRef(false)
+  const mounted = useRef(false)
   const t = useTranslation('settings.synchronization')
 
   useEventListener('message', (e) => {
     if (e.data === OAUTH_SUCCESS_MESSAGE) {
-      getDropboxRefreshToken().then((token) => setRefreshToken(token))
+      getDropboxRefreshToken().then((token) => {
+        if (!mounted.current) return
+        setRefreshToken(token)
+        if (token) setAuthStatus('authorized')
+      })
     }
   })
 
   useEffect(() => {
-    let mounted = true
+    mounted.current = true
     getDropboxRefreshToken().then((token) => {
-      if (mounted) setRefreshToken(token)
+      if (mounted.current) setRefreshToken(token)
     })
+    let revision = 0
+    const checkPermissions = () => {
+      const current = ++revision
+      void hasDropboxDataPermission().then((granted) => {
+        if (mounted.current && current === revision) {
+          setSyncPermissionGranted(granted)
+        }
+      })
+    }
+    checkPermissions()
+    const unsubscribe = subscribeExtensionPermissionChanges(checkPermissions)
     return () => {
-      mounted = false
+      mounted.current = false
+      unsubscribe()
     }
   }, [])
+
+  const authorize = async () => {
+    if (requestPending.current) return
+    requestPending.current = true
+    setAuthStatus('pending')
+    try {
+      // Invoke directly in the click: native permission requests need the gesture.
+      await authorizeDropbox()
+      const token = await getDropboxRefreshToken()
+      const granted = await hasDropboxDataPermission()
+      if (!mounted.current) return
+      setRefreshToken(token)
+      setSyncPermissionGranted(granted)
+      // The web fallback only opens OAuth; that is not successful authorization.
+      setAuthStatus(token && granted ? 'authorized' : 'idle')
+    } catch (err) {
+      if (mounted.current) {
+        setAuthStatus(
+          err instanceof DropboxConsentDeniedError ? 'denied' : 'failed',
+        )
+      }
+      console.error('Dropbox auth failed:', sanitizeErrorForLogs(err))
+    } finally {
+      requestPending.current = false
+    }
+  }
+
+  const disconnect = async () => {
+    if (requestPending.current) return
+    requestPending.current = true
+    setAuthStatus('pending')
+    try {
+      await clearDropboxRefreshToken()
+      if (!mounted.current) return
+      setRefreshToken(null)
+      setAuthStatus('disconnected')
+    } catch (err) {
+      if (mounted.current) setAuthStatus('failed')
+      console.error('Dropbox disconnect failed:', sanitizeErrorForLogs(err))
+    } finally {
+      requestPending.current = false
+    }
+  }
+  const status =
+    authStatus === 'pending' ||
+    authStatus === 'denied' ||
+    authStatus === 'failed'
+      ? authStatus
+      : refreshToken
+      ? syncPermissionGranted
+        ? 'authorized'
+        : 'permission_required'
+      : authStatus === 'disconnected'
+      ? 'disconnected'
+      : 'idle'
 
   return (
     <div className="border-b border-gray-200 pb-8 dark:border-gray-700">
@@ -191,34 +268,35 @@ const Synchronization: React.FC = () => {
           </div>
         </div>
         <div className="sm:pb-0.5">
-          {refreshToken ? (
+          {(!refreshToken || !syncPermissionGranted) && (
             <button
-              className="bg-primary text-on-primary w-full rounded-full px-6 py-2.5 font-medium shadow-sm transition-all hover:shadow-md sm:w-auto"
-              onClick={async () => {
-                await clearDropboxRefreshToken()
-                setRefreshToken(null)
-              }}
-            >
-              {t('unauthorize')}
-            </button>
-          ) : (
-            <button
-              className="bg-primary text-on-primary w-full rounded-full px-6 py-2.5 font-medium shadow-sm transition-all hover:shadow-md sm:w-auto"
-              onClick={async () => {
-                try {
-                  await authorizeDropbox()
-                  const token = await getDropboxRefreshToken()
-                  setRefreshToken(token)
-                } catch (err) {
-                  console.error('Dropbox auth failed:', err)
-                }
-              }}
+              disabled={authStatus === 'pending'}
+              className="bg-primary text-on-primary mr-2 rounded-full px-6 py-2.5 font-medium shadow-sm"
+              onClick={() => void authorize()}
             >
               {t('authorize')}
             </button>
           )}
+          {refreshToken && (
+            <button
+              disabled={authStatus === 'pending'}
+              className="bg-primary text-on-primary w-full rounded-full px-6 py-2.5 font-medium shadow-sm transition-all hover:shadow-md sm:w-auto"
+              onClick={() => void disconnect()}
+            >
+              {t('unauthorize')}
+            </button>
+          )}
         </div>
       </div>
+      {status !== 'idle' && (
+        <p
+          role="status"
+          aria-live="polite"
+          className="mt-3 text-sm text-gray-600 dark:text-gray-300"
+        >
+          {t(`status.${status}`)}
+        </p>
+      )}
     </div>
   )
 }

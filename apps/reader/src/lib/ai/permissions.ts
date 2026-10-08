@@ -1,3 +1,10 @@
+import {
+  AI_AUTH_DATA_PERMISSIONS,
+  AI_CONTENT_DATA_PERMISSIONS,
+  hasExtensionPermissions,
+  requestExtensionPermissions,
+} from '../extension-permissions'
+
 import { type AIProvider } from './config'
 
 const PROVIDER_HOSTS: Partial<Record<AIProvider, string>> = {
@@ -38,11 +45,6 @@ export const LOCAL_MODEL_HOST_PERMISSIONS = [
   'https://hf.co/*',
 ]
 
-type PermissionsApi = {
-  contains?: (details: { origins: string[] }) => Promise<boolean>
-  request?: (details: { origins: string[] }) => Promise<boolean>
-}
-
 export type EndpointValidation =
   | { ok: true; origin: string; permissionPattern: string }
   | {
@@ -52,13 +54,6 @@ export type EndpointValidation =
         | 'invalid_base_url'
         | 'unsupported_custom_host'
     }
-
-function getPermissionsApi(): PermissionsApi | null {
-  const globalApi: any = globalThis as any
-  return (
-    globalApi?.browser?.permissions || globalApi?.chrome?.permissions || null
-  )
-}
 
 function isLoopbackHost(hostname: string): boolean {
   const host = hostname.toLowerCase()
@@ -121,14 +116,10 @@ export async function hasProviderHostPermission(
 ): Promise<boolean> {
   const origin = getProviderHostPermission(provider, baseUrl)
   if (!origin) return false
-  const permissions = getPermissionsApi()
-  // Allows the reader app to run in its normal web development environment.
-  if (!permissions?.contains) return true
-  try {
-    return await permissions.contains({ origins: [origin] })
-  } catch {
-    return false
-  }
+  return hasExtensionPermissions(
+    [origin],
+    provider === 'local' ? [] : AI_AUTH_DATA_PERMISSIONS,
+  )
 }
 
 /** Must be called directly from a user gesture so browsers can show consent. */
@@ -138,13 +129,18 @@ export function requestProviderHostPermission(
 ): Promise<boolean> {
   const origin = getProviderHostPermission(provider, baseUrl)
   if (!origin) return Promise.resolve(false)
-  const permissions = getPermissionsApi()
-  if (!permissions?.request) return Promise.resolve(true)
-  try {
-    return permissions.request({ origins: [origin] })
-  } catch {
-    return Promise.resolve(false)
-  }
+  return requestExtensionPermissions(
+    [origin],
+    provider === 'local' ? [] : AI_AUTH_DATA_PERMISSIONS,
+  )
+}
+
+export function requestRemoteDataPermission(): Promise<boolean> {
+  return requestExtensionPermissions([], AI_CONTENT_DATA_PERMISSIONS)
+}
+
+export function hasRemoteDataPermission(): Promise<boolean> {
+  return hasExtensionPermissions([], AI_CONTENT_DATA_PERMISSIONS)
 }
 
 /**
@@ -153,11 +149,5 @@ export function requestProviderHostPermission(
  * the browser's user-gesture requirement for a permission prompt.
  */
 export function requestLocalModelHostPermissions(): Promise<boolean> {
-  const permissions = getPermissionsApi()
-  if (!permissions?.request) return Promise.resolve(true)
-  try {
-    return permissions.request({ origins: LOCAL_MODEL_HOST_PERMISSIONS })
-  } catch {
-    return Promise.resolve(false)
-  }
+  return requestExtensionPermissions(LOCAL_MODEL_HOST_PERMISSIONS)
 }

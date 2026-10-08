@@ -11,10 +11,23 @@ A private, customizable EPUB reader for Firefox and Chromium browsers.
 
 </div>
 
-Lumen Read keeps reading at the center: local EPUB files, flexible typography,
-notes, navigation, reading insights, and optional bring-your-own-key (BYOK) AI.
+Read your EPUBs comfortably in the browser you already use. Adjust the page to
+your preferences, highlight a passage, and return to your book at your own pace.
+Ordinary reading needs no Lumen account or AI key. AI and Dropbox are optional.
 
-[Install Lumen Read from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/lumen-read/)
+[Install Lumen Read from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/lumen-read/?utm_source=github&utm_medium=readme&utm_content=primary-cta&utm_campaign=reader-first)
+
+## Start with one book
+
+1. Install the signed Firefox add-on and open it from the browser toolbar.
+2. Choose **Add New Book** in the library and select a local `.epub` file.
+3. Open the book and use **Typography** and **Theme** to make reading comfortable.
+
+No need to migrate your whole library to try it. See the
+[getting-started guide](docs/readers/getting-started.md) or
+[primeiros passos em português](docs/readers/primeiros-passos.md) for local
+storage, optional connections and troubleshooting. EPUBs requiring DRM-specific
+software are not supported; Lumen does not remove DRM.
 
 ## Highlights
 
@@ -100,13 +113,14 @@ local temporary loading through its `manifest.json`; the ZIP is the archive to
 submit to Mozilla Add-ons. Mozilla signs the submitted release, and Firefox users
 install that signed release directly from the add-on page.
 
-From PowerShell:
+From the repository root (PowerShell, Bash, or another supported shell):
 
-```powershell
-pnpm build:ext:firefox:prod
-Set-Location apps/extension/dist
-& ..\..\..\node_modules\.bin\bestzip.cmd ..\..\..\Lumen-firefox.zip *
+```bash
+pnpm package:firefox
 ```
+
+The archive is written to `apps/Lumen-firefox.zip`. The equivalent Chromium
+command is `pnpm package:chrome`, which writes `apps/Lumen-chrome.zip`.
 
 ## Development
 
@@ -145,6 +159,11 @@ pnpm --filter @flow/reader exec tsc --noEmit --incremental false
 
 # Verify AI provider configuration without API keys
 pnpm verify:providers
+pnpm verify:ai-release
+pnpm verify:ai-mock
+
+# Offline UI font/ligature smoke test (Windows, Edge and Firefox installed)
+pnpm verify:ui-fonts
 
 # Production builds
 pnpm build:ext:chrome:prod
@@ -172,11 +191,39 @@ pnpm package:firefox
 ```
 
 `pnpm package:firefox` runs the production Firefox build and packages its
-contents as `Lumen-firefox.zip` in the repository root. The script invokes all
+contents as `apps/Lumen-firefox.zip`. The script invokes all
 required build steps, including type checking, linting, static export, asset
 copying, Firefox manifest selection, and ZIP packaging. This is the archive
 submitted to Firefox Add-ons; do not submit the source archive itself as the
 extension package.
+
+For the current release verification, the tested environment is Windows x64,
+Node.js 18.20.8 and pnpm 10.6.4. Node 18 is no longer supported upstream; newer
+Node versions must be verified before claiming equivalent release output.
+Specify the actual tested environment in the reviewer notes. Include the
+vendored `apps/reader/public/fonts` directory and its licenses in source archives.
+
+The extension and source archives must be produced from the same reviewed
+source state. A Git archive contains committed files only: uncommitted fixes
+and new font assets will not be included. Exclude personal EPUBs, credentials,
+generated output and private audit documents from source submissions.
+
+### Release smoke checks
+
+Test the production extension, not only the presentation-test harness:
+
+- With Adaptive disabled and enabled, open books, follow the TOC, cross chapter
+  boundaries, switch books and change between single and double pages.
+- Verify saved positions, Atlas totals, dark/light themes and Published fallback.
+- In a fresh profile without network access, verify UI fonts and icon ligatures.
+- Decline optional AI/sync permissions: local reading must remain available.
+- Grant optional permissions only through their settings controls; revoke them
+  in Firefox's Permissions and data panel and verify that transmissions stop.
+
+Adaptive is opt-in in production. The presentation-test build enables it for
+testing and uses a 7:1 minimum text contrast, versus 4.5:1 in production. A
+Published fallback restores the published presentation; it does not silently
+activate the legacy color-repair path.
 
 ## Contributing
 

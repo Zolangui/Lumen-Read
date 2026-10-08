@@ -5,12 +5,24 @@ import { destroyCookie, parseCookies, setCookie } from 'nookies'
 
 import { BookRecord, db, mergeIncomingBookRecord } from './db'
 import { readBlob } from './lib/epub-file'
+import {
+  DROPBOX_DATA_PERMISSIONS,
+  hasExtensionPermissions,
+  requestExtensionPermissions,
+} from './lib/extension-permissions'
 
 export const mapToToken = {
   dropbox: 'dropbox-refresh-token',
 }
 
 export const OAUTH_SUCCESS_MESSAGE = 'oauth_success'
+
+export class DropboxConsentDeniedError extends Error {
+  constructor() {
+    super('Dropbox transmission permission denied')
+    this.name = 'DropboxConsentDeniedError'
+  }
+}
 
 let dropboxClient: Dropbox | undefined
 
@@ -199,12 +211,31 @@ export const canUseDropboxPkce = () => {
   return !!identity?.launchWebAuthFlow && !!identity?.getRedirectURL
 }
 
+export function hasDropboxDataPermission(): Promise<boolean> {
+  return hasExtensionPermissions([], DROPBOX_DATA_PERMISSIONS)
+}
+
 export async function authorizeDropboxWithPkce(): Promise<void> {
+  if (!(await requestExtensionPermissions([], DROPBOX_DATA_PERMISSIONS))) {
+    throw new DropboxConsentDeniedError()
+  }
   if (!isBrowser()) throw new Error('Auth only available in browser')
   const g = globalThis as any
   const identity = g?.browser?.identity || g?.chrome?.identity
   if (!identity?.launchWebAuthFlow || !identity?.getRedirectURL) {
     throw new Error('PKCE not supported in this environment')
+  }
+
+  // Updating the manifest introduces native consent for existing users too.
+  // Reuse their existing authorization after explicit consent; only repeat
+  // OAuth when the saved token is no longer usable.
+  if (await getDropboxRefreshToken()) {
+    try {
+      await ensureDropboxAccessToken()
+      return
+    } catch {
+      // Expired/revoked authorization needs a fresh interactive OAuth flow.
+    }
   }
 
   const redirectUri = identity.getRedirectURL('dropbox-auth')
@@ -279,6 +310,9 @@ export async function authorizeDropbox(): Promise<void> {
 
 let _refreshReq: Promise<void> | undefined
 export async function ensureDropboxAccessToken(): Promise<void> {
+  if (!(await hasExtensionPermissions([], DROPBOX_DATA_PERMISSIONS))) {
+    throw new Error('Dropbox transmission permission required')
+  }
   const client = getDropboxClient()
   const accessToken = client.auth.getAccessToken()
   const expiresAt = client.auth.getAccessTokenExpiresAt()

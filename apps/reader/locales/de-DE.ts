@@ -67,6 +67,18 @@ export default {
   'settings.synchronization.authorize': 'Autorisieren',
   'settings.synchronization.unauthorize': 'Widerrufen',
   'settings.synchronization.service': 'Dienst',
+  'settings.synchronization.status.pending':
+    'Warten auf die Dropbox-Autorisierung…',
+  'settings.synchronization.status.authorized':
+    'Dropbox-Autorisierung abgeschlossen.',
+  'settings.synchronization.status.denied':
+    'Die Berechtigung wurde nicht erteilt. Dropbox wurde nicht verbunden.',
+  'settings.synchronization.status.failed':
+    'Der Dropbox-Vorgang ist fehlgeschlagen. Bitte erneut versuchen.',
+  'settings.synchronization.status.disconnected':
+    'Dropbox-Verbindung getrennt.',
+  'settings.synchronization.status.permission_required':
+    'Der Dropbox-Zugriff wurde widerrufen. Erneut autorisieren, um die Synchronisierung fortzusetzen.',
   'settings.cache': 'Zwischenspeicher',
   'reader.back_to_library': 'Zurück zur Bibliothek',
   'settings.cache_desc':

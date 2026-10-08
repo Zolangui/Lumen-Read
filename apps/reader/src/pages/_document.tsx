@@ -54,7 +54,7 @@ function GoogleTagManager() {
 }
 
 function GoogleTagManagerNoScript() {
-  if (!GTM_ID) return null
+  if (!GTM_ID || IS_EXTENSION_EXPORT) return null
   return (
     <noscript>
       <iframe

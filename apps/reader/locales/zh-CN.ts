@@ -73,6 +73,13 @@ export default {
   'settings.synchronization.authorize': '授权',
   'settings.synchronization.unauthorize': '取消授权',
   'settings.synchronization.service': '服务',
+  'settings.synchronization.status.pending': '正在等待 Dropbox 授权…',
+  'settings.synchronization.status.authorized': 'Dropbox 授权已完成。',
+  'settings.synchronization.status.denied': '未授予权限。Dropbox 未连接。',
+  'settings.synchronization.status.failed': 'Dropbox 操作失败，请重试。',
+  'settings.synchronization.status.disconnected': '已断开 Dropbox 连接。',
+  'settings.synchronization.status.permission_required':
+    'Dropbox 访问权限已撤销。请重新授权以恢复同步。',
   'settings.cache': '缓存',
 
   'reader.back_to_library': '返回图书馆',

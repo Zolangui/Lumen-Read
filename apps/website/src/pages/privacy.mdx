@@ -1,5 +1,38 @@
 # Privacy Policy
 
-**Lumen Read** does not collect personal data. Your books and reading progress are saved only in your browser (Local Storage/IndexedDB).
+This policy describes the **Lumen Read browser extension**. Reading works locally:
+books, annotations, chat history and reading progress are stored in your browser.
+The published extension does not enable analytics or Sentry error reporting.
 
-Dropbox synchronization is performed directly between your browser and Dropbox, without passing through our servers.
+## Optional AI
+
+Cloud AI is optional. If you choose a provider and grant access and content-sharing
+consent, your API key is sent to that provider for authentication. Chat messages,
+conversation context and relevant book excerpts are sent to generate answers.
+Annotations are included only when you explicitly enable their sharing. These
+requests go directly to your selected provider, not to a Lumen-operated server.
+The provider's own retention and privacy policies apply.
+
+API keys are kept for the current session, not persisted with reader settings.
+On-device inference does not upload your books. Optional model downloads contact
+the model host, which can receive the usual network information such as your IP
+address. A loopback provider sends requests to the local server you configure.
+
+## Optional Dropbox sync
+
+If you authorize Dropbox, library records, annotations, saved chat sessions, reading positions
+and typography are synchronized directly with Dropbox, without passing through
+our servers. Dropbox credentials and refresh tokens are used for authentication;
+the refresh token is stored locally so your authorized connection can persist.
+Dropbox's own privacy policies apply.
+
+## Your choices
+
+You can keep reading without enabling either feature. Cloud content sharing is
+controlled in AI settings; Dropbox can be disconnected in synchronization settings.
+In Firefox you can also grant or revoke optional data permissions in the
+extension's **Permissions and data** panel. Revocation blocks future requests; it
+cannot retrieve information already sent to a service. Disconnecting a service
+does not automatically delete data that service previously received.
+
+UI fonts and icons are bundled locally and do not require Google Fonts requests.

@@ -1,1 +1,7 @@
 packages/epubjs/** linguist-vendored
+
+# Source submissions must not contain books or generated/local artifacts.
+*.epub export-ignore
+*.zip export-ignore
+artifacts/** export-ignore
+docs/launch/** export-ignore

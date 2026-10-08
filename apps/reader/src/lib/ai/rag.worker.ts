@@ -400,9 +400,7 @@ class DirectOPFSCacheManager {
     }
   }
 
-  async getMetadata(
-    nameOrURL: string,
-  ): Promise<{
+  async getMetadata(nameOrURL: string): Promise<{
     originalSize: number
     originalURL: string
     etag: string
@@ -510,6 +508,16 @@ async function configureTransformersEnv() {
   env.useBrowserCache = true
 
   env.backends.onnx.wasm.wasmPaths = resolveWasmBase()
+  // Pin single-threaded ONNX wasm on purpose. The onnxruntime-web default is
+  // Math.min(4, ceil(cores / 2)) (ort.js: `env.wasm.numThreads = ...`), and any
+  // value > 1 makes the loader pick `ort-wasm-threaded.wasm` /
+  // `ort-wasm-simd-threaded.wasm` wherever SharedArrayBuffer transfer actually
+  // works (Chrome). Those two binaries are ~19 MB raw in the package.
+  // Transformers embeddings are a secondary path (Firefox prefers
+  // firefox-native/wllama), so the threading win is not worth doubling the
+  // XPI. Keep this in sync with `onnxWasmNames` in
+  // scripts/generate-wllama-worker.js and both manifests' WAR entries.
+  env.backends.onnx.wasm.numThreads = 1
   debugLog('wasm_paths', { base: env.backends.onnx.wasm.wasmPaths })
 }
 

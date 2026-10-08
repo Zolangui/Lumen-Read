@@ -57,6 +57,13 @@ let config = {
   },
   pageExtensions: ['ts', 'tsx'],
   webpack(config, { dev, isServer }) {
+    if (IS_EXPORT && !isServer) {
+      config.module.rules.push({
+        test: /[\\/]zod[\\/]v4[\\/]core[\\/](?:util|doc)\.(?:js|cjs)$/,
+        enforce: 'pre',
+        use: path.resolve(__dirname, '../../scripts/loaders/zod-csp-loader.js'),
+      })
+    }
     if (process.env.FAST_BUILD === 'true') {
       config.optimization.minimize = false
     }
@@ -71,6 +78,23 @@ let config = {
           css: true, // SOTA: Minify CSS with Esbuild
         }),
       ]
+    }
+
+    // AMO gate: addons-linter refuses to parse any single file above 5 MB
+    // (MAX_FILE_SIZE_TO_PARSE_MB = 5 in mozilla/addons-linter src/const.js),
+    // which is a hard submission blocker for the ~8.3 MB `_app` chunk. Keep
+    // every emitted client chunk comfortably below that ceiling. Scoped to the
+    // static extension export so dev/docker/web builds are untouched.
+    if (!dev && !isServer && IS_EXPORT) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          ...(config.optimization.splitChunks || {}),
+          maxSize: 3500000,
+          maxAsyncSize: 3500000,
+          maxInitialSize: 3500000,
+        },
+      }
     }
 
     config.experiments = {
@@ -106,7 +130,7 @@ const dev = base
 const docker = base
 
 // Only enable Sentry if not skipped
-const shouldEnableSentry = !process.env.SKIP_SENTRY
+const shouldEnableSentry = !IS_EXPORT && process.env.SKIP_SENTRY !== 'true'
 const prod = shouldEnableSentry
   ? withSentryConfig(
       base,

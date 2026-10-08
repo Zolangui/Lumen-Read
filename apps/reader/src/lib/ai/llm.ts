@@ -10,8 +10,12 @@ import { ChatOpenAI } from '@langchain/openai'
 
 import { sanitizeErrorForLogs } from '../security/redact'
 
-import { type AIProvider, type AISettings } from './config'
-import { validateProviderBaseUrl } from './permissions'
+import { isCloudAIProvider, type AIProvider, type AISettings } from './config'
+import {
+  hasProviderHostPermission,
+  hasRemoteDataPermission,
+  validateProviderBaseUrl,
+} from './permissions'
 
 /**
  * Chat message format for conversation history
@@ -70,6 +74,25 @@ export class LLMService {
 
   constructor(settings: AISettings) {
     this.settings = settings
+  }
+
+  private async ensureTransmissionConsent(): Promise<void> {
+    if (
+      isCloudAIProvider(this.settings.provider) &&
+      (!this.settings.remoteDataConsent ||
+        this.settings.remoteDataConsentProvider !== this.settings.provider ||
+        !(await hasRemoteDataPermission()))
+    ) {
+      throw new Error('I18N_ERR:remote_consent_required')
+    }
+    if (
+      !(await hasProviderHostPermission(
+        this.settings.provider,
+        this.settings.baseUrl,
+      ))
+    ) {
+      throw new Error('I18N_ERR:host_permission_required')
+    }
   }
 
   private ensureProviderConfiguration() {
@@ -142,6 +165,7 @@ export class LLMService {
     userQuery: string,
     history: ChatHistoryMessage[] = [],
   ): Promise<string> {
+    await this.ensureTransmissionConsent()
     if (!this.settings.apiKey && this.settings.provider !== 'local') {
       throw new Error('I18N_ERR:api_key_missing')
     }
@@ -193,6 +217,7 @@ ${effectivePrompt}`
     signal?: AbortSignal,
     history?: ChatHistoryMessage[],
   ): AsyncGenerator<string, void, unknown> {
+    await this.ensureTransmissionConsent()
     if (!this.settings.apiKey && this.settings.provider !== 'local') {
       throw new Error('I18N_ERR:api_key_missing')
     }
@@ -257,6 +282,7 @@ ${effectivePrompt}`
   }
 
   async classifyBook(metadata: any): Promise<string> {
+    await this.ensureTransmissionConsent()
     const prompt = `Analyze this book metadata and choose the most appropriate AI persona from: 
         "Literary Critic" (for novels/poetry), 
         "Technical Expert" (for coding/engineering), 
