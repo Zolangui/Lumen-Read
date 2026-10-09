@@ -203,9 +203,11 @@ Node versions must be verified before claiming equivalent release output.
 Specify the actual tested environment in the reviewer notes. Include the
 vendored `apps/reader/public/fonts` directory and its licenses in source archives.
 
-Extension exports use a version-based Next.js build ID and explicit minification
-options for worker compilations, normalize packaged text to LF, and exclude
-stale PWA assets. This avoids differences caused by build IDs, line endings
+Extension exports use a version-based Next.js build ID and preserve identifiers
+in asynchronous chunks while still minifying their syntax/whitespace. The main
+application remains fully minified to respect Mozilla's file-size limit. Builds
+normalize packaged text to LF and exclude stale PWA assets. This avoids
+differences caused by build IDs, line endings
 or leftovers from a previous web build. ZIP container timestamps
 can differ; compare the extracted file contents when checking reproduction.
 

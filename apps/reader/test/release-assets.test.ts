@@ -1,5 +1,6 @@
 import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
+import { createRequire } from 'node:module'
 import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
@@ -8,6 +9,7 @@ import locales from '../locales'
 
 const readerRoot = path.resolve(__dirname, '..')
 const repoRoot = path.resolve(readerRoot, '../..')
+const requireBuild = createRequire(path.join(repoRoot, 'package.json'))
 
 describe('offline UI and release metadata', () => {
   it('uses a repeatable export build ID and invalidates caches on version changes', () => {
@@ -38,14 +40,41 @@ describe('offline UI and release metadata', () => {
       `lumen-${version}`,
       `lumen-${version}`,
     ])
-    expect(
-      fs.readFileSync(path.join(readerRoot, 'next.config.js'), 'utf8'),
-    ).toMatch(/new EsbuildPlugin\(\{[\s\S]*?minify: true/)
     const turbo = JSON.parse(
       fs.readFileSync(path.join(repoRoot, 'turbo.json'), 'utf8'),
     )
     expect(turbo.globalDependencies).toContain('apps/extension/package.json')
   }, 35000)
+  it('keeps async minification repeatable without inflating the main app', () => {
+    const { createReaderMinimizers } = requireBuild(
+      path.join(repoRoot, 'scripts/reader-minimizers.js'),
+    )
+    const [main, async] = createReaderMinimizers(true)
+    expect(main.options.minify).toBe(true)
+    expect(async.options.minifyWhitespace).toBe(true)
+    expect(async.options.minifySyntax).toBe(true)
+    expect(async.options.minifyIdentifiers).toBe(false)
+    for (const name of [
+      'static/chunks/268.example.js',
+      'static/chunks/396.example.js',
+      'static/chunks/647.example.js',
+      'static/chunks/shared.example.js',
+    ]) {
+      expect(main.options.exclude.test(name)).toBe(true)
+      expect(async.options.include.test(name)).toBe(true)
+    }
+    for (const name of [
+      'static/chunks/pages/_app-example.js',
+      'static/chunks/main-example.js',
+      'static/chunks/framework-example.js',
+      'static/chunks/webpack-example.js',
+      'static/css/example.css',
+    ]) {
+      expect(main.options.exclude.test(name)).toBe(false)
+      expect(async.options.include.test(name)).toBe(false)
+    }
+    expect(createReaderMinimizers(false)).toHaveLength(1)
+  })
   it('localizes all Dropbox authorization outcomes in every supported language', () => {
     for (const dictionary of Object.values(locales)) {
       for (const status of [
