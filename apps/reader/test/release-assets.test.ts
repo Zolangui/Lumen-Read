@@ -38,6 +38,9 @@ describe('offline UI and release metadata', () => {
       `lumen-${version}`,
       `lumen-${version}`,
     ])
+    expect(
+      fs.readFileSync(path.join(readerRoot, 'next.config.js'), 'utf8'),
+    ).toMatch(/new EsbuildPlugin\(\{[\s\S]*?minify: true/)
     const turbo = JSON.parse(
       fs.readFileSync(path.join(repoRoot, 'turbo.json'), 'utf8'),
     )

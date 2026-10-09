@@ -33,8 +33,8 @@ extension, not the source archive. Follow the README's installation prerequisite
 Both submitted archives must come from the same final, approved source state;
 `git archive` alone excludes currently uncommitted files and new assets.
 
-Export build IDs are derived from the extension version. Identifier mangling is
-disabled only for extension exports; syntax/whitespace minification remains.
+Export build IDs are derived from the extension version. Minification is
+configured explicitly, including for worker compilations.
 Packaged text uses LF regardless of checkout line endings. Old `sw.js` and
 `workbox-*.js` web/PWA files are excluded. Compare extracted files, not ZIP
 container bytes, because archive timestamps can differ.

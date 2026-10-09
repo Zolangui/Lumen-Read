@@ -79,8 +79,9 @@ let config = {
         new EsbuildPlugin({
           target: 'esnext',
           keepNames: true, // Prevent Zod/Valtio property mangling
-          // Keep worker identifier names stable across clean release rebuilds.
-          minifyIdentifiers: !IS_EXPORT,
+          // Worker child compilations do not inherit minimizer detection. Keep
+          // their minification explicit rather than dependent on invocation.
+          minify: true,
           css: true, // SOTA: Minify CSS with Esbuild
         }),
       ]
