@@ -203,6 +203,12 @@ Node versions must be verified before claiming equivalent release output.
 Specify the actual tested environment in the reviewer notes. Include the
 vendored `apps/reader/public/fonts` directory and its licenses in source archives.
 
+Extension exports use a version-based Next.js build ID, preserve worker
+identifier names while minifying syntax/whitespace, normalize packaged text to
+LF, and exclude stale PWA assets. This avoids differences caused by build IDs,
+line endings or leftovers from a previous web build. ZIP container timestamps
+can differ; compare the extracted file contents when checking reproduction.
+
 The extension and source archives must be produced from the same reviewed
 source state. A Git archive contains committed files only: uncommitted fixes
 and new font assets will not be included. Exclude personal EPUBs, credentials,

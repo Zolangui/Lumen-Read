@@ -5,6 +5,10 @@ const path = require('node:path')
 const MAX_PARSED_ASSET_BYTES = 5 * 1024 * 1024
 
 function validateParsedAsset(name, bytes) {
+  assert(
+    !/^(?:sw\.js|workbox-[\w-]+\.js)(?:\.map)?$/i.test(name),
+    'Stale PWA assets must not be packaged in an extension',
+  )
   if (/\.(?:js|json|html|css)$/i.test(name)) {
     assert(
       bytes.length <= MAX_PARSED_ASSET_BYTES,
@@ -30,6 +34,18 @@ function validateParsedAsset(name, bytes) {
       !/googletagmanager\.com/i.test(bytes.toString('utf8')),
       `${name} contains analytics in an extension export`,
     )
+  }
+}
+
+function normalizePackagedAssets(directory) {
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name)
+    if (entry.isDirectory()) normalizePackagedAssets(file)
+    else if (/\.(?:js|json|html|css|txt|md|svg|xml)$/i.test(entry.name)) {
+      const content = fs.readFileSync(file, 'utf8')
+      const normalized = content.replace(/\r\n/g, '\n')
+      if (normalized !== content) fs.writeFileSync(file, normalized, 'utf8')
+    }
   }
 }
 
@@ -111,6 +127,7 @@ function verifyExtensionOutput(directory, expectedVersion) {
 
 module.exports = {
   MAX_PARSED_ASSET_BYTES,
+  normalizePackagedAssets,
   validateParsedAsset,
   verifyExtensionOutput,
 }

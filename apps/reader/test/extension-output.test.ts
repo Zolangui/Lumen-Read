@@ -1,14 +1,45 @@
+import fs from 'node:fs'
 import { createRequire } from 'node:module'
+import os from 'node:os'
+import path from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
 const require = createRequire(import.meta.url)
 const {
   MAX_PARSED_ASSET_BYTES,
+  normalizePackagedAssets,
   validateParsedAsset,
 } = require('../../../scripts/verify-extension-output')
 
 describe('post-build release checks', () => {
+  it('rejects stale PWA workers while allowing packaged inference workers', () => {
+    expect(() => validateParsedAsset('sw.js', Buffer.from(''))).toThrow('PWA')
+    expect(() =>
+      validateParsedAsset('workbox-abc123.js', Buffer.from('')),
+    ).toThrow('PWA')
+    expect(() =>
+      validateParsedAsset('wasm/wllama.worker.js', Buffer.from('')),
+    ).not.toThrow()
+  })
+
+  it('normalizes text line endings without modifying binary font assets', () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'lumen-output-'))
+    try {
+      const text = path.join(directory, 'manifest.json')
+      const binary = path.join(directory, 'font.woff2')
+      const bytes = Buffer.from([0, 13, 10, 255])
+      fs.writeFileSync(text, '{\r\n}\r\n')
+      fs.writeFileSync(binary, bytes)
+      normalizePackagedAssets(directory)
+      expect(fs.readFileSync(text, 'utf8')).toBe('{\n}\n')
+      expect(fs.readFileSync(binary)).toEqual(bytes)
+      normalizePackagedAssets(directory)
+      expect(fs.readFileSync(text, 'utf8')).toBe('{\n}\n')
+    } finally {
+      fs.rmSync(directory, { recursive: true, force: true })
+    }
+  })
   it('rejects indirect Function constructors missed by the static submission scan', () => {
     expect(() =>
       validateParsedAsset(

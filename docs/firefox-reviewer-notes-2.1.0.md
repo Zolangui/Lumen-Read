@@ -33,6 +33,12 @@ extension, not the source archive. Follow the README's installation prerequisite
 Both submitted archives must come from the same final, approved source state;
 `git archive` alone excludes currently uncommitted files and new assets.
 
+Export build IDs are derived from the extension version. Identifier mangling is
+disabled only for extension exports; syntax/whitespace minification remains.
+Packaged text uses LF regardless of checkout line endings. Old `sw.js` and
+`workbox-*.js` web/PWA files are excluded. Compare extracted files, not ZIP
+container bytes, because archive timestamps can differ.
+
 Extension-only Zod adaptation is in `scripts/loaders/zod-csp-loader.js`, applied
 to original util/doc modules before bundling. It removes an optional dynamic-code
 probe and selects the existing non-JIT interpreter. It fails the build when the

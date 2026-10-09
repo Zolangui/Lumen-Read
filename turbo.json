@@ -1,5 +1,6 @@
 {
   "globalDependencies": [
+    "apps/extension/package.json",
     "pnpm-lock.yaml",
     "patches/**",
     "scripts/loaders/**",

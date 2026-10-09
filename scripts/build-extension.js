@@ -3,7 +3,10 @@ const path = require('path')
 
 const fs = require('fs-extra')
 
-const { verifyExtensionOutput } = require('./verify-extension-output')
+const {
+  normalizePackagedAssets,
+  verifyExtensionOutput,
+} = require('./verify-extension-output')
 
 const browser = process.argv[2]
 if (!browser || (browser !== 'chrome' && browser !== 'firefox')) {
@@ -183,7 +186,14 @@ async function build() {
 
     // 4. Copy files
     // Copy static files first (bulk copy)
-    await fs.copy(outDir, distDir)
+    await fs.copy(outDir, distDir, {
+      // Disabled PWA generation must not leave old web-build assets in releases.
+      filter: (source) =>
+        path.dirname(source) !== outDir ||
+        !/^(?:sw\.js|workbox-[\w-]+\.js)(?:\.map)?$/i.test(
+          path.basename(source),
+        ),
+    })
 
     // Overwrite specific files in parallel
     await Promise.all([
@@ -291,6 +301,7 @@ async function build() {
       }
     }
 
+    normalizePackagedAssets(distDir)
     await verifyManifestResources(distDir)
     if (process.env.FAST_BUILD === 'false') {
       verifyExtensionOutput(

@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 
@@ -9,6 +10,39 @@ const readerRoot = path.resolve(__dirname, '..')
 const repoRoot = path.resolve(readerRoot, '../..')
 
 describe('offline UI and release metadata', () => {
+  it('uses a repeatable export build ID and invalidates caches on version changes', () => {
+    // next-transpile-modules resolves workspace dependencies from cwd. Load
+    // the real config in a separate process, as the reader build does, without
+    // mutating the test runner's environment or module cache.
+    const output = execFileSync(
+      process.execPath,
+      [
+        '-e',
+        "const config = require('./next.config.js'); Promise.all([config.generateBuildId(), config.generateBuildId()]).then(ids => console.log(JSON.stringify(ids)))",
+      ],
+      {
+        cwd: readerRoot,
+        env: { ...process.env, NEXT_PUBLIC_IS_EXPORT: 'true' },
+        encoding: 'utf8',
+        timeout: 30000,
+        windowsHide: true,
+      },
+    )
+    const version = JSON.parse(
+      fs.readFileSync(
+        path.join(repoRoot, 'apps/extension/package.json'),
+        'utf8',
+      ),
+    ).version
+    expect(JSON.parse(output.trim())).toEqual([
+      `lumen-${version}`,
+      `lumen-${version}`,
+    ])
+    const turbo = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, 'turbo.json'), 'utf8'),
+    )
+    expect(turbo.globalDependencies).toContain('apps/extension/package.json')
+  }, 35000)
   it('localizes all Dropbox authorization outcomes in every supported language', () => {
     for (const dictionary of Object.values(locales)) {
       for (const status of [

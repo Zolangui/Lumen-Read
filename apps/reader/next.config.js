@@ -46,6 +46,10 @@ const sentryWebpackPluginOptions = {
  * @type {import('next').NextConfig}
  **/
 let config = {
+  ...(IS_EXPORT && {
+    generateBuildId: async () =>
+      `lumen-${require('../extension/package.json').version}`,
+  }),
   swcMinify: false, // Use Terser instead of SWC (Fixes Zod v4 mangling bug in Next.js 12)
   compress: process.env.FAST_BUILD !== 'true', // Disable gzip for fast builds
   productionBrowserSourceMaps: false, // Disable for faster builds
@@ -75,6 +79,8 @@ let config = {
         new EsbuildPlugin({
           target: 'esnext',
           keepNames: true, // Prevent Zod/Valtio property mangling
+          // Keep worker identifier names stable across clean release rebuilds.
+          minifyIdentifiers: !IS_EXPORT,
           css: true, // SOTA: Minify CSS with Esbuild
         }),
       ]
