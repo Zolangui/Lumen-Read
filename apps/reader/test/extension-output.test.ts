@@ -13,6 +13,19 @@ const {
 } = require('../../../scripts/verify-extension-output')
 
 describe('post-build release checks', () => {
+  it('rejects build-machine dependency URLs in browser workers', () => {
+    for (const source of [
+      'const moduleURL="file:///C:/Users/builder/node_modules/@xenova/transformers/src/env.js";',
+      'const moduleURL="file:///tmp/build/node_modules/@xenova/transformers/src/env.js";',
+    ]) {
+      expect(() =>
+        validateParsedAsset('worker.js', Buffer.from(source)),
+      ).toThrow('build-machine dependency URL')
+    }
+    expect(() =>
+      validateParsedAsset('worker.js', Buffer.from('const directory="./";')),
+    ).not.toThrow()
+  })
   it('rejects stale PWA workers while allowing packaged inference workers', () => {
     expect(() => validateParsedAsset('sw.js', Buffer.from(''))).toThrow('PWA')
     expect(() =>

@@ -23,6 +23,10 @@ function validateParsedAsset(name, bytes) {
   }
   if (/\.js$/i.test(name)) {
     assert(
+      !/file:\/\/\/[^"'\r\n]+\/node_modules\//i.test(bytes.toString('utf8')),
+      `${name} contains a build-machine dependency URL`,
+    )
+    assert(
       !/\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=\s*Function\s*;[\s\S]{0,600}?\bnew\s+\1\s*\(/.test(
         bytes.toString('utf8'),
       ),
