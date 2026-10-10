@@ -24,6 +24,7 @@ import React, { useState, useMemo, useEffect } from 'react'
 
 import { BookRecord, CoverRecord, db } from '../db'
 import { useTranslation } from '../hooks'
+import { indexedBookIdsFromKeys } from '../lib/indexed-book-ids'
 import { useLibraryState } from '../state'
 
 import { BookCard } from './BookCard'
@@ -67,19 +68,12 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
 
   const indexedBookIds = useLiveQuery(async () => {
     try {
-        // SOTA v6.3: Try new 'kind' index
-        const indices = await db?.indices.where('kind').equals('chunks').toArray()
-        return new Set(indices?.map((i) => i.bookId) || [])
-    } catch (e: any) {
-        // Fallback: Legacy schema (no 'kind' index)
-        const errName = e?.name || e?._e?.name
-        if (errName === 'SchemaError' || errName === 'DataError') {
-             // In legacy schema, all entries in 'indices' are chunks for books.
-             // Just get everything (it's metadata-only effectively for this list check)
-             const allIndices = await db?.indices.toArray()
-             return new Set(allIndices?.map((i: any) => i.bookId || i.id) || [])
-        }
-        return new Set()
+      // `kind` is part of the primary key, not a standalone indexed column.
+      // Reading keys also avoids loading large serialized vector payloads.
+      const keys = await db?.indices.toCollection().primaryKeys()
+      return indexedBookIdsFromKeys(keys ?? [])
+    } catch {
+      return new Set<string>()
     }
   }, [])
 
@@ -366,11 +360,11 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                   book={filteredBooks.find((b) => b.id === activeId)!}
                   cover={covers.find((c) => c.id === activeId)?.cover}
                   viewMode={viewMode}
-                  onClick={() => { }}
-                  onToggleFavorite={() => { }}
-                  onDownload={() => { }}
-                  onRemove={() => { }}
-                  onViewDetails={() => { }}
+                  onClick={() => {}}
+                  onToggleFavorite={() => {}}
+                  onDownload={() => {}}
+                  onRemove={() => {}}
+                  onViewDetails={() => {}}
                 />
               </div>
             ) : null}
