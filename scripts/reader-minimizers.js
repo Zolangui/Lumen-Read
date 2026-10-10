@@ -6,8 +6,7 @@ const esbuild = require(require.resolve('esbuild', {
 }))
 
 function createReaderMinimizer() {
-  const workerRuntimes = new Set()
-  const plugin = new EsbuildPlugin({
+  return new EsbuildPlugin({
     target: 'esnext',
     keepNames: true,
     minify: true,
@@ -17,44 +16,21 @@ function createReaderMinimizer() {
         // Standalone Webpack worker bootstraps contain path-bearing comments.
         // Esbuild's identifier frequency changes with those build directories.
         // Keep only their identifiers stable; app chunks remain fully minified.
+        // Worker bootstraps may be added outside the parent's chunk graph.
+        // Identify their generated empty-module runtime, not numeric filenames.
+        const workerRuntime =
+          options.loader !== 'css' &&
+          source.includes('importScripts(') &&
+          /\b__webpack_modules__\s*=\s*\(?\s*\{\s*\}\s*\)?\s*;/.test(source)
         return esbuild.transform(source, {
           ...options,
-          ...(workerRuntimes.has(options.sourcefile) && {
+          ...(workerRuntime && {
             minifyIdentifiers: false,
           }),
         })
       },
     },
   })
-  const apply = plugin.apply.bind(plugin)
-  plugin.apply = (compiler) => {
-    compiler.hooks.compilation.tap(
-      'LumenWorkerRuntimeMinifier',
-      (compilation) => {
-        compilation.hooks.processAssets.tap(
-          {
-            name: 'LumenWorkerRuntimeMinifier',
-            stage:
-              compiler.webpack.Compilation.PROCESS_ASSETS_STAGE_OPTIMIZE_SIZE -
-              1,
-          },
-          () => {
-            workerRuntimes.clear()
-            for (const chunk of compilation.chunks) {
-              if (
-                chunk.hasRuntime() &&
-                chunk.getEntryOptions()?.chunkLoading === 'import-scripts'
-              ) {
-                for (const file of chunk.files) workerRuntimes.add(file)
-              }
-            }
-          },
-        )
-      },
-    )
-    apply(compiler)
-  }
-  return plugin
 }
 
 module.exports = { createReaderMinimizer }
