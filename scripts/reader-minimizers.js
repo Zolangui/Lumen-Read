@@ -25,6 +25,9 @@ function createReaderMinimizer() {
         return esbuild.transform(source, {
           ...options,
           ...(workerRuntime && {
+            minify: false,
+            minifyWhitespace: true,
+            minifySyntax: true,
             minifyIdentifiers: false,
           }),
         })
