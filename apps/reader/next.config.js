@@ -82,15 +82,10 @@ let config = {
 
     // SOTA 2026: Use Esbuild for minification to fix Zod v4 mangling in Next.js 12
     if (!dev && !isServer) {
-      const { EsbuildPlugin } = require('esbuild-loader')
-      config.optimization.minimizer = [
-        new EsbuildPlugin({
-          target: 'esnext',
-          keepNames: true,
-          minify: true,
-          css: true,
-        }),
-      ]
+      const {
+        createReaderMinimizer,
+      } = require('../../scripts/reader-minimizers')
+      config.optimization.minimizer = [createReaderMinimizer()]
     }
 
     // AMO gate: addons-linter refuses to parse any single file above 5 MB
