@@ -39,13 +39,26 @@ reflowable EPUB can change its page breaks when typography or window dimensions
 change; it need not share page numbers with the printed edition. EPUB also
 supports fixed layouts. See the [W3C layout specification](https://www.w3.org/TR/epub-33/#sec-layout).
 
-### If text is hard to read in a dark theme
+### If text is hard to read, try LPE
 
-In versions offering **Adaptive presentation (Beta)** under Theme, you can
-enable it to try improving readability while retaining meaningful book styling.
-It is optional and does not guarantee a repair for every EPUB. Disable it to
-compare reading without Adaptive. If the control is absent, check your
-installed version; this guide is not a promise that a new release is already live.
+A dark page with black text is not necessarily a problem with your eyes or
+font size: the EPUB may specify colours that conflict with your chosen theme.
+The **Lumen Presentation Engine (LPE)** checks the rendered page for contrast
+problems and validates targeted repairs. It can also address hard-to-see list
+bullets and borders, such as worksheet lines and table grids.
+
+1. Open the book and choose **Theme**.
+2. Turn on **Adaptive presentation (Beta)**, available in version 2.1.0.
+3. Compare the affected passage. You can turn the option off in the same place.
+
+Adaptive is off by default. It aims to keep meaningful colour differences and
+book styling rather than recolour everything alike. It works locally, without
+AI or an API key, and does not rewrite your saved EPUB. Images, gradients and
+other uncertain paint may remain unchanged; not every EPUB can be repaired.
+
+If the control is absent, check your installed version and the
+[GitHub releases](https://github.com/Zolangui/Lumen-Read/releases). A GitHub
+release does not mean its signed Firefox store update is already available.
 
 ## Keep a passage and return to it
 
@@ -77,6 +90,11 @@ does not require configuring either feature.
 - The steps, expected result and what happened.
 - Theme, window/layout and whether Adaptive was enabled, if available.
 - A redacted screenshot or a public sample you are allowed to share.
+
+For an Adaptive problem, you can also use **Theme → Copy presentation
+diagnostics** and paste the result into your report. This copies local aggregate
+counters and reasons; it does not automatically send a report or include book
+text. Review anything you share before posting it.
 
 Do not upload a commercial EPUB, private notes, API key or account token.
 You can report a problem without sharing the whole book. Reading statistics

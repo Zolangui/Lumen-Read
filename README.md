@@ -3,7 +3,7 @@
 
 # Lumen Read
 
-A private, customizable EPUB reader for Firefox and Chromium browsers.
+Your EPUBs should stay readable — even in dark mode.
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
 [![Firefox 142+](https://img.shields.io/badge/Firefox-142%2B-orange.svg)](apps/extension/manifests/firefox_manifest_v3.json)
@@ -11,11 +11,37 @@ A private, customizable EPUB reader for Firefox and Chromium browsers.
 
 </div>
 
-Read your EPUBs comfortably in the browser you already use. Adjust the page to
-your preferences, highlight a passage, and return to your book at your own pace.
-Ordinary reading needs no Lumen account or AI key. AI and Dropbox are optional.
+Lumen Read is a private, customizable EPUB reader for Firefox and Chromium
+browsers. Adjust the page to your preferences, highlight a passage, and return
+to your book at your own pace. Ordinary reading needs no Lumen account or AI key.
+AI and Dropbox are optional.
 
 [Install Lumen Read from Firefox Add-ons](https://addons.mozilla.org/firefox/addon/lumen-read/?utm_source=github&utm_medium=readme&utm_content=primary-cta&utm_campaign=reader-first)
+
+## Meet LPE: a dark theme should not hide your book
+
+Have you opened an EPUB in dark mode only to find black text on a dark page?
+Changing the reader's background alone cannot fix every book's own styles.
+
+The **Lumen Presentation Engine (LPE)** inspects the rendered page and applies
+targeted, validated repairs when it can establish a safe correction:
+
+- **Recover contrast** for text, list bullets, and borders such as table grids
+  and worksheet lines.
+- **Respect the book's visual identity** by retaining meaningful colour
+  differences where possible, rather than painting everything the same grey or
+  globally inverting illustrations.
+- **Leave your EPUB intact.** Repairs affect the reading view, not the stored
+  book, and run locally without AI, an API key, or a Lumen server.
+
+Try it in **Theme → Adaptive presentation (Beta)**. It is optional, off by
+default, and can be disabled at any time. Complex images, gradients and other
+uncertain paint can remain unchanged; LPE does not promise to fix every EPUB.
+
+The control is available in version 2.1.0. If your installed store version does
+not offer it yet, check the [GitHub releases](https://github.com/Zolangui/Lumen-Read/releases).
+See the [reader guide](docs/readers/getting-started.md#if-text-is-hard-to-read-try-lpe)
+or the [implementation and limits](docs/lumen-presentation-engine-implementation.md).
 
 ## Start with one book
 
@@ -31,6 +57,8 @@ software are not supported; Lumen does not remove DRM.
 
 ## Highlights
 
+- **Keep difficult EPUBs readable** — opt into LPE's Adaptive presentation for
+  targeted contrast repairs, without rewriting your book.
 - **Read your way** — customize fonts, spacing, themes, and layout globally or
   for one book at a time.
 - **Stay focused** — use Zen Mode, dark mode, full-screen reading, and

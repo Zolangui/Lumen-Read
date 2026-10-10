@@ -3,12 +3,15 @@
 Related contracts:
 
 - [LPE architecture](./lumen-presentation-engine.md)
-- [Presentation layer audit](./lumen-presentation-layer-audit.md)
+- [Location Engine and Layout Atlas](./lumen-location-engine.md)
 
 ## Status
 
 The architecture remains frozen at v1. Phases 0-7 now have an engine
 implementation, with Adaptive deliberately disabled by default.
+Lumen Read 2.1.0 exposes it as an explicit **Theme → Adaptive presentation
+(Beta)** opt-in in production; it is not restricted to presentation-test builds.
+Clean View remains unimplemented.
 
 | Phase | Status                  | Result                                                                                                                                                                               |
 | ----- | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -261,8 +264,15 @@ current rendering fingerprints. The same Rendition lifecycle is forwarded to
 the Layout Atlas measurer; the reader and Atlas cannot receive different
 presentation semantics from this engine instance.
 
-The reader application does not install this opt-in host adapter in release
-builds. The paint, geometry, pseudo, ownership, clipping, occlusion,
+The reader application installs this adapter when the user enables
+`theme.adaptivePresentation`, including in production builds. It also installs
+it unconditionally in the dedicated presentation-test build. The reader and
+Atlas use the same preparation and presentation lifecycle in either case.
+When Adaptive is active, the legacy inline color repair is disabled; when it
+is inactive, the existing non-LPE rendering path remains in use. Disabling the
+option is therefore not a promise of a completely unstyled EPUB.
+
+The paint, geometry, pseudo, ownership, clipping, occlusion,
 delayed-image, and large-index fixtures pass in real Firefox and Chromium/Edge.
 The two
 foreground fixtures cover both descendants that explicitly repeat the body
@@ -273,10 +283,13 @@ reader, while the foreground repair contributes no geometry hash. This initial
 corpus still does not cover the full preservation matrix.
 
 For manual testing with real local EPUBs, the dedicated command below compiles
-an unmistakable Firefox test build. It attaches LPE to the live Rendition,
-shows an `Adaptive test` status badge, forwards the same lifecycle to Atlas,
-and disables the legacy inline color scanner so the two systems cannot compete.
-Normal, production, and package scripts explicitly compile this flag as false.
+an unmistakable Firefox test build. It forces LPE on, shows an `Adaptive test`
+status badge, and uses a minimum normal-text contrast floor of 7:1 for experiment
+control. Production uses a 4.5:1 mandatory floor and the user's opt-in setting.
+The explicit-foreground analyzer can still prefer 7:1 for repaired neutral prose;
+chromatic accents move only as far as the mandatory floor. Normal, production,
+and package scripts compile the forced-test flag as false; they do not compile
+out the production opt-in.
 
 ```powershell
 pnpm build:ext:firefox:presentation-test
@@ -286,16 +299,19 @@ pnpm build:ext:firefox:presentation-test
 
 ### Neutral hierarchy compression
 
-When several neutral foregrounds share one dark canvas, all valid ≥7:1 targets
-live in a narrow lightness band (≈0.05 L). The engine keeps every tier distinct
-and ordered but the steps may be imperceptible in running text. Same-source
+When several neutral foregrounds share one dark canvas, targets satisfying the
+preferred ≥7:1 contrast can occupy a narrow lightness band. This also matters in
+production: its mandatory floor is 4.5:1, but repaired explicit neutral prose
+can still use the stronger preferred target. The engine keeps every tier distinct
+and ordered, but the steps may be imperceptible in running text. Same-source
 elements (e.g. headings and body sharing #000000) intentionally share one
 target — their hierarchy lives in size/weight, which the engine preserves
 untouched.
 
-**Why not widen the band?** Widening requires the bipolar policy (AA for
-secondaries), which trades accessibility guarantees for visual hierarchy. This
-is a product decision, not a bug fix. Tracked separately.
+**Why not widen the band?** Relaxing the preferred contrast target could leave
+more room for visual hierarchy, but changes the accessibility/fidelity policy
+rather than fixing a repair under the same policy. Introducing different
+contrast targets for primary and secondary text is a separate product decision.
 
 ### Translucent surfaces
 
@@ -331,9 +347,10 @@ elements. The LPE chooses fidelity over comfort here.
 surfaces above a certain size threshold (e.g. tables, cards) while preserving
 small badges. This is a product decision, not a bug fix.
 
-## Next admission gate
+## Gate before default activation
 
-Before enabling Adaptive for users:
+Adaptive is already available as an optional Beta in production. Before
+considering it as the default for all users:
 
 1. Expand the preservation corpus for gradients, images, SVG, blend modes,
    pseudo-element repair, inherited descendant paint, RTL, vertical writing, FXL,
@@ -344,9 +361,11 @@ Before enabling Adaptive for users:
    media-query grammar, system colors, missing resources, and late fonts.
 4. Keep phase-8 Clean View explicit and separate from Adaptive fallback.
 
-Only after this gate should the legacy Smart Color Inversion path be replaced.
-It remains outside LPE for now; the new engine does not silently change current
-users.
+Only after this gate should the legacy Smart Color Inversion path be retired.
+It remains the non-Adaptive path for now; the release does not silently opt
+existing users into LPE. This gate is distinct from availability of the Beta
+toggle and does not imply that every contract in the architecture specification
+has been implemented.
 
 ## Development browser harness
 

@@ -42,14 +42,29 @@ com texto refluível, as quebras de página podem mudar com a fonte e a janela;
 não precisam corresponder à edição impressa. EPUB também admite layout fixo.
 Veja a [especificação de layouts da W3C](https://www.w3.org/TR/epub-33/#sec-layout).
 
-### Se algum texto ficar difícil de ler no tema escuro
+### Se algum texto ficar difícil de ler, experimente o LPE
 
-Nas versões que oferecem **Apresentação adaptativa (Beta)** em Tema, você
-pode ativá-la para tentar melhorar a legibilidade preservando características
-visuais importantes do livro. É opcional e não garante correção de qualquer
-EPUB. Desative para comparar a leitura sem Adaptive. Se o controle não
-aparecer, confira a versão instalada: o guia não anuncia que um update já
-está disponível na loja.
+Texto preto sobre uma página escura não é necessariamente um problema da sua
+visão ou do tamanho da fonte: as cores definidas pelo EPUB podem entrar em
+conflito com o tema escolhido. O **Lumen Presentation Engine (LPE)** verifica
+o contraste da página renderizada e valida correções pontuais. Ele também pode
+tratar marcadores de lista e bordas difíceis de enxergar, como linhas de
+exercícios e grades de tabelas.
+
+1. Abra o livro e escolha **Tema**.
+2. Ative **Apresentação adaptativa (Beta)**, disponível na versão 2.1.0.
+3. Compare o trecho afetado. Você pode desativar a opção no mesmo lugar.
+
+O modo adaptativo vem desativado por padrão. Ele busca preservar diferenças
+significativas de cor e a aparência do livro, sem pintar tudo da mesma cor.
+Funciona localmente, sem IA ou chave de API, e não reescreve seu EPUB salvo.
+Imagens, gradientes e outras pinturas incertas podem permanecer inalteradas;
+não há garantia de correção para qualquer EPUB.
+
+Se o controle não aparecer, confira a versão instalada e as
+[versões no GitHub](https://github.com/Zolangui/Lumen-Read/releases). Uma versão
+publicada no GitHub não significa que a atualização assinada já esteja na loja
+do Firefox.
 
 ## Guarde um trecho e volte a ele
 
@@ -82,6 +97,11 @@ nenhum dos dois para ler normalmente.
 - Passos, resultado esperado e o que aconteceu.
 - Tema, janela/layout e se o Adaptive estava ativado, quando disponível.
 - Uma imagem sem dados pessoais ou exemplo público autorizado.
+
+Para um problema no modo adaptativo, você também pode usar **Tema → Copiar
+diagnóstico de apresentação** e colar o resultado no relato. Isso copia
+contadores e motivos agregados locais; não envia um relatório automaticamente
+nem inclui o texto do livro. Confira o que está compartilhando antes de publicar.
 
 Não envie EPUB comercial, notas privadas, chave de API ou token de conta.
 É possível relatar um problema sem compartilhar o livro inteiro. As
