@@ -38,6 +38,7 @@ import type {
   LayoutAtlasRecord,
 } from '../db'
 import { fileToEpub } from '../file'
+import { persistableBookChanges } from '../lib/book-persistence'
 import {
   indexPublicationImages,
   type SectionImageReference,
@@ -496,10 +497,10 @@ export class BookTab extends BaseTab {
   }
 
   updateBook(changes: Partial<BookRecord>) {
-    changes = {
+    changes = persistableBookChanges({
       ...changes,
       updatedAt: Date.now(),
-    }
+    })
     // don't wait promise resolve to make valtio batch updates
     this.book = { ...this.book, ...changes }
     db?.books.update(this.book.id, changes)

@@ -1,3 +1,4 @@
+import { proxy } from 'valtio'
 import { describe, expect, it } from 'vitest'
 
 import {
@@ -11,6 +12,7 @@ import {
   mergeIncomingBookRecord,
 } from '../src/db'
 import type { BookRecord, CanonicalProgressRecord } from '../src/db'
+import { persistableBookChanges } from '../src/lib/book-persistence'
 import { deserializeData, UnsupportedSyncDataVersionError } from '../src/sync'
 
 function progress(
@@ -54,6 +56,36 @@ function book(overrides: Partial<BookRecord>): BookRecord {
 }
 
 describe('canonical persistence', () => {
+  it('captures reactive canonical progress as a structured-cloneable record', () => {
+    const reactiveProgress = proxy(progress('current-page', 30))
+    expect(() => structuredClone(reactiveProgress)).toThrow()
+
+    const captured = persistableBookChanges({
+      canonicalProgress: reactiveProgress,
+    })
+    expect(structuredClone(captured)).toEqual({
+      canonicalProgress: progress('current-page', 30),
+    })
+    reactiveProgress.position.cfi = 'later-page'
+    expect(captured.canonicalProgress?.position.cfi).toBe('current-page')
+  })
+
+  it('preserves explicit field clearing and nested reactive restore locations', () => {
+    const captured = persistableBookChanges({
+      pageCount: undefined,
+      pageCountLayoutKey: undefined,
+      restoreLocation: proxy({
+        schemaVersion: 1 as const,
+        cfi: 'restored-page',
+        updatedAt: 10,
+      }),
+    })
+    const stored = structuredClone(captured)
+    expect(stored).toHaveProperty('pageCount', undefined)
+    expect(stored).toHaveProperty('pageCountLayoutKey', undefined)
+    expect(stored.restoreLocation?.cfi).toBe('restored-page')
+  })
+
   it('fails closed when a backup uses a future data version', () => {
     expect(() =>
       deserializeData(JSON.stringify({ version: 999, books: [] })),
