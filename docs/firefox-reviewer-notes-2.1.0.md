@@ -37,7 +37,9 @@ Export build IDs are derived from the extension version. Browser builds omit
 Transformers.js's Node-only directory calculation before Webpack can embed an
 absolute machine path. Browser environment defaults are preserved; see
 `scripts/loaders/transformers-browser-loader.js` and its regression tests. All
-client chunks remain fully minified.
+application chunks remain fully minified. Standalone Webpack page/worker bootstraps
+retain identifiers to avoid directory-dependent minifier names; their syntax
+and whitespace are still minimized. See `scripts/reader-minimizers.js`.
 Packaged text uses LF regardless of checkout line endings. Old `sw.js` and
 `workbox-*.js` web/PWA files are excluded. Compare extracted files, not ZIP
 container bytes, because archive timestamps can differ.
@@ -82,7 +84,7 @@ blocks subsequent requests, not data already transmitted. See
 ## Nine addons-linter warnings: source attribution
 
 Audit target: the production `apps/extension/dist` built and checked on
-2026-10-07. Chunk names/locations identify that exact build and will change
+2026-10-10. Chunk names/locations identify that exact build and will change
 after rebuilding. These are source-based dispositions, not a request to suppress
 the validator and not an independent security certification.
 
@@ -95,7 +97,7 @@ the validator and not an independent security certification.
 | 1     | `354.927cbc533b9bcd63.js:7:20404`                      | `decode-named-character-reference` 1.3.0, `index.dom.js`: assigns `&` + entity name + `;` to a detached element and reads `textContent`. In the reviewed Markdown path, micromark's `characterReferenceValue` tokenizer restricts named references to ASCII alphanumeric characters before the call. This is not a whole-message HTML rendering path.                                                                  |
 | 1     | `354.927cbc533b9bcd63.js:9:1754`                       | mdast-util-from-markdown's `parse(options).document().write(...)`. `document()` is micromark's tokenizer factory, **not** the browser DOM document, and `write` consumes parser input to generate tokens/AST. See micromark `lib/parse.js`. The application renders Markdown with ReactMarkdown without `rehypeRaw`.                                                                                                   |
 | 1     | `354.927cbc533b9bcd63.js:19:23144`                     | Prism 1.30.0 `components/prism-markdown.js`, optional autoloader hook, around line 348. It sets syntax-highlighted output; Prism's `util.encode` escapes ampersands/less-than before HTML generation. Lumen's `ChatMessage.tsx` uses PrismLight with locally registered languages; no autoloader is imported there. Keep that invariant and strict local-script CSP; do not infer safety for arbitrary future plugins. |
-| 1     | `pages/_app-bef1cecf1498a167.js:21:144`                | JSZip 3.10.1's bundled Browserify/CommonJS module invocation (license header immediately precedes it). A packaging/runtime argument warning, not a dynamic-code execution finding. The reviewed occurrence does not construct code or initiate a remote request.                                                                                                                                                       |
+| 1     | `pages/_app-a4c417d02f5afbc2.js:21:144`                | JSZip 3.10.1's bundled Browserify/CommonJS module invocation (license header immediately precedes it). A packaging/runtime argument warning, not a dynamic-code execution finding. The reviewed occurrence does not construct code or initiate a remote request.                                                                                                                                                       |
 
 Additional boundary checked in original source: the real EPUB renderer uses the
 local engine's iframe view with `sandbox="allow-same-origin"`, **without**
@@ -107,14 +109,20 @@ for untrusted books without a separate security review.
 
 ## Verification limits
 
-83 reader-core tests passed; production build/output gates passed; addons-linter
+96 reader-core tests passed; production build/output gates passed; addons-linter
 reported zero errors and the nine warnings above. Production smoke tests used
 Firefox Developer Edition 158.0 on Windows in disposable profiles. Reader,
 optional Adaptive on/off, consent denial/revocation, local streaming, narrow AI
 setup, and local fonts were exercised. A further launch capture inspected the
-reader iframe's actual sandbox value.
+reader iframe's actual sandbox value. The final Firefox package was exercised
+again on 2026-10-10: importing the original sample, crossing chapters, returning
+to the library and reopening the book preserved its canonical position and
+progress without unhandled errors. A separate-folder source-archive build on
+the documented Windows/Node/pnpm environment reproduced all 79 extracted
+Firefox package files byte-for-byte; ZIP container timestamps were not compared.
 
 Signed-AMO first-install/upgrade consent, genuine cloud authentication, full
-Dropbox synchronization, Firefox 142, Android/Linux and clean source-archive
-reproduction are **not** represented as completed. Review the dated
+Dropbox synchronization, Firefox 142 and Android/Linux are **not** represented
+as completed. Source reproduction on other operating systems is not asserted.
+Review the dated
 [release notes and verification limits](releases/2.1.0.md) before final submission.

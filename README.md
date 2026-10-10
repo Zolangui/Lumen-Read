@@ -205,7 +205,9 @@ vendored `apps/reader/public/fonts` directory and its licenses in source archive
 
 Extension exports use a version-based Next.js build ID and omit Transformers.js's
 Node-only directory calculation, which otherwise embeds the build machine's
-absolute path in browser workers. Builds remain fully minified, normalize
+absolute path in browser workers. Application chunks remain fully minified;
+standalone Webpack page/worker bootstraps retain identifiers for folder-independent
+output (see `scripts/reader-minimizers.js`). Builds normalize
 packaged text to LF and exclude stale PWA assets. This avoids differences caused
 by build IDs, machine paths, line endings
 or leftovers from a previous web build. ZIP container timestamps
