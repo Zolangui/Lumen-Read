@@ -25,6 +25,11 @@ describe('worker runtime minification', () => {
     expect(a.code).toBe(b.code)
     expect(a.code).toContain('__webpack_modules__')
     expect(a.code).toContain('importScripts')
+    const pageRuntime = await implementation.transform(
+      worker.replace('importScripts', 'loadChunk'),
+      input,
+    )
+    expect(pageRuntime.code).toContain('__webpack_modules__')
     expect(a.code.split('\n').length).toBeLessThan(4)
     expect(css).toBe(true)
     expect(options.minify).toBe(true)

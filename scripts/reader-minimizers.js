@@ -13,18 +13,17 @@ function createReaderMinimizer() {
     css: true,
     implementation: {
       transform(source, options) {
-        // Standalone Webpack worker bootstraps contain path-bearing comments.
+        // Standalone Webpack bootstraps contain path-bearing comments.
         // Esbuild's identifier frequency changes with those build directories.
         // Keep only their identifiers stable; app chunks remain fully minified.
-        // Worker bootstraps may be added outside the parent's chunk graph.
+        // Some bootstraps are added outside the parent's chunk graph.
         // Identify their generated empty-module runtime, not numeric filenames.
-        const workerRuntime =
+        const standaloneRuntime =
           options.loader !== 'css' &&
-          source.includes('importScripts(') &&
           /\b__webpack_modules__\s*=\s*\(?\s*\{\s*\}\s*\)?\s*;/.test(source)
         return esbuild.transform(source, {
           ...options,
-          ...(workerRuntime && {
+          ...(standaloneRuntime && {
             minify: false,
             minifyWhitespace: true,
             minifySyntax: true,
