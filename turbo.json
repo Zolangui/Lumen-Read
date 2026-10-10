@@ -4,7 +4,6 @@
     "pnpm-lock.yaml",
     "patches/**",
     "scripts/loaders/**",
-    "scripts/reader-minimizers.js",
     "packages/epub-engine/src/**",
     "packages/epubjs/src/**"
   ],

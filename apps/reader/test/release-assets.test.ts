@@ -1,7 +1,6 @@
-import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
-import { createRequire } from 'node:module'
 import path from 'node:path'
+import vm from 'node:vm'
 
 import { describe, expect, it } from 'vitest'
 
@@ -9,71 +8,56 @@ import locales from '../locales'
 
 const readerRoot = path.resolve(__dirname, '..')
 const repoRoot = path.resolve(readerRoot, '../..')
-const requireBuild = createRequire(path.join(repoRoot, 'package.json'))
 
 describe('offline UI and release metadata', () => {
-  it('uses a repeatable export build ID and invalidates caches on version changes', () => {
-    // next-transpile-modules resolves workspace dependencies from cwd. Load
-    // the real config in a separate process, as the reader build does, without
-    // mutating the test runner's environment or module cache.
-    const output = execFileSync(
-      process.execPath,
-      [
-        '-e',
-        "const config = require('./next.config.js'); Promise.all([config.generateBuildId(), config.generateBuildId()]).then(ids => console.log(JSON.stringify(ids)))",
-      ],
-      {
-        cwd: readerRoot,
-        env: { ...process.env, NEXT_PUBLIC_IS_EXPORT: 'true' },
-        encoding: 'utf8',
-        timeout: 30000,
-        windowsHide: true,
-      },
-    )
+  it('uses a repeatable export build ID and invalidates caches on version changes', async () => {
     const version = JSON.parse(
       fs.readFileSync(
         path.join(repoRoot, 'apps/extension/package.json'),
         'utf8',
       ),
     ).version
-    expect(JSON.parse(output.trim())).toEqual([
+    // This unit tests the real config's ID contract. Full package builds test
+    // its plugin integration separately; do not load their timers/watchers in
+    // the unit runner or depend on its cwd/environment.
+    const configModule: { exports: Record<string, any> } = { exports: {} }
+    vm.runInNewContext(
+      fs.readFileSync(path.join(readerRoot, 'next.config.js'), 'utf8'),
+      {
+        module: configModule,
+        __dirname: readerRoot,
+        process: {
+          env: { NEXT_PUBLIC_IS_EXPORT: 'true', NODE_ENV: 'production' },
+        },
+        require: (name: string) => {
+          if (name === 'path') return path
+          if (name === '../extension/package.json') return { version }
+          if (name === '@sentry/nextjs') {
+            return { withSentryConfig: (config: unknown) => config }
+          }
+          if (
+            [
+              '@next/bundle-analyzer',
+              'next-pwa',
+              'next-transpile-modules',
+            ].includes(name)
+          ) {
+            return () => (config: unknown) => config
+          }
+          throw new Error(`Unexpected config dependency: ${name}`)
+        },
+      },
+    )
+    expect(await configModule.exports.generateBuildId()).toBe(
       `lumen-${version}`,
+    )
+    expect(await configModule.exports.generateBuildId()).toBe(
       `lumen-${version}`,
-    ])
+    )
     const turbo = JSON.parse(
       fs.readFileSync(path.join(repoRoot, 'turbo.json'), 'utf8'),
     )
     expect(turbo.globalDependencies).toContain('apps/extension/package.json')
-  }, 35000)
-  it('keeps async minification repeatable without inflating the main app', () => {
-    const { createReaderMinimizers } = requireBuild(
-      path.join(repoRoot, 'scripts/reader-minimizers.js'),
-    )
-    const [main, async] = createReaderMinimizers(true)
-    expect(main.options.minify).toBe(true)
-    expect(async.options.minifyWhitespace).toBe(true)
-    expect(async.options.minifySyntax).toBe(true)
-    expect(async.options.minifyIdentifiers).toBe(false)
-    for (const name of [
-      'static/chunks/268.example.js',
-      'static/chunks/396.example.js',
-      'static/chunks/647.example.js',
-      'static/chunks/shared.example.js',
-    ]) {
-      expect(main.options.exclude.test(name)).toBe(true)
-      expect(async.options.include.test(name)).toBe(true)
-    }
-    for (const name of [
-      'static/chunks/pages/_app-example.js',
-      'static/chunks/main-example.js',
-      'static/chunks/framework-example.js',
-      'static/chunks/webpack-example.js',
-      'static/css/example.css',
-    ]) {
-      expect(main.options.exclude.test(name)).toBe(false)
-      expect(async.options.include.test(name)).toBe(false)
-    }
-    expect(createReaderMinimizers(false)).toHaveLength(1)
   })
   it('localizes all Dropbox authorization outcomes in every supported language', () => {
     for (const dictionary of Object.values(locales)) {

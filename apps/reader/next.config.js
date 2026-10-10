@@ -67,6 +67,14 @@ let config = {
         enforce: 'pre',
         use: path.resolve(__dirname, '../../scripts/loaders/zod-csp-loader.js'),
       })
+      config.module.rules.push({
+        test: /[\\/]@xenova[\\/]transformers[\\/]src[\\/]env\.js$/,
+        enforce: 'pre',
+        use: path.resolve(
+          __dirname,
+          '../../scripts/loaders/transformers-browser-loader.js',
+        ),
+      })
     }
     if (process.env.FAST_BUILD === 'true') {
       config.optimization.minimize = false
@@ -74,10 +82,15 @@ let config = {
 
     // SOTA 2026: Use Esbuild for minification to fix Zod v4 mangling in Next.js 12
     if (!dev && !isServer) {
-      const {
-        createReaderMinimizers,
-      } = require('../../scripts/reader-minimizers')
-      config.optimization.minimizer = createReaderMinimizers(IS_EXPORT)
+      const { EsbuildPlugin } = require('esbuild-loader')
+      config.optimization.minimizer = [
+        new EsbuildPlugin({
+          target: 'esnext',
+          keepNames: true,
+          minify: true,
+          css: true,
+        }),
+      ]
     }
 
     // AMO gate: addons-linter refuses to parse any single file above 5 MB
