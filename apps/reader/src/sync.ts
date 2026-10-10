@@ -1,9 +1,11 @@
 import { Dropbox } from 'dropbox'
 import { saveAs } from 'file-saver'
-import JSZip from 'jszip'
 import { destroyCookie, parseCookies, setCookie } from 'nookies'
 
-import { BookRecord, db, mergeIncomingBookRecord } from './db'
+import { createBackup } from './backup'
+import type { BackupOptions } from './backup'
+import { BookRecord, db } from './db'
+import { importLocalBackup } from './lib/backup-ui'
 import { readBlob } from './lib/epub-file'
 import {
   DROPBOX_DATA_PERMISSIONS,
@@ -400,17 +402,6 @@ export function deserializeData(text: string): BookRecord[] {
   return Array.isArray(books) ? books.filter(isBookRecordLike) : []
 }
 
-async function mergeIncomingBooks(books: BookRecord[]): Promise<void> {
-  if (!db) return
-
-  await db.transaction('rw', db.books, async () => {
-    for (const incoming of books) {
-      const local = await db.books.get(incoming.id)
-      await db.books.put(mergeIncomingBookRecord(local, incoming))
-    }
-  })
-}
-
 export async function uploadData(books: BookRecord[]) {
   await ensureDropboxAccessToken()
   return getDropboxClient().filesUpload({
@@ -488,47 +479,12 @@ export async function downloadDropboxFile(path: string) {
   return getDropboxClient().filesDownload({ path })
 }
 
-export async function pack() {
-  const books = await db?.books.toArray()
-  const covers = await db?.covers.toArray()
-  const files = await db?.files.toArray()
-
-  const zip = new JSZip()
-  zip.file(DATA_FILENAME, serializeData(books))
-  zip.file('covers.json', JSON.stringify(covers))
-
-  const folder = zip.folder('files')
-  files?.forEach((f) => folder?.file(f.file.name, f.file))
-
+export async function pack(options: BackupOptions = {}) {
+  const bytes = await createBackup(options)
   const date = new Intl.DateTimeFormat('fr-CA').format().replaceAll('-', '')
-
-  return zip.generateAsync({ type: 'blob' }).then((content) => {
-    saveAs(content, `lumen_backup_${date}.zip`)
-  })
+  saveAs(new Blob([new Uint8Array(bytes).buffer]), `lumen_backup_${date}.zip`)
 }
 
 export async function unpack(file: File) {
-  const zip = new JSZip()
-  await zip.loadAsync(file)
-
-  const booksJSON = zip.file(DATA_FILENAME)
-  const coversJSON = zip.file('covers.json')
-  if (!booksJSON || !coversJSON) return
-
-  const books = deserializeData(await booksJSON.async('text'))
-
-  await mergeIncomingBooks(books)
-
-  const coversText = await coversJSON.async('text')
-  db?.covers.bulkPut(JSON.parse(coversText))
-
-  const folder = zip.folder('files')
-  folder?.forEach(async (_, f) => {
-    const book = books.find((b) => `files/${b.name}` === f.name)
-    if (!book) return
-
-    const data = await f.async('blob')
-    const file = new File([data], book.name)
-    db?.files.put({ file, id: book.id })
-  })
+  return importLocalBackup(file)
 }

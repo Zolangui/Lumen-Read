@@ -402,4 +402,39 @@ export default {
     'Abre un libro antes de usar el asistente de lectura.',
   'ai.error.index_incompatible':
     'La configuracion del indice de IA cambio. Vuelve a indexar este libro antes de hacer otra pregunta.',
+  'settings.backup.title': 'Copia de seguridad local',
+  'settings.backup.description':
+    'Descarga un ZIP y guárdalo en Dropbox o donde prefieras. Esto no cambia la sincronización automática con Dropbox.',
+  'settings.backup.contents':
+    'Incluye archivos EPUB, portadas, anotaciones, chats guardados y posiciones de lectura.',
+  'settings.backup.scope': 'Libros para exportar',
+  'settings.backup.all': 'Toda la biblioteca',
+  'settings.backup.selected': 'Libros seleccionados',
+  'settings.backup.preferences':
+    'Incluir preferencias globales de apariencia y biblioteca',
+  'settings.backup.history': 'Incluir historial de lectura y calendario',
+  'settings.backup.export': 'Exportar copia',
+  'settings.backup.exporting': 'Creando copia…',
+  'settings.backup.exported':
+    'Copia creada. Revisa las descargas del navegador.',
+  'settings.backup.import': 'Importar copia',
+  'settings.backup.importing': 'Validando y restaurando la copia…',
+  'settings.backup.restore_extras':
+    'Restaurar también preferencias y combinar el historial de lectura, si están incluidos',
+  'settings.backup.confirm_import':
+    '¿Importar esta copia? Los libros abiertos se cerrarán y Lumen se recargará al terminar. Las anotaciones se combinarán. Si se habilita la restauración de extras, las preferencias incluidas sustituirán las actuales y el historial se combinará.',
+  'settings.backup.privacy':
+    'El ZIP no está cifrado. Guárdalo de forma privada. No incluye claves de API de IA, autorizaciones de servicios, modelos descargados ni cachés regenerables.',
+  'settings.backup.error.invalid':
+    'Copia no válida, dañada o incompatible. Exporta otra con Lumen actualizado. Importa solo un ZIP a la vez.',
+  'settings.backup.error.too_large':
+    'La copia supera el límite de tamaño. Exporta menos libros.',
+  'settings.backup.error.missing_file':
+    'Falta un archivo de libro. Descárgalo localmente antes de exportar; no se puede restaurar una copia incompleta.',
+  'settings.backup.error.conflict':
+    'Este identificador pertenece a otro EPUB. No se modificó ningún libro.',
+  'settings.backup.error.unavailable':
+    'El almacenamiento local o la verificación de integridad no está disponible.',
+  'settings.backup.error.failed':
+    'La copia falló. Comprueba el espacio disponible e inténtalo de nuevo.',
 } as const

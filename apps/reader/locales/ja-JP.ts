@@ -444,4 +444,38 @@ export default {
   'ai.error.no_active_book': '読書アシスタントを使う前に書籍を開いてください。',
   'ai.error.index_incompatible':
     'AI インデックスの設定が変更されました。次の質問の前にこの書籍を再インデックスしてください。',
+  'settings.backup.title': 'ローカルバックアップ',
+  'settings.backup.description':
+    'ZIP をダウンロードして Dropbox などに自分で保存できます。Dropbox の自動同期は変更されません。',
+  'settings.backup.contents':
+    'EPUB ファイル、表紙、注釈、保存済みチャット、読書位置を含みます。',
+  'settings.backup.scope': '書き出す本',
+  'settings.backup.all': 'ライブラリ全体',
+  'settings.backup.selected': '選択した本',
+  'settings.backup.preferences': '全体の表示設定とライブラリ設定を含める',
+  'settings.backup.history': '読書履歴とカレンダーを含める',
+  'settings.backup.export': 'バックアップを書き出す',
+  'settings.backup.exporting': 'バックアップを作成中…',
+  'settings.backup.exported':
+    '作成しました。ブラウザーのダウンロードを確認してください。',
+  'settings.backup.import': 'バックアップを読み込む',
+  'settings.backup.importing': 'バックアップを検証・復元中…',
+  'settings.backup.restore_extras':
+    '含まれている設定も復元し、読書履歴を統合する',
+  'settings.backup.confirm_import':
+    'このバックアップを読み込みますか？開いている本を閉じ、完了後に Lumen を再読み込みします。注釈は統合されます。追加データの復元を有効にすると、含まれている設定は現在の設定を置き換え、読書履歴は統合されます。',
+  'settings.backup.privacy':
+    'ZIP は暗号化されていません。安全に保管してください。AI の API キー、サービスの認証情報、ダウンロード済みモデル、再生成可能なキャッシュは含みません。',
+  'settings.backup.error.invalid':
+    '無効、破損、または非対応のバックアップです。最新版の Lumen で再度書き出してください。一度に読み込める ZIP は一つです。',
+  'settings.backup.error.too_large':
+    'サイズ上限を超えています。書き出す本を減らしてください。',
+  'settings.backup.error.missing_file':
+    '本のファイルがありません。書き出す前に本をローカルにダウンロードしてください。不完全なバックアップは復元できません。',
+  'settings.backup.error.conflict':
+    'この本の識別子は別の EPUB に使われています。本は変更されていません。',
+  'settings.backup.error.unavailable':
+    'ローカルストレージまたは整合性の検証を利用できません。',
+  'settings.backup.error.failed':
+    'バックアップに失敗しました。空き容量を確認して再試行してください。',
 } as const

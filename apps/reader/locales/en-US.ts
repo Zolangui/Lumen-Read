@@ -437,4 +437,38 @@ export default {
   'ai.error.no_active_book': 'Open a book before using the reading assistant.',
   'ai.error.index_incompatible':
     'The AI index settings changed. Re-index this book before asking another question.',
+  'settings.backup.title': 'Local backup',
+  'settings.backup.description':
+    'Download a ZIP and store it yourself, on Dropbox or anywhere else. This does not change automatic Dropbox sync.',
+  'settings.backup.contents':
+    'Includes EPUB files, covers, annotations, saved chats and reading positions.',
+  'settings.backup.scope': 'Books to export',
+  'settings.backup.all': 'Entire library',
+  'settings.backup.selected': 'Selected books',
+  'settings.backup.preferences':
+    'Include global appearance and library preferences',
+  'settings.backup.history': 'Include reading history and calendar',
+  'settings.backup.export': 'Export backup',
+  'settings.backup.exporting': 'Creating backup…',
+  'settings.backup.exported': 'Backup created. Check your browser downloads.',
+  'settings.backup.import': 'Import backup',
+  'settings.backup.importing': 'Validating and restoring backup…',
+  'settings.backup.restore_extras':
+    'Also restore preferences and merge reading history, if included',
+  'settings.backup.confirm_import':
+    'Import this backup? Open books will close and Lumen will reload after completion. Notes will be merged. If restoring extras is enabled, included preferences will replace current preferences and reading history will be merged.',
+  'settings.backup.privacy':
+    'The ZIP is not encrypted. Keep it private. AI API keys, service authorizations, downloaded models and rebuildable caches are excluded.',
+  'settings.backup.error.invalid':
+    'Invalid, damaged or incompatible backup. Export a new backup with an up-to-date Lumen. Import only one ZIP at a time.',
+  'settings.backup.error.too_large':
+    'Backup exceeds the size limit. Export fewer books.',
+  'settings.backup.error.missing_file':
+    'A book file is missing. Download the book locally before exporting; an incomplete backup cannot be restored.',
+  'settings.backup.error.conflict':
+    'This book ID belongs to different EPUB bytes. No books were changed.',
+  'settings.backup.error.unavailable':
+    'Local storage or file integrity verification is unavailable.',
+  'settings.backup.error.failed':
+    'Backup failed. Check available storage space and try again.',
 } as const

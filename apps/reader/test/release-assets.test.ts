@@ -10,6 +10,15 @@ const readerRoot = path.resolve(__dirname, '..')
 const repoRoot = path.resolve(readerRoot, '../..')
 
 describe('offline UI and release metadata', () => {
+  it('translates every local-backup control and outcome in all supported languages', () => {
+    const keys = Object.keys(locales['en-US']).filter((key) =>
+      key.startsWith('settings.backup.'),
+    )
+    expect(keys.length).toBeGreaterThan(20)
+    for (const dictionary of Object.values(locales))
+      for (const key of keys)
+        expect((dictionary as Record<string, string>)[key]).toBeTruthy()
+  })
   it('uses a repeatable export build ID and invalidates caches on version changes', async () => {
     const version = JSON.parse(
       fs.readFileSync(

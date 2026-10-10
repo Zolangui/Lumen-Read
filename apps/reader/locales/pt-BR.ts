@@ -452,4 +452,39 @@ export default {
     'Abra um livro antes de usar o assistente de leitura.',
   'ai.error.index_incompatible':
     'As configuracoes do indice de IA mudaram. Reindexe este livro antes de fazer outra pergunta.',
+  'settings.backup.title': 'Backup local',
+  'settings.backup.description':
+    'Baixe um ZIP e guarde você mesmo no Dropbox ou onde preferir. Isso não altera a sincronização automática com Dropbox.',
+  'settings.backup.contents':
+    'Inclui arquivos EPUB, capas, anotações, chats salvos e posições de leitura.',
+  'settings.backup.scope': 'Livros para exportar',
+  'settings.backup.all': 'Biblioteca inteira',
+  'settings.backup.selected': 'Livros selecionados',
+  'settings.backup.preferences':
+    'Incluir preferências globais de aparência e biblioteca',
+  'settings.backup.history': 'Incluir histórico de leitura e calendário',
+  'settings.backup.export': 'Exportar backup',
+  'settings.backup.exporting': 'Criando backup…',
+  'settings.backup.exported':
+    'Backup criado. Confira os downloads do navegador.',
+  'settings.backup.import': 'Importar backup',
+  'settings.backup.importing': 'Validando e restaurando o backup…',
+  'settings.backup.restore_extras':
+    'Também restaurar preferências e mesclar o histórico de leitura, se incluídos',
+  'settings.backup.confirm_import':
+    'Importar este backup? Os livros abertos serão fechados e o Lumen será recarregado ao terminar. Anotações serão mescladas. Se a restauração dos extras estiver habilitada, preferências incluídas substituirão as atuais e o histórico será mesclado.',
+  'settings.backup.privacy':
+    'O ZIP não é criptografado. Guarde-o com cuidado. Chaves de API da IA, autorizações de serviços, modelos baixados e caches reconstruíveis não são incluídos.',
+  'settings.backup.error.invalid':
+    'Backup inválido, danificado ou incompatível. Exporte novamente com o Lumen atualizado. Importe apenas um ZIP por vez.',
+  'settings.backup.error.too_large':
+    'O backup excede o limite de tamanho. Exporte menos livros.',
+  'settings.backup.error.missing_file':
+    'Falta um arquivo de livro. Baixe o livro localmente antes de exportar; um backup incompleto não pode ser restaurado.',
+  'settings.backup.error.conflict':
+    'Este identificador de livro pertence a outro EPUB. Nenhum livro foi alterado.',
+  'settings.backup.error.unavailable':
+    'O armazenamento local ou a verificação de integridade está indisponível.',
+  'settings.backup.error.failed':
+    'O backup falhou. Verifique o espaço disponível e tente novamente.',
 } as const

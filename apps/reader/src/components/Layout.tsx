@@ -396,7 +396,7 @@ const SideBar: React.FC = () => {
           'SideBar bg-surface flex flex-col overflow-hidden transition-all duration-200 ease-in-out',
           mobile ? 'absolute inset-y-0 right-0 z-10' : '',
         )}
-        style={{ width: mobile ? '75%' : size }}
+        style={{ width: mobile ? (action ? '75%' : 0) : size }}
         onTransitionEnd={onTransitionEnd}
       >
         {CurrentView && (

@@ -2,31 +2,51 @@ import { v4 as uuidv4 } from 'uuid'
 
 import type { Book } from '@flow/epubjs'
 
+import { BackupError } from './backup'
 import {
   BookRecord,
   db,
   isCacheableLocalFileRevision,
   localFileRevision,
 } from './db'
+import {
+  confirmBackupImport,
+  importLocalBackup,
+  showBackupImportError,
+} from './lib/backup-ui'
 import { fileToEpub, readBlob } from './lib/epub-file'
 import { mapExtToMimes } from './mime'
-import { unpack } from './sync'
 
 export { fileToEpub, readBlob } from './lib/epub-file'
 
 export async function handleFiles(files: Iterable<File>) {
+  const selected = Array.from(files)
+  const isBackup = (file: File) =>
+    /\.zip$/i.test(file.name) || mapExtToMimes['.zip'].includes(file.type)
+  if (selected.some(isBackup) && selected.length !== 1) {
+    showBackupImportError(new BackupError('invalid'))
+    return []
+  }
   const books = await db?.books.toArray()
   const newBooks = []
 
-  for (const file of files) {
+  for (const file of selected) {
     console.log(file)
 
-    if (mapExtToMimes['.zip'].includes(file.type)) {
-      unpack(file)
-      continue
+    if (isBackup(file)) {
+      if (!confirmBackupImport()) return []
+      try {
+        await importLocalBackup(file)
+      } catch (error) {
+        showBackupImportError(error)
+      }
+      return []
     }
 
-    if (!mapExtToMimes['.epub'].includes(file.type)) {
+    if (
+      !/\.epub$/i.test(file.name) &&
+      !mapExtToMimes['.epub'].includes(file.type)
+    ) {
       console.error(`Unsupported file type: ${file.type}`)
       continue
     }

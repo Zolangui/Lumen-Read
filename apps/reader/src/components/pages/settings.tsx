@@ -16,6 +16,8 @@ import {
   OAUTH_SUCCESS_MESSAGE,
 } from '@flow/reader/sync'
 
+import { BackupSettings } from './BackupSettings'
+
 export const Settings: React.FC = () => {
   const { scheme, setScheme } = useColorScheme()
   const [settings, setSettings] = useSettings()
@@ -110,6 +112,8 @@ export const Settings: React.FC = () => {
 
           {/* Synchronization */}
           <Synchronization />
+
+          <BackupSettings />
 
           {/* Cache */}
           <div className="border-b border-gray-200 pb-8 dark:border-gray-700">

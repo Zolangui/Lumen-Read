@@ -717,7 +717,7 @@ export function mergeIncomingBookRecord(
     // that does not understand the record must neither derive percentage
     // from it nor erase it during a same-format sync merge.
     merged.canonicalProgress =
-      local.canonicalProgress ?? incoming.canonicalProgress
+      local?.canonicalProgress ?? incoming.canonicalProgress
   }
 
   return merged

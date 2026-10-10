@@ -420,4 +420,33 @@ export default {
   'ai.error.no_active_book': '请先打开一本书再使用阅读助手。',
   'ai.error.index_incompatible':
     'AI 索引设置已更改。请在提出下一个问题前重新索引该书。',
+  'settings.backup.title': '本地备份',
+  'settings.backup.description':
+    '下载 ZIP 文件，自行保存到 Dropbox 或其他位置。这不会更改 Dropbox 自动同步。',
+  'settings.backup.contents':
+    '包含 EPUB 文件、封面、批注、已保存的聊天和阅读位置。',
+  'settings.backup.scope': '选择要导出的书籍',
+  'settings.backup.all': '整个书库',
+  'settings.backup.selected': '所选书籍',
+  'settings.backup.preferences': '包含全局外观和书库设置',
+  'settings.backup.history': '包含阅读历史和日历',
+  'settings.backup.export': '导出备份',
+  'settings.backup.exporting': '正在创建备份…',
+  'settings.backup.exported': '备份已创建，请查看浏览器下载列表。',
+  'settings.backup.import': '导入备份',
+  'settings.backup.importing': '正在验证并恢复备份…',
+  'settings.backup.restore_extras': '同时恢复已包含的设置并合并阅读历史',
+  'settings.backup.confirm_import':
+    '导入此备份吗？打开的书籍将关闭，完成后 Lumen 会重新加载。批注将合并。如果启用额外数据恢复，备份中的设置将替换当前设置，阅读历史将合并。',
+  'settings.backup.privacy':
+    'ZIP 文件未加密，请妥善保管。不包含 AI API 密钥、服务授权、已下载的模型或可重建的缓存。',
+  'settings.backup.error.invalid':
+    '备份无效、损坏或不兼容。请使用最新 Lumen 重新导出。一次仅导入一个 ZIP 文件。',
+  'settings.backup.error.too_large': '备份超出大小限制，请减少导出的书籍数量。',
+  'settings.backup.error.missing_file':
+    '缺少书籍文件，请先下载到本地再导出。不完整的备份无法恢复。',
+  'settings.backup.error.conflict':
+    '此书籍标识对应另一份 EPUB 文件。未更改任何书籍。',
+  'settings.backup.error.unavailable': '本地存储或完整性验证不可用。',
+  'settings.backup.error.failed': '备份失败，请检查可用空间后重试。',
 } as const

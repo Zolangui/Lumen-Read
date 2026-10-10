@@ -293,7 +293,7 @@ function isLegacyReadingSession(value: unknown): value is LegacyReadingSession {
   )
 }
 
-function isReadingSession(value: unknown): value is ReadingSession {
+export function isReadingSession(value: unknown): value is ReadingSession {
   return isCanonicalReadingSession(value) || isLegacyReadingSession(value)
 }
 
@@ -309,7 +309,7 @@ export function readingSessionEquivalentPages(session: ReadingSession): number {
     : session.pagesRead
 }
 
-function normalizeStats(value: unknown): ReadingStats {
+export function normalizeStats(value: unknown): ReadingStats {
   const raw = value as Partial<ReadingStats> | undefined
   if (!raw || typeof raw !== 'object') return emptyStats()
 

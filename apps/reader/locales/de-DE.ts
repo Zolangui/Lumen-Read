@@ -409,4 +409,39 @@ export default {
     'Offne ein Buch, bevor du den Leseassistenten verwendest.',
   'ai.error.index_incompatible':
     'Die Einstellungen des KI-Index haben sich geandert. Indiziere dieses Buch neu, bevor du eine weitere Frage stellst.',
+  'settings.backup.title': 'Lokale Sicherung',
+  'settings.backup.description':
+    'Lade eine ZIP-Datei herunter und speichere sie selbst in Dropbox oder anderswo. Die automatische Dropbox-Synchronisierung bleibt unverändert.',
+  'settings.backup.contents':
+    'Enthält EPUB-Dateien, Cover, Anmerkungen, gespeicherte Chats und Lesepositionen.',
+  'settings.backup.scope': 'Zu exportierende Bücher',
+  'settings.backup.all': 'Gesamte Bibliothek',
+  'settings.backup.selected': 'Ausgewählte Bücher',
+  'settings.backup.preferences':
+    'Globale Darstellungs- und Bibliothekseinstellungen einschließen',
+  'settings.backup.history': 'Leseverlauf und Kalender einschließen',
+  'settings.backup.export': 'Sicherung exportieren',
+  'settings.backup.exporting': 'Sicherung wird erstellt…',
+  'settings.backup.exported':
+    'Sicherung erstellt. Prüfe die Downloads deines Browsers.',
+  'settings.backup.import': 'Sicherung importieren',
+  'settings.backup.importing': 'Sicherung wird geprüft und wiederhergestellt…',
+  'settings.backup.restore_extras':
+    'Enthaltene Einstellungen wiederherstellen und Leseverlauf zusammenführen',
+  'settings.backup.confirm_import':
+    'Diese Sicherung importieren? Offene Bücher werden geschlossen und Lumen danach neu geladen. Anmerkungen werden zusammengeführt. Wenn zusätzliche Daten wiederhergestellt werden, ersetzen enthaltene Einstellungen die aktuellen und der Leseverlauf wird zusammengeführt.',
+  'settings.backup.privacy':
+    'Die ZIP-Datei ist nicht verschlüsselt. Bewahre sie privat auf. KI-API-Schlüssel, Dienstautorisierungen, heruntergeladene Modelle und erneuerbare Caches werden nicht gesichert.',
+  'settings.backup.error.invalid':
+    'Ungültige, beschädigte oder inkompatible Sicherung. Exportiere erneut mit aktuellem Lumen. Importiere nur eine ZIP-Datei auf einmal.',
+  'settings.backup.error.too_large':
+    'Die Sicherung überschreitet die Größenbegrenzung. Exportiere weniger Bücher.',
+  'settings.backup.error.missing_file':
+    'Eine Buchdatei fehlt. Lade das Buch vor dem Export lokal herunter; unvollständige Sicherungen lassen sich nicht wiederherstellen.',
+  'settings.backup.error.conflict':
+    'Diese Buchkennung gehört zu einer anderen EPUB-Datei. Keine Bücher wurden verändert.',
+  'settings.backup.error.unavailable':
+    'Lokaler Speicher oder Integritätsprüfung ist nicht verfügbar.',
+  'settings.backup.error.failed':
+    'Sicherung fehlgeschlagen. Prüfe den freien Speicherplatz und versuche es erneut.',
 } as const

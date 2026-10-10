@@ -67,6 +67,8 @@ software are not supported; Lumen does not remove DRM.
   image preview, progress tracking, and reading locations.
 - **Keep your notes** — highlight text, add annotations, and manage your
   reading library locally.
+- **Back up your library** — export all or selected books with optional
+  preferences and reading history. See the [local backup guide](docs/readers/local-backup.md).
 - **Understand your habits** — follow streaks and reading activity with a
   GitHub-style heatmap calendar.
 - **Use AI only when you choose** — chat with a book, retrieve relevant

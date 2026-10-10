@@ -414,4 +414,39 @@ export default {
     'Ouvrez un livre avant d utiliser l assistant de lecture.',
   'ai.error.index_incompatible':
     'Les reglages de l index IA ont change. Reindexez ce livre avant de poser une autre question.',
+  'settings.backup.title': 'Sauvegarde locale',
+  'settings.backup.description':
+    'Téléchargez un ZIP et conservez-le dans Dropbox ou ailleurs. Cela ne modifie pas la synchronisation automatique avec Dropbox.',
+  'settings.backup.contents':
+    'Inclut les EPUB, couvertures, annotations, discussions enregistrées et positions de lecture.',
+  'settings.backup.scope': 'Livres à exporter',
+  'settings.backup.all': 'Toute la bibliothèque',
+  'settings.backup.selected': 'Livres sélectionnés',
+  'settings.backup.preferences':
+    'Inclure les préférences globales d’apparence et de bibliothèque',
+  'settings.backup.history': 'Inclure l’historique de lecture et le calendrier',
+  'settings.backup.export': 'Exporter la sauvegarde',
+  'settings.backup.exporting': 'Création de la sauvegarde…',
+  'settings.backup.exported':
+    'Sauvegarde créée. Consultez les téléchargements du navigateur.',
+  'settings.backup.import': 'Importer une sauvegarde',
+  'settings.backup.importing': 'Validation et restauration de la sauvegarde…',
+  'settings.backup.restore_extras':
+    'Restaurer aussi les préférences et fusionner l’historique de lecture, si inclus',
+  'settings.backup.confirm_import':
+    'Importer cette sauvegarde ? Les livres ouverts seront fermés et Lumen sera rechargé après restauration. Les annotations seront fusionnées. Si la restauration des données supplémentaires est activée, les préférences incluses remplaceront les actuelles et l’historique sera fusionné.',
+  'settings.backup.privacy':
+    'Le ZIP n’est pas chiffré. Gardez-le privé. Les clés API d’IA, autorisations de services, modèles téléchargés et caches reconstructibles sont exclus.',
+  'settings.backup.error.invalid':
+    'Sauvegarde invalide, endommagée ou incompatible. Exportez-en une avec Lumen à jour. Importez un seul ZIP à la fois.',
+  'settings.backup.error.too_large':
+    'La sauvegarde dépasse la limite de taille. Exportez moins de livres.',
+  'settings.backup.error.missing_file':
+    'Un fichier de livre manque. Téléchargez-le localement avant l’export ; une sauvegarde incomplète ne peut pas être restaurée.',
+  'settings.backup.error.conflict':
+    'Cet identifiant appartient à un autre EPUB. Aucun livre n’a été modifié.',
+  'settings.backup.error.unavailable':
+    'Le stockage local ou la vérification d’intégrité est indisponible.',
+  'settings.backup.error.failed':
+    'Échec de la sauvegarde. Vérifiez l’espace disponible et réessayez.',
 } as const
